@@ -5,12 +5,12 @@ using Orleans.Storage;
 
 namespace Orleans.NpgsqlTenancy;
 
-public static class PostgresStorageFactory
+public static class PostgresStorageFactory<TDbContext> where TDbContext: StateDbContext
 {
     public static IGrainStorage Create(
         IServiceProvider services, string name)
     {
-        return ActivatorUtilities.CreateInstance<PostgresStorageProvider>(
+        return ActivatorUtilities.CreateInstance<PostgresStorageProvider<TDbContext>>(
             services,
             name,
             services.GetProviderClusterOptions(name));

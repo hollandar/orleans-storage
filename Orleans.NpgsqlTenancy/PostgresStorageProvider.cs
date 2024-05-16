@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace Orleans.NpgsqlTenancy;
 
-public class PostgresStorageProvider : IGrainStorage
+public class PostgresStorageProvider<TDbContext> : IGrainStorage where TDbContext: StateDbContext
 {
     private readonly IServiceProvider services;
     private readonly string storageName;
@@ -26,7 +26,7 @@ public class PostgresStorageProvider : IGrainStorage
 
     public async Task ClearStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)
     {
-        var storageFactory = services.GetRequiredService<StorageDbFactory<StateDbContext>>();
+        var storageFactory = services.GetRequiredService<StorageDbFactory<TDbContext>>();
         using var context = await storageFactory.GetDbContext(storageName);
 
         await context.States.Where(r => r.StateName == stateName && r.Id == grainId.ToString()).ExecuteDeleteAsync();
@@ -34,7 +34,7 @@ public class PostgresStorageProvider : IGrainStorage
 
     public async Task ReadStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)
     {
-        var storageFactory = services.GetRequiredService<StorageDbFactory<StateDbContext>>();
+        var storageFactory = services.GetRequiredService<StorageDbFactory<TDbContext>>();
         using var context = await storageFactory.GetDbContext(storageName);
 
         var state = context.States.FirstOrDefault(r => r.StateName == stateName && r.Id == grainId.ToString());
@@ -56,7 +56,7 @@ public class PostgresStorageProvider : IGrainStorage
 
     public async Task WriteStateAsync<T>(string stateName, GrainId grainId, IGrainState<T> grainState)
     {
-        var storageFactory = services.GetRequiredService<StorageDbFactory<StateDbContext>>();
+        var storageFactory = services.GetRequiredService<StorageDbFactory<TDbContext>>();
         using var context = await storageFactory.GetDbContext(storageName);
 
         var state = context.States.FirstOrDefault(r => r.StateName == stateName && r.Id == grainId.ToString());
