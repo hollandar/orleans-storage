@@ -20,7 +20,7 @@ public class ValueResult<TResultType> : IResult
 
     public static ValueResult<TResultType> Ok(TResultType value)
     {
-        return new ValueResult<TResultType>(value) { Success = true, Value = value };
+        return new ValueResult<TResultType>(value) { Success = true };
     }
 
     public static ValueResult<TResultType> Fail(string message, ResultReasonType reason = ResultReasonType.None)

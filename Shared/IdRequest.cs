@@ -19,3 +19,4 @@ public class IdRequest<T0, T1, T2, T3> : IdRequest<T0, T1, T2>
 {
     public T3 Id3 { get; set; } = default(T3)!;
 }
+
