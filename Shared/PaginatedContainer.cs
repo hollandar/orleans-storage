@@ -23,6 +23,10 @@ public class PaginatedContainer<T>
     public bool Success => (Message is null && Reason == ResultReasonType.None);
     public string? Message { get; set; } = null;
     public ResultReasonType Reason { get; set; } = ResultReasonType.None;
+
+    public static PaginatedContainer<T> Fail(string message, ResultReasonType reason = ResultReasonType.None) {
+        return new PaginatedContainer<T>(message, reason);
+    }
 }
 
 public class PageRequest
@@ -32,4 +36,9 @@ public class PageRequest
     public string? Search { get; set; } = null;
     public SortOrder SortOrder { get; set; } = SortOrder.Asc;
     public OrderBy OrderBy { get; set; } = OrderBy.Id;
+}
+
+public class PageRequestWithId:PageRequest
+{
+    public string Id { get; set; } = string.Empty;
 }
