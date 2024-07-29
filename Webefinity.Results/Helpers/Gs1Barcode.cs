@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.Barcodes;
+namespace Webefinity.Results.Barcodes;
 
 public class Gs1Barcode
 {

@@ -1,7 +1,8 @@
 ﻿
 using FluentValidation.Results;
+using Webefinity.Results;
 
-namespace Shared.Validation;
+namespace Webefinity.Validation;
 
 public static class ValidationExtensions
 {

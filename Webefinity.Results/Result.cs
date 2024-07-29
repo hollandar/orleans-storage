@@ -1,4 +1,4 @@
-﻿namespace Shared;
+﻿namespace Webefinity.Results;
 
 
 public class Result : IResult

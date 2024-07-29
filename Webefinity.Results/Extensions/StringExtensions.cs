@@ -5,7 +5,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
-namespace Shared.Extensions;
+namespace Webefinity.Results.Extensions;
 
 public static partial class StringExtensions
 {
