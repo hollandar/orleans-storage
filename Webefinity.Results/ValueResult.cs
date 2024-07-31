@@ -3,7 +3,7 @@ public class ValueResult<TResultType> : IResult
 {
     public ValueResult()
     {
-
+        Value = default(TResultType);
     }
     public ValueResult(TResultType value) : base()
     {
@@ -12,7 +12,7 @@ public class ValueResult<TResultType> : IResult
 
     public bool Success { get; set; }
     public string? Message { get; set; } = null;
-    public TResultType Value { get; set; }
+    public TResultType? Value { get; set; }
     public bool HasError => Message != null;
     public ResultReasonType Reason { get; set; } = ResultReasonType.None;
 
@@ -38,7 +38,7 @@ public class ValueResult<TResultType> : IResult
         return Fail(message);
     }
 
-    public static implicit operator TResultType(ValueResult<TResultType> result)
+    public static implicit operator TResultType?(ValueResult<TResultType> result)
     {
         if (result.Success == false)
         {
