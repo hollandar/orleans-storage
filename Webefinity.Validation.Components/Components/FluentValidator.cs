@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components;
 
-namespace Validation.Components
+namespace Webefinity.Validation.Components
 {
     public class FluentValidator<TModelType, TValidator> : ComponentBase where TValidator : IValidator, new()
     {
