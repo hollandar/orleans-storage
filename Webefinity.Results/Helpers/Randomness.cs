@@ -16,6 +16,6 @@ public static class Randomness
         }
 
         Debug.Assert(builder.Length == length);
-        return builder.Length.ToString();
+        return builder.ToString();
     }
 }
