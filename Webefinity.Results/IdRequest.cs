@@ -1,4 +1,6 @@
-﻿namespace Webefinity.Results;
+﻿using System.Formats.Tar;
+
+namespace Webefinity.Results;
 
 public class IdRequest<T0>
 {
@@ -12,6 +14,16 @@ public class IdRequest<T0>
     }
 
     public T0 Id { get; set; } = default(T0)!;
+
+    public static implicit operator IdRequest<T0>(T0 id)
+    {
+        return new IdRequest<T0>(id);
+    }
+
+    public static implicit operator T0(IdRequest<T0> request)
+    {
+        return request.Id;
+    }
 }
 
 public class IdRequest<T0, T1> : IdRequest<T0>
