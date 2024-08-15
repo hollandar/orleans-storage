@@ -6,19 +6,19 @@ using System.Threading.Tasks;
 
 namespace Webefinity.Results;
 
-public struct AssociateRequest<TAssocitedId, TModel>
+public struct AssociateRequest<TAssociated, TValue>
 {
     public AssociateRequest()
     {
         
     }
 
-    public AssociateRequest(TAssocitedId associtedId, TModel model)
+    public AssociateRequest(TAssociated associted, TValue value)
     {
-        this.AssociatedId = associtedId;
-        this.Model = model;
+        this.Associated = associted;
+        this.Value = value;
     }
 
-    public TAssocitedId AssociatedId { get; set; }
-    public TModel Model { get; set; }
+    public TAssociated Associated { get; set; }
+    public TValue Value { get; set; }
 }
