@@ -4,5 +4,6 @@ public enum ResultReasonType { None, NotFound,
     AlreadyExists,
     Mismatch,
     Invalid,
-    Unauthorized
+    Unauthorized,
+    LimitReached
 }
