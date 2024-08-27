@@ -1,0 +1,90 @@
+﻿@page "/article/{id}"
+
+@using Markdig
+@using Markdig.Renderers
+@using Markdig.Syntax
+@using Markdig.Syntax.Inlines
+@using Microsoft.Extensions.Options
+@using Webefinity.Frontmatter
+@using Humanizer
+@using Webefinity.ContentRoot
+
+@using Webefinity.Module.Blog.Models
+
+@inject IContentRootLibrary ContentRootLibrary
+
+<HeadContent>
+    <meta name="description" content="@this.properties?.Summary" />
+</HeadContent>
+
+<section class="gutter constrained p-t-4 p-b-4">
+    @if (found)
+    {
+        @if (this.properties is not null)
+        {
+            <PageTitle>@this.properties.Title</PageTitle>
+            <p>@this.properties.Date.Humanize() by @this.properties.Author</p>
+        }
+
+        <article>
+            @(new MarkupString(this.html))
+        </article>
+
+        <div class="actions">
+            <a href="/article" class="button primary"><i class="fa-solid fa-caret-left"></i> Back</a>
+        </div>
+    }
+    else
+    {
+        <h1>Article Not Found</h1>
+        <p>The article you have requested does not exist, maybe the link is wrong?</p>
+    }
+</section>
+
+@code {
+    [Parameter] public string Id { get; set; }
+
+    string html = string.Empty;
+    ArticleFrontmatter? properties = null;
+    bool found = false;
+
+    class ImageExtension : IMarkdownExtension
+    {
+
+        public void Setup(MarkdownPipelineBuilder pipeline)
+        {
+            pipeline.DocumentProcessed += ChangeImgPath;
+        }
+
+        public void ChangeImgPath(MarkdownDocument document)
+        {
+            foreach (LinkInline link in document.Descendants<LinkInline>())
+            {
+                if (link.IsImage)
+                    link.Url = "/c/blog/" + link.Url;
+            }
+        }
+
+        public void Setup(MarkdownPipeline pipeline, IMarkdownRenderer renderer)
+        {
+        }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var collectionDef = new CollectionDef("blog");
+
+        var file = $"{Id}.md";
+        if (ContentRootLibrary.FileExists(collectionDef, file))
+        {
+            using var reader = ContentRootLibrary.LoadReader(collectionDef, file);
+            var content = await FrontmatterLoader.LoadAsync<ArticleFrontmatter>(reader);
+            this.properties = content.Frontmatter;
+            var markdownPipeline = new MarkdownPipelineBuilder().Use<ImageExtension>().Build();
+            this.html = Markdig.Markdown.ToHtml(content.Content, markdownPipeline);
+            found = true;
+        }
+
+        await base.OnInitializedAsync();
+    }
+}

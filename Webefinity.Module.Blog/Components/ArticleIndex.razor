@@ -1,0 +1,108 @@
+@page "/article"
+@using Microsoft.AspNetCore.Components.Forms
+@using Webefinity.ContentRoot
+@using Webefinity.Frontmatter
+@using Webefinity.Module.Blog.Data
+@using Webefinity.Module.Blog.Models
+@using Webefinity.Module.Blog.Services
+
+@inject IContentRootLibrary ContentRootLibrary
+@inject ArticleIndexService ArticleIndexService
+
+<HeadContent>
+    <meta name="description" content="An index of blog articles published by Sports Trainer."/>
+</HeadContent>
+
+<PageTitle>Articles</PageTitle>
+
+<section class="gutter container p-t-4 p-b-4">
+    <h1>Articles</h1>
+
+    @if (this.articleModels is not null)
+    {
+        if (this.articleModels.Count() == 0 && this.SearchTerms.IsActive)
+        {
+            <p>No article matched your criteria.</p>
+        }
+        else if (this.articleModels.Count() == 0 && !this.SearchTerms.IsActive)
+        {
+            <p>No article are published</p>
+        }
+        else
+        {
+            <div class="articles">
+                @foreach (var article in this.articleModels)
+                {
+                    <div class="card">
+                        <div>
+                            @if (article.Image is not null)
+                            {
+                                <img class="cover" src="@($"/contentroot/{Constants.BlogCollection.Collection}/{article.Image}")" alt="@article.Title" />
+                            }
+                        </div>
+
+                        <h2>
+                            <a href="@($"/article/{article.Id}")">
+                                @article.Title
+                            </a>
+                        </h2>
+
+                        @if (article.Summary is not null)
+                        {
+                            <p>@article.Summary</p>
+                        }
+                    </div>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <p>Loading...</p>
+    }
+
+    <EditForm Model="this.SearchTerms" method="post" OnSubmit="SearchAsync" FormName="BlogSearch">
+        <div class="panel stack horizontal">
+            <InputSelect @bind-Value="this.SearchTerms.Tag" style="padding-right: 2rem;">
+                <option value="">(none)</option>
+                @foreach (var tag in this.tags)
+                {
+                    <option value="@tag">@tag</option>
+                }
+            </InputSelect>
+            <InputText class="wide" type="text" @bind-Value="this.SearchTerms.Search" placeholder="Search..." />
+            <button type="submit" class="secondary"><i class="fa-solid fa-magnifying-glass"></i> Search</button>
+        </div>
+    </EditForm>
+
+</section>
+
+@code {
+    IEnumerable<ArticleFrontmatter>? articleModels;
+    List<string> tags = new List<string>();
+
+    [SupplyParameterFromForm]
+    public MatchTerms SearchTerms { get; set; } = new MatchTerms();
+
+    public class MatchTerms
+    {
+        public string Search { get; set; } = string.Empty;
+        public string Tag { get; set; } = string.Empty;
+        public bool IsActive { get => !String.IsNullOrWhiteSpace(Search) || !String.IsNullOrWhiteSpace(Tag); }
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.tags = await ArticleIndexService.ListTagsAsync();
+
+        if (!this.SearchTerms.IsActive)
+            this.articleModels = await ArticleIndexService.ListArticlesAsync();
+
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task SearchAsync()
+    {
+        this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag);
+    }
+}

@@ -1,0 +1,26 @@
+.articles {
+    display: grid;
+    gap: 2rem;
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+    grid-auto-flow: row;
+    align-items: stretch;
+}
+
+@container (min-width: 800px) {
+    .articles {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (min-width: 1024px) {
+    .articles {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@container (min-width: 1920px) {
+    .articles {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
