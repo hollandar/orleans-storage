@@ -38,10 +38,11 @@ namespace Webefinity.Module.Blog
             });
         }
 
-        public static void AddWebefinityBlogComponents(this RazorComponentsEndpointConventionBuilder builder)
+        public static RazorComponentsEndpointConventionBuilder AddWebefinityBlogComponents(this RazorComponentsEndpointConventionBuilder builder)
         {
-
             builder.AddAdditionalAssemblies(typeof(StartupExtensions).Assembly);
+
+            return builder;
         }
     }
 }
