@@ -1,0 +1,68 @@
+﻿@page "/{*route:nonfile}"
+@using Microsoft.Extensions.Options
+@using Webefinity.ContentRoot
+@using Webefinity.Module.Pages.Options
+
+@inject IContentRootLibrary ContentRootLibrary
+@inject IOptions<PageRouterOptions> PageRouterOptions
+
+@if (content is not null)
+{
+    <PageTitle>@this.title</PageTitle>
+    <div>@((MarkupString)this.content)</div>
+} 
+else
+{
+    <PageTitle>404 Not Found</PageTitle>
+    <h1>404 Not Found</h1>
+    <p>The page @Route was not found.</p>
+}
+
+@code {
+    [Parameter]
+    public string? Route { get; set; }
+
+    private string? content = null;
+    private string? title = null;
+
+    public class PageFrontmatter
+    {
+        public string Route { get; set; } = string.Empty;
+        public string? Title { get; set; } = null;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        if (Route is not null)
+        {
+            var collection = new CollectionDef(PageRouterOptions.Value.Collection);
+            await foreach (var page in ContentRootLibrary.EnumerateRecursiveAsync(collection, "*.*"))
+            {
+                using var pageReader = ContentRootLibrary.LoadReader(collection, page);
+                var frontmatterContent = await Frontmatter.FrontmatterLoader.LoadAsync<PageFrontmatter>(pageReader);
+
+                if (frontmatterContent.Frontmatter?.Route == Route)
+                {
+                    this.title = frontmatterContent.Frontmatter.Title ?? Route;
+                    var contentType = ContentTypes.GetContentType(page);
+                    switch (contentType)
+                    {
+                        case "text/markdown":
+                            this.content = Markdig.Markdown.ToHtml(frontmatterContent.Content);
+                            break;
+                        case "text/htm":
+                        case "text/html":
+                            this.content = frontmatterContent.Content;
+                            break;
+                        default:
+                            throw new Exception($"Unsupported content type {contentType}.");
+
+                    }
+                    break;
+                }
+            }
+        }
+    }
+}

@@ -139,7 +139,7 @@ namespace Webefinity.Frontmatter
                 contentStream.Seek(0, SeekOrigin.Begin);
 
                 using var frontmatterReader = new StreamReader(frontMatterStream);
-                var frontmatterString = frontmatterReader.ReadToEnd()[..(startDivider - (endDivider - startDivider - 1))];
+                var frontmatterString = frontmatterReader.ReadToEnd()[..(startDivider)];
 
                 using var contentReader = new StreamReader(contentStream);
                 var contentString = contentReader.ReadToEnd()[1..];
