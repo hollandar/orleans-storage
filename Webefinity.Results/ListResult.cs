@@ -17,6 +17,8 @@ public class ListResult<TItemType> : IResult
         return new ListResult<TItemType>(items) { Success = true };
     }
 
+    public static ListResult <TItemType> Empty() => Ok(new List<TItemType>());
+
     public static ListResult<TItemType> Fail(string message, ResultReasonType reason = ResultReasonType.None)
     {
         return new ListResult<TItemType>() { Success = false, Message = message, Reason = reason };
