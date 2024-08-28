@@ -20,6 +20,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\Webefinity.ContentRoot\Webefinity.ContentRoot.csproj" />
 		<ProjectReference Include="..\Webefinity.Frontmatter\Webefinity.Frontmatter.csproj" />
+		<ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
 	</ItemGroup>
 
 </Project>

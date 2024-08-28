@@ -1,16 +1,13 @@
 ﻿@page "/{*route:nonfile}"
-@using Microsoft.Extensions.Options
-@using Webefinity.ContentRoot
-@using Webefinity.Module.Pages.Options
+@using Webefinity.Module.Pages.Services
 
-@inject IContentRootLibrary ContentRootLibrary
-@inject IOptions<PageRouterOptions> PageRouterOptions
+@inject PageCacheService PageCacheService
 
 @if (content is not null)
 {
     <PageTitle>@this.title</PageTitle>
     <div>@((MarkupString)this.content)</div>
-} 
+}
 else
 {
     <PageTitle>404 Not Found</PageTitle>
@@ -35,34 +32,16 @@ else
     {
         await base.OnInitializedAsync();
 
-        if (Route is not null)
+        var pageCacheResult = await PageCacheService.GetPageAsync(Route);
+        if (pageCacheResult.Success)
         {
-            var collection = new CollectionDef(PageRouterOptions.Value.Collection);
-            await foreach (var page in ContentRootLibrary.EnumerateRecursiveAsync(collection, "*.*"))
-            {
-                using var pageReader = ContentRootLibrary.LoadReader(collection, page);
-                var frontmatterContent = await Frontmatter.FrontmatterLoader.LoadAsync<PageFrontmatter>(pageReader);
-
-                if (frontmatterContent.Frontmatter?.Route == Route)
-                {
-                    this.title = frontmatterContent.Frontmatter.Title ?? Route;
-                    var contentType = ContentTypes.GetContentType(page);
-                    switch (contentType)
-                    {
-                        case "text/markdown":
-                            this.content = Markdig.Markdown.ToHtml(frontmatterContent.Content);
-                            break;
-                        case "text/htm":
-                        case "text/html":
-                            this.content = frontmatterContent.Content;
-                            break;
-                        default:
-                            throw new Exception($"Unsupported content type {contentType}.");
-
-                    }
-                    break;
-                }
-            }
+            content = pageCacheResult.Value.Content;
+            title = pageCacheResult.Value.Title;
+        }
+        else
+        {
+            content = null;
+            title = "Page not found.";
         }
     }
 }
