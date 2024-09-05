@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using System.Security.Claims;
 using System.Security.Principal;
+using Webefinity.Authorization.Extensions;
 
 namespace Webefinity.Authorization.Services;
 
@@ -34,5 +35,14 @@ public class SecureServiceBase
 
         var result = await authorizationService.AuthorizeAsync(httpContextAccessor.HttpContext.User, policyName);
         return (result.Succeeded, result);
+    }
+    
+    public string Subject()
+    {
+        if (this.httpContextAccessor.HttpContext.User.Identity.IsAuthenticated) { 
+            return this.HttpContextAccessor.HttpContext.User.Subject();
+        }
+
+        return string.Empty;
     }
 }
