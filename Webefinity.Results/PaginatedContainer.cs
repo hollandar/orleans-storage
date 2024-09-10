@@ -42,3 +42,8 @@ public class PageRequestWithId:PageRequest
 {
     public string Id { get; set; } = string.Empty;
 }
+
+public class PageRequestWithId<TIdType>:PageRequest
+{
+    public TIdType Id { get; set; } = default!;
+}
