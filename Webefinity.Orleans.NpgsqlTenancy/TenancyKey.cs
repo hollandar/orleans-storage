@@ -41,6 +41,11 @@ public class TenancyKey
         }
 
         var key = grainId.Key.ToString();
+        if (key is null)
+        {
+            throw new NullReferenceException("The key is null.");
+        }
+
         var parts = key.Split('>', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 2)
         {
@@ -70,6 +75,11 @@ public class TenancyKey
         if (grainId.Key.Value.Span[0] != '>' && grainId.Key.Value.Span[1] != '>')
         {
             var key = grainId.Key.ToString();
+            if (key is null)
+            {
+                throw new NullReferenceException("The key is null.");
+            }
+
             var parts = key.Split('>', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 1)
             {
