@@ -75,10 +75,16 @@ public class PostgresTenancyStorageProvider<TDbContext> : IGrainStorage where TD
             state.Id = tenancy.Id;
             context.States.Add(state);
         }
-
+        var originalToken = state.ETag;
         state.ETag = Guid.NewGuid().ToString();
         state.State = JsonSerializer.SerializeToDocument(grainState.State);
 
+        try { 
         await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            throw new InconsistentStateException(originalToken, grainState.ETag, ex);
+        }
     }
 }
