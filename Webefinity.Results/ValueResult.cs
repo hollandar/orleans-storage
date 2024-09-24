@@ -1,11 +1,14 @@
-﻿namespace Webefinity.Results;
+﻿using System.Diagnostics;
+
+namespace Webefinity.Results;
 public class ValueResult<TResultType> : IResult
 {
     public ValueResult()
     {
         Value = default(TResultType);
     }
-    public ValueResult(TResultType value) : base()
+
+    private ValueResult(TResultType value) : base()
     {
         Value = value;
     }
@@ -20,6 +23,7 @@ public class ValueResult<TResultType> : IResult
 
     public static ValueResult<TResultType> Ok(TResultType value)
     {
+        Debug.Assert(value is not null);
         return new ValueResult<TResultType>(value) { Success = true };
     }
 

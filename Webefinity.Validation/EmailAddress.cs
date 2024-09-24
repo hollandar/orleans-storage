@@ -9,7 +9,7 @@ public static partial class EmailAddress
 
     public static bool IsValidEmailAddress(this string? input, bool isRequired = false)
     {
-        return (isRequired == false && String.IsNullOrEmpty(input)) || EmailExtensionRegex().IsMatch(input);
+        return (isRequired == false && String.IsNullOrEmpty(input)) || ( input is not null && EmailExtensionRegex().IsMatch(input));
     }
 
     public static string UnextendedEmailAddress(this string input)

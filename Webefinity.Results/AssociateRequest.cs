@@ -19,6 +19,6 @@ public struct AssociateRequest<TAssociated, TValue>
         this.Value = value;
     }
 
-    public TAssociated Associated { get; set; }
-    public TValue Value { get; set; }
+    public TAssociated Associated { get; set; } = default!;
+    public TValue Value { get; set; } = default!;
 }

@@ -1,4 +1,5 @@
 ﻿using Orleans.Runtime;
+using System.Diagnostics;
 
 namespace Orleans.NpgsqlTenancy;
 
@@ -41,6 +42,8 @@ public class TenancyKey
         }
 
         var key = grainId.Key.ToString();
+        Debug.Assert(key is not null);
+
         var parts = key.Split('>', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length == 2)
         {
@@ -70,6 +73,8 @@ public class TenancyKey
         if (grainId.Key.Value.Span[0] != '>' && grainId.Key.Value.Span[1] != '>')
         {
             var key = grainId.Key.ToString();
+            Debug.Assert(key is not null);
+
             var parts = key.Split('>', StringSplitOptions.RemoveEmptyEntries);
             if (parts.Length == 1)
             {
