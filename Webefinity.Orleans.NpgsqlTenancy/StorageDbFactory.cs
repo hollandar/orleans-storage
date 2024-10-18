@@ -8,7 +8,7 @@ using System.Diagnostics.Contracts;
 
 namespace Orleans.NpgsqlTenancy;
 
-public class StorageDbFactory<TDbContext> where TDbContext: GrainStoreDbContext
+public class StorageDbFactory<TDbContext> where TDbContext: DbContext
 {
     static ConcurrentDictionary<string, string> exists = new();
     static SemaphoreSlim creationSemaphore = new SemaphoreSlim(1);
@@ -37,7 +37,7 @@ public class StorageDbFactory<TDbContext> where TDbContext: GrainStoreDbContext
             var database = tenancyId switch
             {
                 null => storage.Database,
-                _ => $"t_{tenancyId}".Replace("-", ""),
+                _ => $"{storageName}_{tenancyId}".Replace("-", ""),
             };
 
             connectionString = $"Host={storage.Host};Database={database};User Id={storage.UserId};Password={storage.Password};Port={storage.Port}";
@@ -47,6 +47,7 @@ public class StorageDbFactory<TDbContext> where TDbContext: GrainStoreDbContext
 
         var optionsBuilder = new DbContextOptionsBuilder<TDbContext>();
         optionsBuilder.UseNpgsql(connectionString);
+        optionsBuilder.UseApplicationServiceProvider(serviceProvider);
         var newContext = ActivatorUtilities.CreateInstance<TDbContext>(serviceProvider, optionsBuilder.Options);
 
         if (migrate)
