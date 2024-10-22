@@ -4,10 +4,10 @@ namespace Webefinity.MessageBus;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection ConfigureMessageBus(this IServiceCollection services, Action<IBusOptions> options)
+    public static IServiceCollection ConfigureMessageBus(this IServiceCollection services, Action<IMessageBusOptions> options)
     {
 
-        var busOptions = new BusOptions();
+        var busOptions = new MessageBusOptions();
         options(busOptions);
 
         services.AddSingleton(busOptions);

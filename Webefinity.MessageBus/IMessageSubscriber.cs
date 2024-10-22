@@ -1,13 +1,13 @@
 ﻿namespace Webefinity.MessageBus;
 
-public interface ISubscriber;
+public interface IMessageSubscriber;
 
-public interface ISubscriber<TMessageType> : ISubscriber
+public interface IMessageSubscriber<TMessageType> : IMessageSubscriber
 {
     public Task HandleAsync(TMessageType message, CancellationToken ct);
 }
 
-public interface ISubscriberAsync<TMessageType> : ISubscriber
+public interface IMessageSubscriberAsync<TMessageType> : IMessageSubscriber
 {
     public Task HandleAsync(TMessageType message, CancellationToken ct);
 }

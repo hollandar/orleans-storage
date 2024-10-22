@@ -1,7 +1,7 @@
 ﻿namespace Webefinity.MessageBus;
 
 
-public class BusScope : IDisposable
+public class MessageBusScope : IDisposable
 {
     private static int taskCycle = 0;
     private const int taskCleanupInterval = 10;

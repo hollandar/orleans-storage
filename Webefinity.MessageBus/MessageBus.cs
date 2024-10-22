@@ -7,7 +7,7 @@ public class MessageBus : IDisposable
 {
     private SemaphoreSlim semaphoreSlim = new(1);
     private List<Task> unfinishedTasks = new();
-    private readonly BusOptions busOptions;
+    private readonly MessageBusOptions busOptions;
     private readonly ILogger<MessageBus>? logger;
     private readonly IServiceProvider serviceProvider;
     private static int taskCycle = 0;
@@ -15,13 +15,13 @@ public class MessageBus : IDisposable
 
     public MessageBus(IServiceProvider serviceProvider)
     {
-        this.busOptions = serviceProvider.GetRequiredService<BusOptions>();
+        this.busOptions = serviceProvider.GetRequiredService<MessageBusOptions>();
         this.logger = serviceProvider.GetService<ILogger<MessageBus>>();
         this.serviceProvider = serviceProvider;
     }
 
 
-    public async Task PublishAsync<TMessageType>(TMessageType message, CancellationToken? ct = null, BusScope? busScope = null)
+    public async Task PublishAsync<TMessageType>(TMessageType message, CancellationToken? ct = null, MessageBusScope? busScope = null)
     {
         using var scope = serviceProvider.CreateScope();
         if (this.busOptions.TryGetSubscribers<TMessageType>(out var subscriberList))
@@ -31,13 +31,13 @@ public class MessageBus : IDisposable
             {
                 var subscriberType = subscriberList[index];
                 var serviceInstance = scope.ServiceProvider.GetService(subscriberType);
-                if (serviceInstance is ISubscriberAsync<TMessageType>)
+                if (serviceInstance is IMessageSubscriberAsync<TMessageType>)
                 {
                     try
                     {
                         semaphoreSlim.Wait();
 
-                        var service = serviceInstance as ISubscriberAsync<TMessageType>;
+                        var service = serviceInstance as IMessageSubscriberAsync<TMessageType>;
                         var task = Task.Run(async () =>
                         {
                             try
@@ -49,7 +49,7 @@ public class MessageBus : IDisposable
                                 if (this.busOptions.GetExceptionHandlerType() is not null)
                                 {
                                     var exceptionHandler = scope.ServiceProvider.GetRequiredService(this.busOptions.GetExceptionHandlerType()!);
-                                    await (exceptionHandler as IBusExceptionHandler)!.HandleExceptionAsync(ex, ct ?? CancellationToken.None);
+                                    await (exceptionHandler as IMessageBusExceptionHandler)!.HandleExceptionAsync(ex, ct ?? CancellationToken.None);
                                 }
                                 else if (this.busOptions.GetLogger() && logger is not null)
                                 {
@@ -72,9 +72,9 @@ public class MessageBus : IDisposable
                     finally { semaphoreSlim.Release(); }
                 }
 
-                else if (serviceInstance is ISubscriber<TMessageType>)
+                else if (serviceInstance is IMessageSubscriber<TMessageType>)
                 {
-                    var service = serviceInstance as ISubscriber<TMessageType>;
+                    var service = serviceInstance as IMessageSubscriber<TMessageType>;
 
                     await service!.HandleAsync(message, ct ?? CancellationToken.None);
                 }

@@ -2,23 +2,23 @@
 
 namespace Webefinity.MessageBus;
 
-public interface IBusOptions
+public interface IMessageBusOptions
 {
-    void Subscribe<TSubscriberType, TMessageType>() where TSubscriberType : ISubscriber;
+    void Subscribe<TSubscriberType, TMessageType>() where TSubscriberType : IMessageSubscriber;
 }
 
-public interface IBusExceptionHandler
+public interface IMessageBusExceptionHandler
 {
     Task HandleExceptionAsync(Exception exception, CancellationToken ct);
 }
 
-public class BusOptions : IBusOptions
+public class MessageBusOptions : IMessageBusOptions
 {
     private Type? exceptionHandler = null;
     private bool useLogger = true;
     private ConcurrentDictionary<Type, List<Type>> subscribers = new();
 
-    public void Subscribe<TSubscriberType, TMessageType>() where TSubscriberType : ISubscriber
+    public void Subscribe<TSubscriberType, TMessageType>() where TSubscriberType : IMessageSubscriber
     {
         if (!subscribers.ContainsKey(typeof(TMessageType)))
         {
@@ -32,7 +32,7 @@ public class BusOptions : IBusOptions
         return this.subscribers.TryGetValue(typeof(TMessageType), out subscribers);
     }
 
-    public void UseExceptionHandler<TBusExceptionHandler>() where TBusExceptionHandler : IBusExceptionHandler
+    public void UseExceptionHandler<TBusExceptionHandler>() where TBusExceptionHandler : IMessageBusExceptionHandler
     {
         this.exceptionHandler = typeof(TBusExceptionHandler);
     }
