@@ -23,23 +23,24 @@ public class MessageBus : IDisposable
 
     public async Task PublishAsync<TMessageType>(TMessageType message, CancellationToken? ct = null, MessageBusScope? busScope = null)
     {
-        using var scope = serviceProvider.CreateScope();
         if (this.busOptions.TryGetSubscribers<TMessageType>(out var subscriberList))
         {
             int index = 0;
             while (index < subscriberList!.Count)
             {
                 var subscriberType = subscriberList[index];
-                var serviceInstance = scope.ServiceProvider.GetService(subscriberType);
-                if (serviceInstance is IMessageSubscriberAsync<TMessageType>)
+                if (subscriberType.IsAssignableTo(typeof(IMessageSubscriberAsync<TMessageType>)))
                 {
                     try
                     {
                         semaphoreSlim.Wait();
-
-                        var service = serviceInstance as IMessageSubscriberAsync<TMessageType>;
                         var task = Task.Run(async () =>
                         {
+                            using var scope = serviceProvider.CreateScope();
+                            var serviceInstance = scope.ServiceProvider.GetService(subscriberType);
+
+                            var service = serviceInstance as IMessageSubscriberAsync<TMessageType>;
+
                             try
                             {
                                 await service!.HandleAsync(message, ct ?? CancellationToken.None);
@@ -72,8 +73,11 @@ public class MessageBus : IDisposable
                     finally { semaphoreSlim.Release(); }
                 }
 
-                else if (serviceInstance is IMessageSubscriber<TMessageType>)
+                else if (subscriberType.IsAssignableTo(typeof(IMessageSubscriber<TMessageType>)))
                 {
+                    using var scope = serviceProvider.CreateScope();
+                    var serviceInstance = scope.ServiceProvider.GetService(subscriberType);
+
                     var service = serviceInstance as IMessageSubscriber<TMessageType>;
 
                     await service!.HandleAsync(message, ct ?? CancellationToken.None);
