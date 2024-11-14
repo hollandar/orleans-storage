@@ -31,11 +31,17 @@ public class PaginatedContainer<T>
 
 public class PageRequest
 {
+    public PageRequest() { }
+    public PageRequest(int skip, int take, string? search = null)
+    {
+        Skip = skip;
+        Take = take;
+        Search = search;
+    }   
+
     public int Skip { get; set; } = 0;
     public int Take { get; set; } = 10;
     public string? Search { get; set; } = null;
-    public SortOrder SortOrder { get; set; } = SortOrder.Asc;
-    public OrderBy OrderBy { get; set; } = OrderBy.Id;
 }
 
 public class PageRequestWithId:PageRequest
