@@ -1,15 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == ''">net8.0</TargetFramework>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == 'net8.0'">net8.0</TargetFramework>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == 'net9.0'">net9.0</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation" Version="11.*" />
+		<PackageReference Include="FluentValidation" />
 	</ItemGroup>
 
 	<ItemGroup>

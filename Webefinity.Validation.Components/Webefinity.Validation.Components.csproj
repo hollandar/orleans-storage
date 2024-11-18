@@ -1,9 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
 	<PropertyGroup>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == ''">net8.0</TargetFramework>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == 'net8.0'">net8.0</TargetFramework>
-		<TargetFramework Condition="'$(TARGET_FRAMEWORK)' == 'net9.0'">net9.0</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<ImplicitUsings>enable</ImplicitUsings>
 	</PropertyGroup>
@@ -13,15 +12,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FluentValidation" Version="11.*" />
-	</ItemGroup>
-	
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="8.*" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net9.0'">
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.*" />
+		<PackageReference Include="FluentValidation" />
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 	</ItemGroup>
 
 </Project>
