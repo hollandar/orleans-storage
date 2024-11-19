@@ -38,9 +38,9 @@ public class PageCacheService
     {
         var pageRoute = $"/{route}";
 
-        if (this.memoryCache is not null && this.memoryCache.TryGetValue(pageRoute, out PageCache pageCache))
+        if (this.memoryCache is not null && this.memoryCache.TryGetValue(pageRoute, out PageCache? pageCache))
         {
-            return ValueResult<PageCache>.Ok(pageCache);
+            return ValueResult<PageCache>.Ok(pageCache!);
         }
 
         var collection = new CollectionDef(options.Value.Collection);

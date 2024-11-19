@@ -148,7 +148,7 @@ namespace Webefinity.Frontmatter
             }
         }
 
-        public static async Task<FrontmatterContent<TFrontmatterType>> LoadAsync<TFrontmatterType>(StreamReader streamReader, FrontmatterLoaderOptions? loaderOptions = null)
+        public static Task<FrontmatterContent<TFrontmatterType>> LoadAsync<TFrontmatterType>(StreamReader streamReader, FrontmatterLoaderOptions? loaderOptions = null)
         {
             var sectionsLoaded = LoadSections(streamReader);
 
@@ -156,12 +156,12 @@ namespace Webefinity.Frontmatter
 
             if (sectionsLoaded.b.Length == 0)
             {
-                return new FrontmatterContent<TFrontmatterType> { Content = sectionsLoaded.a };
+                return Task.FromResult( new FrontmatterContent<TFrontmatterType> { Content = sectionsLoaded.a });
             }
             else
             {
                 TFrontmatterType? frontmatter = LoadFrontmatter<TFrontmatterType>(frontmatterLoaderOptions, sectionsLoaded.a);
-                return new FrontmatterContent<TFrontmatterType> { Frontmatter = frontmatter, Content = sectionsLoaded.b };
+                return Task.FromResult(new FrontmatterContent<TFrontmatterType> { Frontmatter = frontmatter, Content = sectionsLoaded.b });
             }
         }
 

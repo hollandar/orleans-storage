@@ -55,6 +55,7 @@ public class ContentRootFile : IContentRootLibrary
         return new FileStream(path, FileMode.Open, FileAccess.Read);
     }
 
+#pragma warning disable CS1998
     public async IAsyncEnumerable<string> EnumerateRecursiveAsync(CollectionDef collection, string glob, string? insidePath = null)
     {
         var relative = Path.Combine(this.contentRootPath, collection.Collection);
@@ -70,6 +71,8 @@ public class ContentRootFile : IContentRootLibrary
                 yield return Path.GetRelativePath(relative, file);
             }
         }
+
+        await Task.CompletedTask;
     }
 
     public async IAsyncEnumerable<string> EnumerateAsync(CollectionDef collection, string glob, string? insidePath = null)
@@ -88,6 +91,7 @@ public class ContentRootFile : IContentRootLibrary
             }
         }
     }
+#pragma warning restore CS1998
 
     public bool FileExists(CollectionDef collection, string file)
     {

@@ -13,8 +13,8 @@ namespace Webefinity.ContentRoot.Hosting.Client
     {
         public bool Success { get; set; } = false;
         public ContentState State { get; set; } = ContentState.None;
-        public Stream Stream { get; set; }
-        public string ContentType { get; set; }
+        public Stream? Stream { get; set; }
+        public string? ContentType { get; set; }
         public HttpStatusCode StatusCode { get; set; }
     }
 

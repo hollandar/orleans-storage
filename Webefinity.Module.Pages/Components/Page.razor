@@ -35,6 +35,7 @@ else
         var pageCacheResult = await PageCacheService.GetPageAsync(Route);
         if (pageCacheResult.Success)
         {
+            ArgumentNullException.ThrowIfNull(pageCacheResult.Value);
             content = pageCacheResult.Value.Content;
             title = pageCacheResult.Value.Title;
         }

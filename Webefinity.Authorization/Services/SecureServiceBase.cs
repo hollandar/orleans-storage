@@ -39,7 +39,8 @@ public class SecureServiceBase
     
     public string Subject()
     {
-        if (this.httpContextAccessor.HttpContext.User.Identity.IsAuthenticated) { 
+        ArgumentNullException.ThrowIfNull(this.HttpContextAccessor.HttpContext);
+        if (this.httpContextAccessor.HttpContext!.User.Identity?.IsAuthenticated ?? false) { 
             return this.HttpContextAccessor.HttpContext.User.Subject();
         }
 

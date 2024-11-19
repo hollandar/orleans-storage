@@ -5,7 +5,7 @@ namespace Webefinity.ContentRoot;
 internal class LibraryPathNotFoundException : Exception
 {
     public string? Path { get; init; }
-    public LibraryPathNotFoundException(string path = null)
+    public LibraryPathNotFoundException(string? path = null)
     {
         this.Path = path;
     }
