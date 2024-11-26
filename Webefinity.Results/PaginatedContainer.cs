@@ -46,7 +46,7 @@ public class PageRequest
 
 public class PageRequestWithId:PageRequest
 {
-    public string Id { get; set; } = string.Empty;
+    public required string Id { get; set; } = string.Empty;
 }
 
 public class PageRequestWithId<TIdType>:PageRequest
