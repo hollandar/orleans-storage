@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MailKit" />
+    <PackageReference Include="Markdig" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Modules.Messaging.Abstractions.csproj" />
+  </ItemGroup>
+
+</Project>

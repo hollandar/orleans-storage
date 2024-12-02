@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.Hosting" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.Module.Messaging.Data\Webefinity.Module.Messaging.Data.csproj" />
+	  <ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Modules.Messaging.Abstractions.csproj" />
+	  <ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
+	</ItemGroup>
+
+</Project>
