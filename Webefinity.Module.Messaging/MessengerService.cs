@@ -21,6 +21,13 @@ internal class MessengerService: IMessengerService
     {
         try
         {
+            var validator = new EmailMessageModelValidator();
+            var validationResult = validator.Validate(emailMessage);
+            if (!validationResult.IsValid)
+            {
+                throw new ArgumentException($"Email message is not valid {String.Join(", ", validationResult.Errors.Select(r => r.ErrorMessage))}", nameof(emailMessage));
+            }
+
             var message = new Message
             {
                 Target = MessageTarget.Email,
@@ -128,6 +135,7 @@ internal class MessengerService: IMessengerService
                 Content = smsMessageModel.Message,
                 Format = MessageFormat.Text,
                 PurgeAfter = DateTimeOffset.UtcNow.AddDays(options.Value.PurgeAfterDays),
+                Status = SendStatus.New
             };
             dbContext.Messages.Add(message);
 
@@ -143,6 +151,7 @@ internal class MessengerService: IMessengerService
                 message.Addresses.Add(address);
             }
 
+            message.Status = SendStatus.Pending;
             await dbContext.SaveChangesAsync();
             return ValueResult<Guid>.Ok(message.Id);
         }

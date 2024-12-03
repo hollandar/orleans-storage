@@ -60,7 +60,7 @@ public class SenderTransportService : ISenderTransportService
         return workDone;
     }
 
-    private async Task SendPushAsync(Message message, CancellationToken ct = default)
+    private Task SendPushAsync(Message message, CancellationToken ct = default)
     {
         throw new NotImplementedException();
     }
@@ -112,7 +112,14 @@ public class SenderTransportService : ISenderTransportService
             }).ToArray()
         };
 
-        emailSender.SendAsync(emailMessage, ct);
+        var validator = new EmailMessageModelValidator();
+        var validationResult = validator.Validate(emailMessage);
+        if (!validationResult.IsValid)
+        {
+            throw new ArgumentException($"Email message is not valid {String.Join(", ", validationResult.Errors.Select(r => r.ErrorMessage))}", nameof(emailMessage));
+        }
+
+        await emailSender.SendAsync(emailMessage, ct);
     }
 
     private EmailMessageFormat MapEmailFormat(MessageFormat format)
