@@ -1,4 +1,4 @@
-﻿using Webefinity.Module.Messaging.Abstractions.Args;
+﻿using Webefinity.Module.Messaging.Abstractions.Models;
 
 namespace Webefinity.Module.Messaging.Abstractions;
 

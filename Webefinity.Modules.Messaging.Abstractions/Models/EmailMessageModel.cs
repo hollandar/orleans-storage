@@ -1,6 +1,6 @@
 ﻿using FluentValidation;
 
-namespace Webefinity.Module.Messaging.Abstractions.Args;
+namespace Webefinity.Module.Messaging.Abstractions.Models;
 
 public enum EmailMessageFormat { None, Text, Html, Markdown }
 public record EmailAddress(string address, string name);

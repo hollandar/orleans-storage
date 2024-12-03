@@ -1,4 +1,4 @@
-﻿namespace Webefinity.Module.Messaging.Abstractions.Args;
+﻿namespace Webefinity.Module.Messaging.Abstractions.Models;
 
 public class SmsMessageModel
 {

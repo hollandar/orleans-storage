@@ -1,12 +1,13 @@
-﻿using Microsoft.Extensions.Options;
-using Webefinity.Module.Messaging.Abstractions.Args;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Module.Messaging.Data;
 using Webefinity.Module.Messaging.Options;
 using Webefinity.Results;
 
 namespace Webefinity.Module.Messaging;
 
-internal class MessengerService: IMessengerService
+internal class MessengerService : IMessengerService
 {
     private readonly MessagingDbContext dbContext;
     private readonly IOptions<MessagingOptions> options;
@@ -17,7 +18,7 @@ internal class MessengerService: IMessengerService
         this.options = options;
     }
 
-    public async Task<ValueResult<Guid>> QueueMessageAsync(EmailMessageModel emailMessage)
+    public async Task<ValueResult<Guid>> QueueMessageAsync(EmailMessageModel emailMessage, CancellationToken ct = default)
     {
         try
         {
@@ -124,7 +125,7 @@ internal class MessengerService: IMessengerService
         };
     }
 
-    public async Task<ValueResult<Guid>> QueueMessageAsync(SmsMessageModel smsMessageModel)
+    public async Task<ValueResult<Guid>> QueueMessageAsync(SmsMessageModel smsMessageModel, CancellationToken ct = default)
     {
         try
         {
@@ -164,5 +165,85 @@ internal class MessengerService: IMessengerService
             return ValueResult<Guid>.Fail(ex.Message);
         }
 
+    }
+
+    public Task<PaginatedContainer<MessageListModel>> ListMessagesAsync(PageRequest pageRequest, CancellationToken ct = default)
+    {
+        var messages = this.dbContext.Messages.OrderByDescending(r =>  r.Created).AsQueryable();
+        var total = messages.Count();
+        if (!String.IsNullOrEmpty(pageRequest.Search))
+        {
+            messages = messages.Where(r => r.Content.Contains(pageRequest.Search) || (r.Subject != null && r.Subject.Contains(pageRequest.Search)));
+        }
+
+        var pagedMessages = messages.Skip(pageRequest.Skip).Take(pageRequest.Take).ToList();
+        var models = pagedMessages.Select(r =>
+        {
+            this.dbContext.Entry(r).Collection(r => r.Addresses).Load();
+            var to = String.Join(", ", r.Addresses.Where(r => r.Type == AddressType.To).Select(a => {
+                if (!String.IsNullOrWhiteSpace(a.Phone))
+                {
+                    return a.Phone;
+                } else
+                {
+                    return $"{a.Email} <{a.Name}>";
+                }
+            }));
+            return new MessageListModel
+            {
+                Id = r.Id,
+                To = to,
+                Subject = r.Subject,
+                Content = r.Content,
+                Created = r.Created,
+                Sent = r.Sent,
+                Status = r.Status,
+                Target = r.Target,
+                SenderId = r.SenderId
+            };
+        }).ToList();
+
+        return Task.FromResult(new PaginatedContainer<MessageListModel>(models, total));
+    }
+
+    public Task<ValueResult<MessageModel>> GetMessageAsync(Guid messageId, CancellationToken ct = default)
+    {
+        var message = this.dbContext.Messages.Include(r => r.Addresses).Include(r => r.Attachments).Where(r => r.Id == messageId).SingleOrDefault();
+        if (message is null)
+        {
+            return Task.FromResult(ValueResult<MessageModel>.Fail("Message not found.", ResultReasonType.NotFound));
+        }
+
+        var model = new MessageModel
+        {
+            Id = message.Id,
+            Subject = message.Subject,
+            Content = message.Content,
+            Addresses = message.Addresses.Select(r => new AddressModel
+            {
+                Id = r.Id,
+                Email = r.Email,
+                Phone = r.Phone,
+                Name = r.Name,
+                Type = r.Type
+            }).ToList(),
+            Attachments = message.Attachments.Select(r => new AttachmentModel
+            {
+                Id = r.Id,
+                Name = r.Name,
+                ContentType = r.ContentType,
+                Length = r.Length
+            }).ToList(),
+            Status = message.Status,
+            Format = message.Format,
+            Created = message.Created,
+            Error = message.Error,
+            Sent = message.Sent,
+            PurgeAfter = message.PurgeAfter,
+            Target = message.Target,
+            SenderId = message.SenderId
+        };
+
+        return Task.FromResult(ValueResult<MessageModel>.Ok(model));
     }
 }

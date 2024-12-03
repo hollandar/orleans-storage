@@ -1,7 +1,7 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
-using Webefinity.Modules.Messaging.Abstractions;
+using Webefinity.Module.Messaging.Abstractions;
 
 namespace Webefinity.Module.Messaging;
 

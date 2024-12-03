@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Webefinity.Module.Messaging.Abstractions;
-using Webefinity.Module.Messaging.Abstractions.Args;
+using Webefinity.Module.Messaging.Abstractions.Models;
 
 namespace Webefinity.Module.Messaging
 {

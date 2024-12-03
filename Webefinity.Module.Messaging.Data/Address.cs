@@ -1,4 +1,6 @@
-﻿namespace Webefinity.Module.Messaging.Data;
+﻿using Webefinity.Module.Messaging.Abstractions.Models;
+
+namespace Webefinity.Module.Messaging.Data;
 
 public class Address
 {

@@ -12,4 +12,8 @@
 		<PackageReference Include="UUIDNext" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Module.Messaging.Abstractions.csproj" />
+	</ItemGroup>
+
 </Project>

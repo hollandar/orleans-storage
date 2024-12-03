@@ -1,4 +1,4 @@
-﻿namespace Webefinity.Modules.Messaging.Abstractions;
+﻿namespace Webefinity.Module.Messaging.Abstractions;
 
 public interface IMessagingActive
 {

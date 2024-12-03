@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Logging;
 using System.Net.Mail;
 using Webefinity.Module.Messaging.Abstractions;
-using Webefinity.Module.Messaging.Abstractions.Args;
+using Webefinity.Module.Messaging.Abstractions.Models;
 
 namespace Webefinity.Module.Messaging
 {

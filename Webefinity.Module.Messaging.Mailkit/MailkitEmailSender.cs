@@ -2,7 +2,7 @@
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Webefinity.Module.Messaging.Abstractions;
-using Webefinity.Module.Messaging.Abstractions.Args;
+using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Module.Messaging.Options;
 
 namespace Webefinity.Module.Messaging.Mailkit

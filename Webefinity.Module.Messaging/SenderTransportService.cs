@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Webefinity.Module.Messaging.Abstractions;
-using Webefinity.Module.Messaging.Abstractions.Args;
+using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Module.Messaging.Data;
 
 namespace Webefinity.Module.Messaging;
