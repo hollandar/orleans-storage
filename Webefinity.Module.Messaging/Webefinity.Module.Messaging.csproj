@@ -14,7 +14,6 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\Webefinity.Module.Messaging.Data\Webefinity.Module.Messaging.Data.csproj" />
 	  <ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Module.Messaging.Abstractions.csproj" />
-	  <ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Modules.Messaging.Abstractions.csproj" />
 	  <ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
 	</ItemGroup>
 
