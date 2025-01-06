@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Diagnostics;
 using Microsoft.Extensions.Options;
 using Webefinity.Module.Messaging.Abstractions;
 using Webefinity.Module.Messaging.Abstractions.Models;
@@ -108,6 +109,7 @@ public class SenderTransportService : ISenderTransportService
             throw new InvalidOperationException("EmailSender service not registered");
         }
 
+        Debug.Assert(message.Subject is not null);
         var emailMessage = new EmailMessageModel
         {
             Subject = message.Subject,
