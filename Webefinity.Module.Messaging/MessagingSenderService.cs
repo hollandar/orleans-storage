@@ -2,18 +2,22 @@
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Webefinity.Module.Messaging.Abstractions;
+using Microsoft.Extensions.Options;
+using Webefinity.Module.Messaging.Options;
 
 namespace Webefinity.Module.Messaging;
 
 public class MessagingSenderService : BackgroundService
 {
     private readonly IServiceProvider serviceProvider;
+    private readonly IOptions<MessagingOptions> options;
     private int waitTime = 1000;
     private DateTimeOffset purgeAfter = DateTimeOffset.MinValue;
 
-    public MessagingSenderService(IServiceProvider serviceProvider)
+    public MessagingSenderService(IServiceProvider serviceProvider, IOptions<MessagingOptions> options)
     {
         this.serviceProvider = serviceProvider;
+        this.options = options;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -29,9 +33,9 @@ public class MessagingSenderService : BackgroundService
         {
             if (!await messagingActive.IsMessagingAsync())
             {
-                if (waitTime < 10000)
+                if (waitTime < this.options.Value.MaxWaitTime)
                 {
-                    waitTime += 1000;
+                    waitTime += this.options.Value.WaitTime;
                 }
 
                 await Task.Delay(waitTime, stoppingToken);
@@ -55,13 +59,13 @@ public class MessagingSenderService : BackgroundService
             {
                 var workDone = await senderTransportService.SendAsync(stoppingToken);
                 
-                if (workDone == 0 && waitTime < 10000)
+                if (workDone == 0 && waitTime < this.options.Value.MaxWaitTime)
                 {
-                    waitTime += 1000;
+                    waitTime += this.options.Value.WaitTime;
                 }
-                else if (workDone > 0 && waitTime > 1000)
+                else if (workDone > 0 && waitTime > this.options.Value.WaitTime)
                 {
-                    waitTime = 1000;
+                    waitTime = this.options.Value.WaitTime;
                 }
                 await Task.Delay(waitTime, stoppingToken);
             }

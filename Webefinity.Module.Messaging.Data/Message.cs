@@ -16,4 +16,6 @@ public class Message
     public SendStatus Status { get; set; } = SendStatus.None;
     public string? Error { get; set; } = null;
     public DateTimeOffset PurgeAfter { get; set; } = DateTimeOffset.UtcNow.AddDays(365);
+    public DateTimeOffset? RetryAfter { get; set; } = null;
+    public int RetryCount { get; set; } = 0;
 }

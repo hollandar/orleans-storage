@@ -1,8 +1,10 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Webefinity.Module.Messaging.Abstractions;
 using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Module.Messaging.Data;
+using Webefinity.Module.Messaging.Options;
 
 namespace Webefinity.Module.Messaging;
 
@@ -10,25 +12,34 @@ public class SenderTransportService : ISenderTransportService
 {
     private readonly MessagingDbContext dbContext;
     private readonly IServiceProvider serviceProvider;
+    private readonly IOptions<MessagingOptions> options;
 
-    public SenderTransportService(MessagingDbContext dbContext, IServiceProvider serviceProvider)
+    public SenderTransportService(MessagingDbContext dbContext, IServiceProvider serviceProvider, IOptions<MessagingOptions> options)
     {
         this.dbContext = dbContext;
         this.serviceProvider = serviceProvider;
+        this.options = options;
     }
 
     public async Task<int> SendAsync(CancellationToken ct = default)
     {
+        var guardDate = DateTimeOffset.UtcNow;
+        var sendAvailableMessageQuery = this.dbContext.Messages.Where(r =>
+                r.Status == SendStatus.Pending ||
+                (r.Status == SendStatus.Failed && r.RetryAfter != null && r.RetryAfter < guardDate && r.RetryCount > 0)
+            )
+            .OrderBy(r => r.Created);
+
         int workDone = 0;
         while (!ct.IsCancellationRequested)
         {
-            if (!this.dbContext.Messages.Where(r => r.Status == SendStatus.Pending).Any())
+            if (!sendAvailableMessageQuery.Any())
             {
                 // No work to be done in this cycle
                 break;
             }
 
-            var message = this.dbContext.Messages.Where(r => r.Status == SendStatus.Pending).OrderBy(r => r.Created).First();
+            var message = sendAvailableMessageQuery.First();
             try
             {
                 switch (message.Target)
@@ -51,6 +62,8 @@ public class SenderTransportService : ISenderTransportService
                 await dbContext.SaveChangesAsync(ct);
             } catch (Exception ex)
             {
+                message.RetryCount -= 1;
+                message.RetryAfter = guardDate.AddMinutes(this.options.Value.RetryDelay);
                 message.Status = SendStatus.Failed;
                 message.Error = ex.Message;
                 await dbContext.SaveChangesAsync(ct);

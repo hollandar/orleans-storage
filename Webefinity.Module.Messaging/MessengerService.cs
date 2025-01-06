@@ -37,7 +37,9 @@ internal class MessengerService : IMessengerService
                 Content = emailMessage.Body,
                 Format = MapEmailFormat(emailMessage.Format),
                 PurgeAfter = DateTimeOffset.UtcNow.AddDays(options.Value.PurgeAfterDays),
-                Status = SendStatus.New
+                Status = SendStatus.New,
+                RetryCount = this.options.Value.RetryCount,
+                RetryAfter = null
             };
             dbContext.Messages.Add(message);
 
@@ -136,7 +138,10 @@ internal class MessengerService : IMessengerService
                 Content = smsMessageModel.Message,
                 Format = MessageFormat.Text,
                 PurgeAfter = DateTimeOffset.UtcNow.AddDays(options.Value.PurgeAfterDays),
-                Status = SendStatus.New
+                Status = SendStatus.New,
+                RetryCount = this.options.Value.RetryCount,
+                RetryAfter = null
+
             };
             dbContext.Messages.Add(message);
 
