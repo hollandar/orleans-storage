@@ -3,14 +3,14 @@
 namespace Webefinity.Module.Messaging.Abstractions.Models;
 
 public enum EmailMessageFormat { None, Text, Html, Markdown }
-public record EmailAddress(string address, string name);
+public record EmailAddress(string Address, string Name);
 
 public class EmailAddressValidator : AbstractValidator<EmailAddress>
 {
     public EmailAddressValidator()
     {
-        RuleFor(r => r.address).NotEmpty().EmailAddress();
-        RuleFor(r => r.name).NotEmpty();
+        RuleFor(r => r.Address).NotEmpty().EmailAddress();
+        RuleFor(r => r.Name).NotEmpty();
     }
 }
 

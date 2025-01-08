@@ -48,8 +48,8 @@ internal class MessengerService : IMessengerService
                 var address = new Address
                 {
                     Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
-                    Email = to.address,
-                    Name = to.name,
+                    Email = to.Address,
+                    Name = to.Name,
                     Type = AddressType.To,
 
                 };
@@ -62,8 +62,8 @@ internal class MessengerService : IMessengerService
                 var address = new Address
                 {
                     Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
-                    Email = cc.address,
-                    Name = cc.name,
+                    Email = cc.Address,
+                    Name = cc.Name,
                     Type = AddressType.Cc,
 
                 };
@@ -76,8 +76,8 @@ internal class MessengerService : IMessengerService
                 var address = new Address
                 {
                     Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
-                    Email = bcc.address,
-                    Name = bcc.name,
+                    Email = bcc.Address,
+                    Name = bcc.Name,
                     Type = AddressType.Bcc,
 
                 };

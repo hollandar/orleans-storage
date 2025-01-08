@@ -28,19 +28,19 @@ namespace Webefinity.Module.Messaging.Mailkit
             var message = new MimeMessage();
             foreach (var address in emailMessage.To)
             {
-                message.To.Add(new MailboxAddress(address.name, address.address));
+                message.To.Add(new MailboxAddress(address.Name, address.Address));
             }
             foreach (var address in emailMessage.Cc)
             {
-                message.Cc.Add(new MailboxAddress(address.name, address.address));
+                message.Cc.Add(new MailboxAddress(address.Name, address.Address));
             }
             foreach (var address in emailMessage.Bcc)
             {
-                message.Bcc.Add(new MailboxAddress(address.name, address.address));
+                message.Bcc.Add(new MailboxAddress(address.Name, address.Address));
             }
             if (emailMessage.From is not null)
             {
-                message.From.Add(new MailboxAddress(emailMessage.From.name, emailMessage.From.address));
+                message.From.Add(new MailboxAddress(emailMessage.From.Name, emailMessage.From.Address));
             }
 
             message.Subject = emailMessage.Subject;

@@ -24,7 +24,7 @@ namespace Webefinity.Module.Messaging
         {
             foreach (var to in emailMessage.To)
             {
-                logger?.LogInformation($"Sending email to {to.address}");
+                logger?.LogInformation($"Sending email to {to.Address}");
             }
 
             logger?.LogInformation($"Email subject: {emailMessage.Subject}");
