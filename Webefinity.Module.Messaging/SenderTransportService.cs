@@ -25,7 +25,10 @@ public class SenderTransportService : ISenderTransportService
     public async Task<int> SendAsync(CancellationToken ct = default)
     {
         var guardDate = DateTimeOffset.UtcNow;
-        var sendAvailableMessageQuery = this.dbContext.Messages.Where(r =>
+        var sendAvailableMessageQuery = this.dbContext.Messages
+            .Include(r => r.Addresses)
+            .Include(r => r.Attachments)
+            .Where(r =>
                 r.Status == SendStatus.Pending ||
                 (r.Status == SendStatus.Failed && r.RetryAfter != null && r.RetryAfter < guardDate && r.RetryCount > 0)
             )

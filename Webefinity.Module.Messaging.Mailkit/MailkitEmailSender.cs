@@ -1,24 +1,30 @@
 ﻿using MailKit.Net.Smtp;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Webefinity.Module.Messaging.Abstractions;
 using Webefinity.Module.Messaging.Abstractions.Models;
-using Webefinity.Module.Messaging.Options;
 
 namespace Webefinity.Module.Messaging.Mailkit
 {
     public class MailkitEmailSender : IEmailSender
     {
-        private readonly IOptions<MailkitServerOptions> options;
+        private readonly SmtpOptions smtpOptions;
 
-        public MailkitEmailSender(IOptions<MailkitServerOptions> options)
+        public MailkitEmailSender(IServiceProvider serviceProvider)
         {
-            this.options = options;
+            var options = serviceProvider.GetService<ISmtpOptionsProvider>();
+            if (options is null)
+            {
+                throw new InvalidOperationException("The SMTP options provider is not registered");
+            }
+
+            this.smtpOptions = options.GetSmtpOptions();
 
             // Validate the options
-            if (string.IsNullOrWhiteSpace(this.options.Value.Host))
+            if (string.IsNullOrWhiteSpace(this.smtpOptions.Host))
             {
-                throw new ArgumentException("The SMTP server host is not set", nameof(this.options.Value.Host));
+                throw new ArgumentException("The SMTP server host is not set", nameof(this.smtpOptions.Host));
             }
         }
 
@@ -41,6 +47,10 @@ namespace Webefinity.Module.Messaging.Mailkit
             if (emailMessage.From is not null)
             {
                 message.From.Add(new MailboxAddress(emailMessage.From.Name, emailMessage.From.Address));
+            }
+            if (!message.From.Any())
+            {
+                message.From.Add(new MailboxAddress(smtpOptions.FromName, smtpOptions.From));
             }
 
             message.Subject = emailMessage.Subject;
@@ -67,12 +77,12 @@ namespace Webefinity.Module.Messaging.Mailkit
                 try
                 {
                     // Connect to the SMTP server
-                    client.Connect(this.options.Value.Host, this.options.Value.Port, this.options.Value.UseSsl);
+                    client.Connect(this.smtpOptions.Host, this.smtpOptions.Port, this.smtpOptions.UseSsl);
 
                     // Authenticate if needed
-                    if (this.options.Value.RequiresAuthentication)
+                    if (this.smtpOptions.RequiresAuthentication)
                     {
-                        client.Authenticate(this.options.Value.Username, this.options.Value.Password);
+                        client.Authenticate(this.smtpOptions.Username, this.smtpOptions.Password);
                     }
 
                     // Send the email
