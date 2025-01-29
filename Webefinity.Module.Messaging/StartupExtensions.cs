@@ -8,8 +8,8 @@ public static class StartupExtensions
 {
     public static IServiceCollection ConfigureMessaging(this IServiceCollection services)
     {
-        services.TryAddScoped<ISmsSender, SmsLoggingService>();
-        services.TryAddScoped<IEmailSender, EmailLoggingService>();
+        services.TryAddKeyedScoped<ISmsSender, SmsLoggingService>(Constants.SmsLoggingService);
+        services.TryAddKeyedScoped<IEmailSender, EmailLoggingService>(Constants.EmailLoggingService);
         services.TryAddScoped<IMessagingActive, AlwaysMessagingActiveService>();
         services.AddScoped<ISenderTransportService, SenderTransportService>();
         services.AddScoped<IMessengerService, MessengerService>();

@@ -18,7 +18,7 @@ internal class MessengerService : IMessengerService
         this.options = options;
     }
 
-    public async Task<ValueResult<Guid>> QueueMessageAsync(EmailMessageModel emailMessage, CancellationToken ct = default)
+    public async Task<ValueResult<Guid>> QueueMessageAsync(string senderId, EmailMessageModel emailMessage, CancellationToken ct = default)
     {
         try
         {
@@ -31,8 +31,9 @@ internal class MessengerService : IMessengerService
 
             var message = new Message
             {
-                Target = MessageTarget.Email,
                 Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                SenderId = senderId,
+                Target = MessageTarget.Email,
                 Subject = emailMessage.Subject,
                 Content = emailMessage.Body,
                 Format = MapEmailFormat(emailMessage.Format),
@@ -127,13 +128,14 @@ internal class MessengerService : IMessengerService
         };
     }
 
-    public async Task<ValueResult<Guid>> QueueMessageAsync(SmsMessageModel smsMessageModel, CancellationToken ct = default)
+    public async Task<ValueResult<Guid>> QueueMessageAsync(string senderId, SmsMessageModel smsMessageModel, CancellationToken ct = default)
     {
         try
         {
             var message = new Message
             {
                 Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                SenderId = senderId,
                 Target = MessageTarget.SMS,
                 Content = smsMessageModel.Message,
                 Format = MessageFormat.Text,

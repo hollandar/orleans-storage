@@ -81,10 +81,15 @@ public class SenderTransportService : ISenderTransportService
 
     private async Task SendSmsAsync(Message message, CancellationToken ct = default)
     {
-        var smsSender = this.serviceProvider.GetService<ISmsSender>();
+        var smsSender = this.serviceProvider.GetKeyedService<ISmsSender>(message.SenderId);
         if (smsSender is null)
         {
-            throw new InvalidOperationException("SmsSender service not registered");
+            smsSender = this.serviceProvider.GetKeyedService<ISmsSender>(Constants.SmsLoggingService);
+        }
+
+        if (smsSender is null)
+        {
+            throw new InvalidOperationException($"SmsSender service not registered for senderId {message.SenderId}.");
         }
 
         if (message.Format != MessageFormat.Text)
@@ -103,10 +108,15 @@ public class SenderTransportService : ISenderTransportService
 
     private async Task SendEmailAsync(Message message, CancellationToken ct = default)
     {
-        var emailSender = this.serviceProvider.GetService<IEmailSender>();
+        var emailSender = this.serviceProvider.GetKeyedService<IEmailSender>(message.SenderId);
         if (emailSender is null)
         {
-            throw new InvalidOperationException("EmailSender service not registered");
+            emailSender = this.serviceProvider.GetKeyedService<IEmailSender>(Constants.EmailLoggingService);
+        }
+
+        if (emailSender is null)
+        {
+            throw new InvalidOperationException($"EmailSender service not registered {message.SenderId}.");
         }
 
         Debug.Assert(message.Subject is not null);
