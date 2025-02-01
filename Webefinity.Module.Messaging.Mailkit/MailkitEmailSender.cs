@@ -1,5 +1,6 @@
 ﻿using MailKit.Net.Smtp;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MimeKit;
 using Webefinity.Module.Messaging.Abstractions;
@@ -10,6 +11,7 @@ namespace Webefinity.Module.Messaging.Mailkit
     public class MailkitEmailSender : IEmailSender
     {
         private readonly SmtpOptions smtpOptions;
+        private readonly ILogger<MailkitEmailSender> logger;
 
         public MailkitEmailSender(IServiceProvider serviceProvider)
         {
@@ -26,6 +28,8 @@ namespace Webefinity.Module.Messaging.Mailkit
             {
                 throw new ArgumentException("The SMTP server host is not set", nameof(this.smtpOptions.Host));
             }
+
+            this.logger = serviceProvider.GetRequiredService<ILogger<MailkitEmailSender>>();
         }
 
         public Task SendAsync(EmailMessageModel emailMessage, CancellationToken? ct)
@@ -88,9 +92,11 @@ namespace Webefinity.Module.Messaging.Mailkit
                     // Send the email
                     client.Send(message);
 
+                    this.logger?.LogInformation("MailKit: Email sent to {To} with subject {Subject}", message.To, message.Subject);
                 }
                 catch (Exception ex)
                 {
+                    this.logger?.LogError("MailKit: Email sent to {To} with subject {Subject} failed: {Error}", message.To, message.Subject, ex.Message);
                     throw new MessagingException($"An error occurred while sending the email: {ex.Message}");
                 }
                 finally

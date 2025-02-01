@@ -8,13 +8,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="MailKit" />
-		<PackageReference Include="Markdig" />
-		<PackageReference Include="Microsoft.Extensions.Logging" />
+	  <PackageReference Include="Twilio" />
+	  <PackageReference Include="Microsoft.Extensions.Logging" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Module.Messaging.Abstractions.csproj" />
 	</ItemGroup>
-
 </Project>
