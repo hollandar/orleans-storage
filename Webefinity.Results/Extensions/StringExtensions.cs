@@ -29,4 +29,8 @@ public static partial class StringExtensions
             return input;
         }
     }
+
+    public static string Or(this string subject, string def) {
+        return string.IsNullOrWhiteSpace(subject) ? def : subject;
+    }
 }
