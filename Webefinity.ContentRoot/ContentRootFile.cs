@@ -1,5 +1,8 @@
 ﻿using GlobExpressions;
 using Microsoft.Extensions.Options;
+using System.Text.Json;
+using Webefinity.ContentRoot.Abstractions;
+using Webefinity.Extensions;
 
 namespace Webefinity.ContentRoot;
 
@@ -8,16 +11,21 @@ public class ContentRootFile : IContentRootLibrary
     private readonly IOptions<ContentRootOptions> options;
     private string contentRootPath;
 
-    public ContentRootFile(IOptions<ContentRootOptions> options)
+    public ContentRootFile(IServiceProvider serviceProvider, IOptions<ContentRootOptions> options)
     {
         this.options = options;
-        if (!Directory.Exists(options.Value.Path))
-            throw new Exception("Content root does not exist.");
+        if (options.Value.Properties.TryGetValue<string>("Path", out var optionsPath))
+        {
+            if (!Directory.Exists(optionsPath))
+                throw new Exception("Content root does not exist.");
 
-        contentRootPath = Path.Combine(options.Value.Path);
+            contentRootPath = Path.Combine(optionsPath);
+        }
+        else
+        {
+            throw new ArgumentException("Content root path is not set. Set the Path property in configuration");
+        }
     }
-
-    private string ToFile(CollectionDef collection, string file) => collection.ToFile(file);
 
     public string Load(CollectionDef collection, string file)
     {
@@ -45,7 +53,13 @@ public class ContentRootFile : IContentRootLibrary
 
         return new StreamReader(path, new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read });
     }
-    
+
+    public Task<StreamReader> LoadReaderAsync(CollectionDef collection, string file)
+    {
+        return Task.FromResult(LoadReader(collection, file));
+    }
+
+
     public Stream LoadReadStream(CollectionDef collection, string file)
     {
         var path = Path.Combine(contentRootPath, collection.Collection, file);
@@ -53,6 +67,11 @@ public class ContentRootFile : IContentRootLibrary
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
         return new FileStream(path, FileMode.Open, FileAccess.Read);
+    }
+
+    public Task<Stream> LoadReadStreamAsync(CollectionDef collection, string file)
+    {
+        return Task.FromResult(LoadReadStream(collection, file));
     }
 
 #pragma warning disable CS1998
@@ -99,9 +118,35 @@ public class ContentRootFile : IContentRootLibrary
         return File.Exists(path);
     }
 
+    public Task<bool> FileExistsAsync(CollectionDef collection, string file)
+    {
+        return Task.FromResult(FileExists(collection, file));
+    }
+
     public bool DirectoryExists(CollectionDef collection, string directory)
     {
         var path = Path.Combine(contentRootPath, collection.Collection, directory);
         return Directory.Exists(path);
     }
+
+    public Task<bool> DirectoryExistsAsync(CollectionDef collection, string directory) => Task.FromResult(DirectoryExists(collection, directory));
+
+
+    public T LoadJson<T>(CollectionDef collection, string file) {
+        var content = Load(collection, file);
+        var value = JsonSerializer.Deserialize<T>(content);
+        if (value is null)
+        {
+            throw new Exception("Failed to deserialize JSON content.");
+        }
+
+        return value;
+    }
+
+    public Task<T> LoadJsonAsync<T>(CollectionDef collection, string file)
+    {
+        return Task.FromResult(LoadJson<T>(collection, file));
+    }
+
+
 }

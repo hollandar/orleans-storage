@@ -12,6 +12,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.ContentRoot.Abstractions\Webefinity.ContentRoot.Abstractions.csproj" />
 	  <ProjectReference Include="..\Webefinity.ContentRoot.Hosting.Client\Webefinity.ContentRoot.Hosting.Client.csproj" />
 	  <ProjectReference Include="..\Webefinity.ContentRoot\Webefinity.ContentRoot.csproj" />
 	</ItemGroup>

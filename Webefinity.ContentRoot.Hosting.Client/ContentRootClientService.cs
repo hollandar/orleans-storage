@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -9,15 +10,23 @@ namespace Webefinity.ContentRoot.Hosting.Client
     public class ContentRootClientService : IContentRootService
     {
         private HttpClient httpClient;
+        private readonly string? key;
+
+        public ContentRootClientService(HttpClient httpClient, string? key = null)
+        {
+            this.httpClient = httpClient;
+            this.key = key;
+        }
 
         public ContentRootClientService(HttpClient httpClient)
         {
             this.httpClient = httpClient;
+            this.key = String.Empty;
         }
 
         public async Task<ContentStream> GetStreamContentAsync(string collection, string file, CancellationToken ct)
         {
-            var url = $"/content/{collection}/{file}";
+            var url = $"/content/{collection}/{file}?key={this.key}";
             var response = await httpClient.GetAsync(url, ct);
             if (response.IsSuccessStatusCode)
             {

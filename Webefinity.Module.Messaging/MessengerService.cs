@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
+using Webefinity.Module.Messaging.Abstractions;
 using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Module.Messaging.Data;
 using Webefinity.Module.Messaging.Options;

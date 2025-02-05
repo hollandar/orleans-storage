@@ -1,5 +1,6 @@
 ﻿
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans.NpgsqlTenancy.Options;
@@ -8,23 +9,24 @@ using System.Diagnostics.Contracts;
 
 namespace Orleans.NpgsqlTenancy;
 
-public class StorageDbFactory<TDbContext> where TDbContext: DbContext
+public class StorageDbFactory<TDbContext> where TDbContext : DbContext
 {
     static ConcurrentDictionary<string, string> exists = new();
     static SemaphoreSlim creationSemaphore = new SemaphoreSlim(1);
     private readonly IServiceProvider serviceProvider;
+    private readonly IConfiguration configuration;
     private readonly IOptions<TenancyStorageOptions> tenancyDbOptions;
 
-    public StorageDbFactory(IServiceProvider serviceProvider, IOptions<TenancyStorageOptions> tenancyDbOptions)
+    public StorageDbFactory(IServiceProvider serviceProvider, IConfiguration configuration)
     {
         this.serviceProvider = serviceProvider;
-        this.tenancyDbOptions = tenancyDbOptions;
+        this.configuration = configuration;
     }
 
     public Task<TDbContext> GetDbContext(string storageName) => GetDbContextInternal(storageName);
-    
+
     public Task<TDbContext> GetTenantDbContext(string storageName, string tenancyId) => GetDbContextInternal(storageName, tenancyId);
-    
+
     protected async Task<TDbContext> GetDbContextInternal(string storageName, string? tenancyId = null)
     {
         var key = storageName + tenancyId ?? string.Empty;
@@ -32,17 +34,30 @@ public class StorageDbFactory<TDbContext> where TDbContext: DbContext
         bool migrate = false;
         if (!exists.TryGetValue(key, out connectionString))
         {
-            Contract.Assert(this.tenancyDbOptions.Value.Storages.ContainsKey(storageName), $"Storage {storageName} not found.");
-            var storage = this.tenancyDbOptions.Value.Storages[storageName];
-            var database = tenancyId switch
+            var connectionStringSetting = configuration.GetConnectionString(key);
+            if (connectionStringSetting is not null)
             {
-                null => storage.Database,
-                _ => $"{storageName}_{tenancyId}".Replace("-", ""),
-            };
+                connectionString = connectionStringSetting;
+                exists[key] = connectionString;
+                migrate = true;
+            }
+            else
+            {
+                var templateConnectionString = configuration.GetConnectionString("Tenant");
+                if (templateConnectionString is null || !templateConnectionString.Contains("{database}"))
+                {
+                    throw new ArgumentException("The Tenant connection string does not exist, or does not contain the {database} replacement flag.");
+                }
+                var database = tenancyId switch
+                {
+                    null => storageName,
+                    _ => $"{storageName}_{tenancyId}".Replace("-", ""),
+                };
 
-            connectionString = $"Host={storage.Host};Database={database};User Id={storage.UserId};Password={storage.Password};Port={storage.Port}";
-            exists[key] = connectionString;
-            migrate = true;
+                connectionString = templateConnectionString.Replace("{database}", database);
+                exists[key] = connectionString;
+                migrate = true;
+            }
         }
 
         var optionsBuilder = new DbContextOptionsBuilder<TDbContext>();

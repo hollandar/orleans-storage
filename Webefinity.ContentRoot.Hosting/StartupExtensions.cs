@@ -1,8 +1,12 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
+using System.Runtime.CompilerServices;
+using Webefinity.ContentRoot.Abstractions;
 using Webefinity.ContentRoot.Hosting.Client;
 
 namespace Webefinity.ContentRoot.Hosting;
@@ -14,37 +18,63 @@ public class ContentRootOptionsBuilder
 
 public static class StartupExtensions
 {
-    public static void AddContentRoot(this WebApplicationBuilder builder, Action<ContentRootOptionsBuilder>? action = null)
+    public static void AddContentRoot(this IServiceCollection services, string? key = null)
     {
-        var crb = new ContentRootOptionsBuilder();
-        if (action is not null)
-        action(crb);
 
-        var options = new ContentRootOptions();
-        builder.Configuration.GetSection(crb.ConfigurationSection).Bind(options);
-
-        switch (options.Type)
+        if (key is null)
         {
-            case ContentRootType.File:
-                builder.Services.AddSingleton<IContentRootLibrary, ContentRootFile>();
-                break;
-            default:
-                throw new Exception("Content root type not supported.");
+            services.AddScoped<IContentRootService, ContentRootService>();
         }
-
-        builder.Services.AddScoped<IContentRootService, ContentRootService>();
+        else
+        {
+            services.AddKeyedScoped<IContentRootService, ContentRootService>(key, (sp, k) =>
+            {
+                ArgumentNullException.ThrowIfNull(k, nameof(k));
+                var library = sp.GetKeyedService<IContentRootLibrary>((string)k);
+                if (library is not null)
+                {
+                    return new ContentRootService(library);
+                }
+                else
+                {
+                    throw new InvalidOperationException($"No content root with key {key} is registered.");
+                }
+            });
+        }
     }
 
-    public static void MapContentRootServer(this IEndpointRouteBuilder endpoints)
+    public static void MapContentRootServer(this IEndpointRouteBuilder endpoints, string? key = null)
     {
-        endpoints.MapGet("/content/{Collection}/{**Path}", (string Collection, string Path, IContentRootLibrary contentRootLibrary) => {
+        string? mapKey = key;
+        var uri = "/content/{Collection}/{**Path}";
+        if (mapKey is not null)
+            uri = "/content/" + mapKey.ToLower() + "/{Collection}/{**Path}";
+
+        endpoints.MapGet(uri, async (
+            string Collection, 
+            string Path, 
+            IServiceProvider serviceProvider, 
+            IHttpContextAccessor httpContextAccessor
+        ) =>
+        {
+            IContentRootLibrary contentRootLibrary;
+            if (mapKey is null)
+            {
+                contentRootLibrary = serviceProvider.GetService<IContentRootLibrary>() ?? throw new InvalidOperationException("No content root is registered.");
+            }
+            else
+            {
+                contentRootLibrary = serviceProvider.GetKeyedService<IContentRootLibrary>(mapKey) ?? throw new InvalidOperationException($"No content root with key {mapKey} is registered.");
+            }
+
             var collectionDef = new CollectionDef(Collection);
-            if (contentRootLibrary.FileExists(collectionDef, Path))
+            if (await contentRootLibrary.FileExistsAsync(collectionDef, Path))
             {
-                return Results.Stream(contentRootLibrary.LoadReadStream(collectionDef, Path), ContentTypes.GetContentType(Path));
-            } else
+                return Results.Stream(await contentRootLibrary.LoadReadStreamAsync(collectionDef, Path), ContentTypes.GetContentType(Path));
+            }
+            else
             {
-                return Results.NotFound("Content not found.");
+                return Results.NotFound();
             }
         });
     }

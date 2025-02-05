@@ -10,4 +10,8 @@
 	<ItemGroup>
 		<PackageReference Include="FluentValidation" />
 	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
+	</ItemGroup>
 </Project>

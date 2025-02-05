@@ -1,8 +1,8 @@
 ﻿
-namespace Webefinity.ContentRoot;
+namespace Webefinity.ContentRoot.Abstractions;
 
 [Serializable]
-internal class LibraryPathNotFoundException : Exception
+public class LibraryPathNotFoundException : Exception
 {
     public string? Path { get; init; }
     public LibraryPathNotFoundException(string? path = null)

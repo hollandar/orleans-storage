@@ -1,4 +1,5 @@
-﻿using Webefinity.ContentRoot.Hosting.Client;
+﻿using Webefinity.ContentRoot.Abstractions;
+using Webefinity.ContentRoot.Hosting.Client;
 
 namespace Webefinity.ContentRoot.Hosting
 {

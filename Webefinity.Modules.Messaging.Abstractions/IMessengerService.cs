@@ -1,7 +1,7 @@
 ﻿using Webefinity.Module.Messaging.Abstractions.Models;
 using Webefinity.Results;
 
-namespace Webefinity.Module.Messaging;
+namespace Webefinity.Module.Messaging.Abstractions;
 
 public interface IMessengerService
 {
