@@ -56,4 +56,14 @@ public class ValueResult<TResultType> : IResult
     {
         return new ValueResult<TResultType>(value);
     }
+
+    public static implicit operator ValueResult<TResultType>(Result result)
+    {
+        return new ValueResult<TResultType>() { Success = result.Success, Message = result.Message, Reason = result.Reason };
+    }
+
+    public static implicit operator Result(ValueResult<TResultType> result)
+    {
+        return new Result() { Success = result.Success, Message = result.Message, Reason = result.Reason };
+    }
 }

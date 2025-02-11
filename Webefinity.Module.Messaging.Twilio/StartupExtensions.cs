@@ -6,9 +6,9 @@ namespace Webefinity.Module.Messaging.Twilio;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddTwilioSmsSender(this IServiceCollection services)
+    public static IServiceCollection AddTwilioSmsSender(this IServiceCollection services, string? key = null)
     {
-        services.TryAddKeyedScoped<ISmsSender, TwilioSmsSender>(Constants.SmsTwilioService);
+        services.TryAddKeyedScoped<ISmsSender, TwilioSmsSender>(key ?? Constants.SmsTwilioService);
 
         return services;
     }

@@ -6,10 +6,10 @@ namespace Webefinity.Module.Messaging;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection ConfigureMessaging(this IServiceCollection services)
+    public static IServiceCollection AddMessaging(this IServiceCollection services, string? emailSenderKey = null, string? smsSenderKey = null)
     {
-        services.TryAddKeyedScoped<ISmsSender, SmsLoggingService>(Constants.SmsLoggingService);
-        services.TryAddKeyedScoped<IEmailSender, EmailLoggingService>(Constants.EmailLoggingService);
+        services.TryAddKeyedScoped<ISmsSender, SmsLoggingService>(smsSenderKey ?? Constants.SmsLoggingService);
+        services.TryAddKeyedScoped<IEmailSender, EmailLoggingService>(emailSenderKey ?? Constants.EmailLoggingService);
         services.TryAddScoped<IMessagingActive, AlwaysMessagingActiveService>();
         services.AddScoped<ISenderTransportService, SenderTransportService>();
         services.AddScoped<IMessengerService, MessengerService>();

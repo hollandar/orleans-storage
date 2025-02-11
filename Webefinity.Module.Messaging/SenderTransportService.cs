@@ -25,6 +25,16 @@ public class SenderTransportService : ISenderTransportService
     public async Task<int> SendAsync(CancellationToken ct = default)
     {
         var guardDate = DateTimeOffset.UtcNow;
+
+        var sendAvailableMessageCount = this.dbContext.Messages.Count(r =>
+            r.Status == SendStatus.Pending ||
+            (r.Status == SendStatus.Failed && r.RetryAfter != null && r.RetryAfter < guardDate && r.RetryCount > 0)
+        );
+        if (sendAvailableMessageCount == 0)
+        {
+            return 0;
+        }
+
         var sendAvailableMessageQuery = this.dbContext.Messages
             .Include(r => r.Addresses)
             .Include(r => r.Attachments)
@@ -34,16 +44,12 @@ public class SenderTransportService : ISenderTransportService
             )
             .OrderBy(r => r.Created);
 
-        int workDone = 0;
-        while (!ct.IsCancellationRequested)
-        {
-            if (!sendAvailableMessageQuery.Any())
-            {
-                // No work to be done in this cycle
-                break;
-            }
+        var sendQueue = new Queue<Message>(sendAvailableMessageQuery.ToList());
 
-            var message = sendAvailableMessageQuery.First();
+        int workDone = 0;
+        while (!ct.IsCancellationRequested && sendQueue.Count > 0)
+        {
+            var message = sendQueue.Dequeue();
             try
             {
                 switch (message.Target)
@@ -71,6 +77,10 @@ public class SenderTransportService : ISenderTransportService
                 message.Status = SendStatus.Failed;
                 message.Error = ex.Message;
                 await dbContext.SaveChangesAsync(ct);
+            }
+            finally
+            {
+                workDone++;
             }
         }
 

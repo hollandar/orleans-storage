@@ -6,9 +6,9 @@ namespace Webefinity.Module.Messaging.Mailkit;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddMailkitEmailSender(this IServiceCollection services)
+    public static IServiceCollection AddMailkitEmailSender(this IServiceCollection services, string? key = null)
     {
-        services.TryAddKeyedScoped<IEmailSender, MailkitEmailSender>(Constants.EmailSmtpService);
+        services.TryAddKeyedScoped<IEmailSender, MailkitEmailSender>(key ?? Constants.EmailSmtpService);
 
         return services;
     }
