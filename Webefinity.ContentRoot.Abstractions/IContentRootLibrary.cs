@@ -16,4 +16,6 @@ public interface IContentRootLibrary
     public Task<bool> DirectoryExistsAsync(CollectionDef collection, string directory);
     public Task<T> LoadJsonAsync<T>(CollectionDef collection, string file);
     public T LoadJson<T>(CollectionDef collection, string file);
+
+    public Task SaveAsync(CollectionDef collection, string file, Stream content, string? contentType = null);
 }

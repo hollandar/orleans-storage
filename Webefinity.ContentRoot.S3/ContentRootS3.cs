@@ -244,4 +244,33 @@ public partial class ContentRootS3 : IContentRootLibrary
         return value;
     }
 
+    public async Task SaveAsync(CollectionDef collection, string file, Stream content, string? contentType = null)
+    {
+        try
+        {
+            if (!DirectoryNameRegex().IsMatch(file))
+            {
+                throw new ArgumentException("File is not in the correct format.  Should be '/' separated directory/file names.");
+            }
+
+            MemoryStream contentStream = new();
+            var path = BuildPath(collection, file);
+            var args = new PutObjectArgs().WithBucket(this.bucket)
+                .WithObject(BuildPath(collection, file))
+                .WithStreamData(content)
+                .WithObjectSize(content.Length)
+                .WithContentType(contentType ?? "application/octet-stream");
+
+            await minioClient.PutObjectAsync(args);
+        }
+        catch (MinioException e)
+        {
+            if (e is ObjectNotFoundException)
+            {
+                throw new LibraryPathNotFoundException("Path not found.", e, file);
+            }
+
+            throw;
+        }
+    }
 }

@@ -148,5 +148,16 @@ public class ContentRootFile : IContentRootLibrary
         return Task.FromResult(LoadJson<T>(collection, file));
     }
 
+    public Task SaveAsync(CollectionDef collection, string file, Stream content, string? contentType = null)
+    {
+        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        if (!File.Exists(path))
+            throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
+
+        using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
+        content.CopyTo(fileStream);
+
+        return Task.CompletedTask;
+    }
 }
