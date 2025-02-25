@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.AspNetCore.Components;
+using System.Runtime.CompilerServices;
 
 namespace Webefinity.Validation.Components
 {
@@ -8,6 +9,7 @@ namespace Webefinity.Validation.Components
     {
         private readonly static char[] separators = new[] { '.', '[' };
         private TValidator validator;
+        private bool formValidationRequested = false;
 
         [CascadingParameter] private EditContext? EditContext { get; set; }
 
@@ -32,7 +34,8 @@ namespace Webefinity.Validation.Components
             {
                 if (sender is EditContext)
                 {
-                    ValidateModel((EditContext)sender, messages);
+                    if (formValidationRequested)
+                        ValidateModel((EditContext)sender, messages);
                 }
                 else
                 {
@@ -44,6 +47,7 @@ namespace Webefinity.Validation.Components
             {
                 if (sender is EditContext)
                 {
+                    this.formValidationRequested = true;
                     ValidateModel((EditContext)sender, messages);
                 }
                 else
