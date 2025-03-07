@@ -11,6 +11,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Webefinity.ContentRoot;
+using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Frontmatter;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Models;

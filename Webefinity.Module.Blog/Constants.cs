@@ -1,4 +1,5 @@
 ﻿using Webefinity.ContentRoot;
+using Webefinity.ContentRoot.Abstractions;
 
 namespace Webefinity.Module.Blog;
 

@@ -5,6 +5,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Webefinity.ContentRoot;
+using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Services;
 
