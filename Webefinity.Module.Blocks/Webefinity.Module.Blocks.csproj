@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+		<TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+	  <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\webefinity-cadence\Cadence.UI\Cadence.UI.csproj" />
+    <ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
+    <ProjectReference Include="..\Webefinity.Module.Blocks.Data\Webefinity.Module.Blocks.Data.csproj" />
+  </ItemGroup>
+
+</Project>

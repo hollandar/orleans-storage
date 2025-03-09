@@ -1,0 +1,19 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+		<TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+		<TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.EntityFrameworkCore" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
+	</ItemGroup>
+</Project>

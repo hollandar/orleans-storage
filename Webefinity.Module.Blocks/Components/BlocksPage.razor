@@ -1,0 +1,8 @@
+﻿@page "/{**PageName}"
+@using Webefinity.Module.Blocks.Services
+
+<BlocksPageByName PageName="@PageName"/>
+
+@code {
+    [Parameter] public string PageName { get; set; } = default!;
+}

@@ -1,0 +1,32 @@
+﻿@using Webefinity.Module.Blocks.Abstractions
+@using Webefinity.Module.Blocks.Services
+
+<h1>Blocks: @PageName</h1>
+
+@if (pageModel is not null)
+{
+    <PageTitle>@this.pageModel.Title</PageTitle>
+}
+else
+{
+    <PageTitle>Page not found</PageTitle>
+    <p>Page not found</p>
+}
+
+@code {
+    [Inject] public BlocksProviderService BlocksProvider { get; set; } = default!;
+    [Parameter] public string PageName { get; set; } = default!;
+
+    bool exists = false;
+    PageModel pageModel = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        this.exists = await BlocksProvider.PageExistsAsync(PageName, CancellationToken.None);
+        if (!this.exists) return;
+
+        this.pageModel = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
+    }
+}
