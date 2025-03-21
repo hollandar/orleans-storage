@@ -1,4 +1,5 @@
-﻿using Webefinity.Module.Blocks.Abstractions;
+﻿using System.Text.Json;
+using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Data.Entities;
 using Webefinity.Module.Blocks.Data.Mappers;
 using Webefinity.Modules.Blocks.Abstractions;
@@ -28,5 +29,19 @@ public class BlocksDataService : IBlocksDataProvider
         var lowerName = name.ToLower();
         var pageExists = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Any();
         return Task.FromResult(pageExists);
+    }
+
+    public async Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct)
+    {
+        var block = dbContextChild.Blocks.Where(r => r.Id == model.Id).SingleOrDefault();
+        if (block is null)
+        {
+            return false;
+        }
+
+        block.Data = jsonDocument;
+        await dbContextChild.SaveChangesAsync(ct);
+
+        return true;
     }
 }

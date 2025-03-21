@@ -13,7 +13,7 @@ public class Block
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public Guid PageId { get; set; } = Guid.Empty;
     public virtual Page? Page { get; set; }
-    public BlockKindsEnum Kind { get; set; } = BlockKindsEnum.none;
+    public string Kind { get; set; } = "none";
     public JsonDocument Data { get; set; } = JsonDocument.Parse("{}");
     public int Sequence { get; set; } = 0;
 }

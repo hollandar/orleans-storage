@@ -11,6 +11,6 @@ public class Page
 {
     public Guid Id { get; set; } = Guid.CreateVersion7();
     public string Name { get; set; } = string.Empty;
-    public virtual ICollection<Block> Blocks { get; set; } = Array.Empty<Block>();
+    public virtual ICollection<Block> Blocks { get; set; } = new List<Block>();
     public string Title { get; set; } = string.Empty;
 }

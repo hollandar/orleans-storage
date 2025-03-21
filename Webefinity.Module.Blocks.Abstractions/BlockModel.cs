@@ -10,7 +10,7 @@ namespace Webefinity.Module.Blocks.Abstractions
     public class BlockModel
     {
         public Guid Id { get; set; } = Guid.Empty;
-        public BlockKindsEnum Kind { get; set; } = BlockKindsEnum.none;
+        public string Kind { get; set; } = "none";
         public JsonDocument Data { get; set; } = JsonDocument.Parse("{}");
         public int Sequence { get; set; } = 0;
     }

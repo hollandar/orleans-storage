@@ -7,7 +7,7 @@ public interface IBlocksDbContextChild
     DbSet<Block> Blocks { get; }
     DbSet<Page> Pages { get; }
 
-    Task<int> SaveChangesAsync(CancellationToken ct);
+    Task<int> SaveChangesAsync(CancellationToken ct = default!);
 }
 
 public class BlocksDbContextChild<TDbContext> : IBlocksDbContextChild where TDbContext : DbContext
@@ -22,5 +22,5 @@ public class BlocksDbContextChild<TDbContext> : IBlocksDbContextChild where TDbC
     public DbSet<Block> Blocks => dbContext.Set<Block>();
     public DbSet<Page> Pages => dbContext.Set<Page>();
 
-    public Task<int> SaveChangesAsync(CancellationToken ct) => dbContext.SaveChangesAsync(ct);
+    public Task<int> SaveChangesAsync(CancellationToken ct = default!) => dbContext.SaveChangesAsync(ct);
 }

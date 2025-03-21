@@ -1,8 +1,59 @@
 ﻿@page "/{**PageName}"
 @using Webefinity.Module.Blocks.Services
+@inject NavigationManager Nav
+@inject IHttpContextAccessor HttpContextAccessor
 
-<BlocksPageByName PageName="@PageName"/>
+@if (Mode == "edit") {
+
+    <div class="blocks-actionbar stack horizontal end">
+        <a class="button" href="@ViewUri()"><i class="fa-solid fa-x"></i><span>View</span></a>
+    </div>
+
+    <BlocksPageByName @rendermode="InteractiveServer" PageName="@PageName" Edit="true" />
+} else
+{
+    <div class="blocks-actionbar stack horizontal end">
+        <a class="button" href="@EditUri()"><i class="fa-solid fa-pencil"></i><span>Edit</span></a>
+    </div>
+
+    <BlocksPageByName PageName="@PageName" />
+}
+
 
 @code {
     [Parameter] public string PageName { get; set; } = default!;
+    [Parameter, SupplyParameterFromQuery(Name = "mode")] public string Mode { get; set; } = "view";
+
+    protected string EditUri()
+    {
+        var uri = GetPageUri();
+        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        queryParameters["mode"] = "edit";
+        var builder = new UriBuilder(uri);
+        builder.Query = queryParameters.ToString();
+        return builder.ToString();
+    }
+
+    protected string ViewUri()
+    {
+        var uri = GetPageUri();
+        var queryParameters = System.Web.HttpUtility.ParseQueryString(uri.Query);
+        queryParameters.Remove("mode");
+        var builder = new UriBuilder(uri);
+        builder.Query = queryParameters.ToString();
+        return builder.ToString();
+    }
+
+    protected Uri GetPageUri() {
+        var uri = new Uri(Nav.Uri);
+        if (HttpContextAccessor.HttpContext?.Items.ContainsKey("OriginalUri") ?? false)
+        {
+            // Does a tenancy layer provide an initial uri?
+            var originalUri = HttpContextAccessor.HttpContext.Items["OriginalUri"] as string;
+            ArgumentNullException.ThrowIfNull(originalUri);
+            uri = new Uri(originalUri);
+        }
+
+        return uri;
+    }
 }

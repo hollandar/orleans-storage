@@ -8,5 +8,6 @@ public static class SetupExtensions
     public static void AddBlocksProvider(this IServiceCollection services)
     {
         services.AddScoped<BlocksProviderService>();
+        services.AddScoped<BlockProviderService>();
     }
 }

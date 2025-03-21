@@ -1,0 +1,11 @@
+﻿@inherits BlockComponentBase<TextModel>
+@attribute [BlockAttribute("md", "Markdown", "A block that renders markdown")]
+
+@if (Model.Text is not null)
+{
+    <Cadence.UI.Components.Markdown Md="@Model.Text" />
+}
+
+@code {
+
+}
