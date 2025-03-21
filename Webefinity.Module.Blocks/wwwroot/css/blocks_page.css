@@ -2,10 +2,10 @@ body {
 }
 
 .block-missing {
-    border-radius: 5px;
-    border: 1px solid var(--color-red--600);
-    color: var(--color--red-600);
+    background-color: var(--color-red--600);
+    color: var(--color-white);
     padding: 1rem;
+    font-weight: bold;
 }
 
 .blocks-actionbar {
@@ -23,7 +23,11 @@ body {
     position: absolute;
     right: 0;
     top: 0;
-    background-color: var(--color-neutral--200);
+    background-color: var(--color-neutral--100);
+}
+
+.blocks-parent.edit .blocks-container {
+    min-height: 45px;
 }
 
 .blocks-container.editing .blocks-editor {
@@ -32,4 +36,55 @@ body {
     border-bottom-left-radius: var(--_border-radius);
     border-bottom-right-radius: var(--_border-radius);
     padding: 1rem;
+}
+
+.blocks-dialog-block {
+    border: 1px solid var(--color-neutral--300);
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.blocks-dialog-name {
+    font-weight: bold;
+    font-size: 100%;
+}
+
+.blocks-dialog-content {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    grid-auto-rows: auto;
+    overflow-y:auto;
+    gap: 1rem;
+}
+
+.blocks-controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    background-color: var(--color-neutral--100);
+    gap: 1rem;
+}
+
+@container (min-width: 512px) {
+    .blocks-dialog-content {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@container (min-width: 1024px) {
+    .blocks-dialog-content {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@container (min-width: 1536px) {
+    .blocks-dialog-content {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@container (min-width: 2048px) {
+    .blocks-dialog-content {
+        grid-template-columns: repeat(5, 1fr);
+    }
 }

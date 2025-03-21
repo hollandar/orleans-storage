@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Components.Blocks;
@@ -26,7 +27,7 @@ internal class BlockDetail
     public void SetEditorType(Type editorType)
     {
         this.EditorType = editorType;
-    }   
+    }
 
     public static bool operator ==(BlockDetail left, string right)
     {
@@ -92,11 +93,12 @@ internal class BlockProviderService
             blockTypes.Add(blockAttribute.Kind, blockDetail);
         }
 
-        foreach (var type in assembly.GetTypes()) { 
-            
+        foreach (var type in assembly.GetTypes())
+        {
+
             var customEditAttributes = type.GetCustomAttributes(typeof(BlockEditorAttribute), true);
             if (customEditAttributes.Length == 0) continue;
-            
+
             if (customEditAttributes.Length > 1)
             {
                 throw new InvalidOperationException($"Block type {type.FullName} has more than one BlockEditorAttribute");
@@ -111,7 +113,7 @@ internal class BlockProviderService
             var blockDetail = blockTypes[blockEditAttribute.Kind];
             if (blockDetail is null)
             {
-                throw new InvalidOperationException($"Block type { type.FullName} is for a block kind {blockEditAttribute.Kind} that does not exist.");
+                throw new InvalidOperationException($"Block type {type.FullName} is for a block kind {blockEditAttribute.Kind} that does not exist.");
             }
 
             if (blockDetail.EditorType is not null)
@@ -120,12 +122,12 @@ internal class BlockProviderService
             }
 
             blockDetail.SetEditorType(type);
-        } 
+        }
     }
 
     public (bool block, bool editor) HasBlock(string kind)
     {
-        if ( blockTypes!.ContainsKey(kind))
+        if (blockTypes!.ContainsKey(kind))
         {
             var blockDetail = blockTypes[kind];
             return (blockDetail.Type is not null, blockDetail.EditorType is not null);
@@ -159,7 +161,7 @@ internal class BlockProviderService
             builder.CloseComponent();
         };
     }
-    
+
     public RenderFragment RenderEditorFragment(BlockModel model, EventCallback<JsonDocument> onApplyDocument, EventCallback<JsonDocument> onSaveDocument, EventCallback onCancelDocument)
     {
         if (!blockTypes!.ContainsKey(model.Kind))
@@ -188,5 +190,13 @@ internal class BlockProviderService
             builder.AddComponentParameter(8, "OnCancelDocument", onCancelDocument);
             builder.CloseComponent();
         };
+    }
+
+    public record BlockDescription(string Name, string Description, string Kind);
+
+    public IEnumerable<BlockDescription> GetBlockDescriptions()
+    {
+        Debug.Assert(blockTypes is not null && blockTypes.Any());
+        return blockTypes.Values.Select(b => new BlockDescription(b.Name, b.Description, b.Kind)).OrderBy(r => r.Name);
     }
 }
