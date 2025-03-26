@@ -2,7 +2,7 @@
 using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 
-namespace Webefinity.Modules.Blocks.Abstractions;
+namespace Webefinity.Module.Blocks.Abstractions;
 
 public interface IBlocksDataProvider
 {
@@ -11,4 +11,6 @@ public interface IBlocksDataProvider
     Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct);
     Task<bool> AddBlockAtAsync(Guid pageId, string kind, int sequence, CancellationToken ct);
     Task<bool> DeleteBlockAsync(Guid blockId, CancellationToken ct);
+    Task<bool> CreatePageAsync(CreatePageModel createPageModel, CancellationToken ct);
+    Task<bool> DeletePageAsync(Guid pageId, CancellationToken ct);
 }

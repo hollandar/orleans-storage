@@ -1,8 +1,8 @@
-﻿using System.Text.Json;
+﻿using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Data.Entities;
 using Webefinity.Module.Blocks.Data.Mappers;
-using Webefinity.Modules.Blocks.Abstractions;
 
 namespace Webefinity.Module.Blocks.Data.Services;
 
@@ -19,7 +19,7 @@ public class BlocksDataService : IBlocksDataProvider
     {
         var blocks = this.dbContextChild.Blocks.Where(r => r.PageId == pageId).ToList();
 
-        var maxSequence = blocks.Max(r => r.Sequence);
+        var maxSequence = blocks.Max(r => (int?)r.Sequence) ?? 0;
         if ( sequence > maxSequence)
         {
             sequence = maxSequence + 1;
@@ -92,6 +92,32 @@ public class BlocksDataService : IBlocksDataProvider
 
         this.dbContextChild.Blocks.Remove(block);
         await this.dbContextChild.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> CreatePageAsync(CreatePageModel createPageModel, CancellationToken ct)
+    {
+        var validator = new CreatePageModelValidator();
+        var validationResult = validator.Validate(createPageModel);
+        if (!validationResult.IsValid)
+        {
+            return false;
+        }
+
+        var page = new Page { Id = Guid.CreateVersion7(), Name = createPageModel.PageName, Title = createPageModel.PageTitle };
+        this.dbContextChild.Pages.Add(page);
+
+        await this.dbContextChild.SaveChangesAsync();
+
+        return true;
+
+    }
+
+    public async Task<bool> DeletePageAsync(Guid pageId, CancellationToken ct)
+    {
+        await this.dbContextChild.Blocks.Where(r => r.PageId == pageId).ExecuteDeleteAsync();
+        await this.dbContextChild.Pages.Where(r => r.Id == pageId).ExecuteDeleteAsync();
 
         return true;
     }

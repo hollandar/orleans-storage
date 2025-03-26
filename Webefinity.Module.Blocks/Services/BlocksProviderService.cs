@@ -1,6 +1,5 @@
 ﻿using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
-using Webefinity.Modules.Blocks.Abstractions;
 
 namespace Webefinity.Module.Blocks.Services;
 
@@ -35,5 +34,15 @@ public class BlocksProviderService
     public Task<bool> DeleteBlockAsync(Guid blockId, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.DeleteBlockAsync(blockId, ct);
+    }
+    
+    public Task<bool> DeletePageAsync(Guid pageId, CancellationToken ct = default!)
+    {
+        return this.blocksDataProvider.DeletePageAsync(pageId, ct);
+    }
+
+    public Task<bool> CreatePageAsync(CreatePageModel createPageModel, CancellationToken ct = default!)
+    {
+        return this.blocksDataProvider.CreatePageAsync(createPageModel, ct);
     }
 }

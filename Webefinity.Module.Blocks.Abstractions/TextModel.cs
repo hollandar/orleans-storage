@@ -1,11 +1,6 @@
 ﻿using FluentValidation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Webefinity.Module.Blocks.Components.Blocks;
+namespace Webefinity.Module.Blocks.Abstractions;
 
 public class TextModel
 {

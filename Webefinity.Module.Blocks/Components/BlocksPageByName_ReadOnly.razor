@@ -1,0 +1,58 @@
+﻿@using Cadence.UI.Components
+@using System.Text.Json
+@using Webefinity.Module.Blocks.Abstractions
+@using Webefinity.Module.Blocks.Services
+
+<HeadContent>
+    <link rel="stylesheet" href="@Assets["_content/Webefinity.Module.Blocks/css/blocks_page.css"]" />
+</HeadContent>
+
+@if (pageModel is not null)
+{
+    <PageTitle>@this.pageModel.Title</PageTitle>
+    @foreach (var enumBlockState in this.blockEditorStates)
+    {
+        var blockModel = enumBlockState;
+        var hasBlock = BlockProvider.HasBlock(blockModel.Kind);
+
+        <div @key="blockModel.Id" class="blocks-parent">
+            @if (hasBlock.block)
+            {
+                <div class="blocks-container">
+                    <div class="blocks-block">
+                        <div>
+                            @BlockProvider.RenderFragment(blockModel)
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+}
+
+@code {
+    [Inject] public BlocksProviderService BlocksProvider { get; set; } = default!;
+    [Inject] internal BlockProviderService BlockProvider { get; set; } = default!;
+    [Parameter] public string PageName { get; set; } = default!;
+
+    bool exists = false;
+    PageModel pageModel = default!;
+    IEnumerable<BlockModel> blockEditorStates = Array.Empty<BlockModel>();
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        this.exists = await BlocksProvider.PageExistsAsync(PageName, CancellationToken.None);
+        if (!this.exists) return;
+
+        await RefreshPageModel();
+    }
+
+    async Task RefreshPageModel()
+    {
+        this.pageModel = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
+        this.blockEditorStates = this.pageModel.Blocks.ToList().OrderBy(r => r.Sequence);
+        await InvokeAsync(StateHasChanged);
+    }
+}

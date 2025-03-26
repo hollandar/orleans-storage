@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Data.Entities;
 using Webefinity.Module.Blocks.Data.Services;
-using Webefinity.Modules.Blocks.Abstractions;
 
 namespace Webefinity.Module.Blocks.Data;
 
@@ -26,7 +26,7 @@ public static class SetupExtensions
         modelBuilder.Entity<Block>(builder => {
             builder.HasKey(r => r.Id);
             builder.HasIndex(r => new { r.PageId, r.Sequence }).IsUnique();
-            builder.HasOne(r => r.Page).WithMany(r => r.Blocks).HasForeignKey(r => r.PageId);
+            builder.HasOne(r => r.Page).WithMany(r => r.Blocks).HasForeignKey(r => r.PageId);//.OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Components.Blocks;
@@ -52,6 +54,7 @@ internal class BlockDetail
 
 internal class BlockProviderService
 {
+    private static List<Assembly> blockAssemblies = new();
     private static Dictionary<string, BlockDetail>? blockTypes = null;
     private ILogger<BlockProviderService>? logger;
 
@@ -64,64 +67,71 @@ internal class BlockProviderService
         }
     }
 
+    public static void AddAssemblies(params Assembly[] assemblies)
+    {
+        blockAssemblies.AddRange(assemblies);
+    }
+
     private void ProbeBlockTypes()
     {
         blockTypes = new Dictionary<string, BlockDetail>();
-        var assembly = this.GetType().Assembly;
-        foreach (var type in assembly.GetTypes())
+        foreach (var assembly in blockAssemblies)
         {
-            var customAttributes = type.GetCustomAttributes(typeof(BlockAttribute), true);
-            if (customAttributes.Length == 0) continue;
-
-            if (customAttributes.Length > 1)
+            foreach (var type in assembly.GetTypes())
             {
-                throw new InvalidOperationException($"Block type {type.FullName} has more than one BlockAttribute");
+                var customAttributes = type.GetCustomAttributes(typeof(BlockAttribute), true);
+                if (customAttributes.Length == 0) continue;
+
+                if (customAttributes.Length > 1)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has more than one BlockAttribute");
+                }
+
+                var blockAttribute = customAttributes[0] as BlockAttribute;
+                if (blockAttribute is null)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has a null BlockAttribute");
+                }
+
+                if (blockTypes.ContainsKey(blockAttribute.Kind))
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has a duplicate kind {blockAttribute.Kind}");
+                }
+
+                var blockDetail = new BlockDetail(blockAttribute.Kind, blockAttribute.Name, blockAttribute.Description, type);
+                blockTypes.Add(blockAttribute.Kind, blockDetail);
             }
 
-            var blockAttribute = customAttributes[0] as BlockAttribute;
-            if (blockAttribute is null)
+            foreach (var type in assembly.GetTypes())
             {
-                throw new InvalidOperationException($"Block type {type.FullName} has a null BlockAttribute");
+
+                var customEditAttributes = type.GetCustomAttributes(typeof(BlockEditorAttribute), true);
+                if (customEditAttributes.Length == 0) continue;
+
+                if (customEditAttributes.Length > 1)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has more than one BlockEditorAttribute");
+                }
+
+                var blockEditAttribute = customEditAttributes[0] as BlockEditorAttribute;
+                if (blockEditAttribute is null)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has a null BlockEditorAttribute");
+                }
+
+                var blockDetail = blockTypes[blockEditAttribute.Kind];
+                if (blockDetail is null)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} is for a block kind {blockEditAttribute.Kind} that does not exist.");
+                }
+
+                if (blockDetail.EditorType is not null)
+                {
+                    throw new InvalidOperationException($"Block type {type.FullName} has a duplicate editor kind {blockEditAttribute.Kind}");
+                }
+
+                blockDetail.SetEditorType(type);
             }
-
-            if (blockTypes.ContainsKey(blockAttribute.Kind))
-            {
-                throw new InvalidOperationException($"Block type {type.FullName} has a duplicate kind {blockAttribute.Kind}");
-            }
-
-            var blockDetail = new BlockDetail(blockAttribute.Kind, blockAttribute.Name, blockAttribute.Description, type);
-            blockTypes.Add(blockAttribute.Kind, blockDetail);
-        }
-
-        foreach (var type in assembly.GetTypes())
-        {
-
-            var customEditAttributes = type.GetCustomAttributes(typeof(BlockEditorAttribute), true);
-            if (customEditAttributes.Length == 0) continue;
-
-            if (customEditAttributes.Length > 1)
-            {
-                throw new InvalidOperationException($"Block type {type.FullName} has more than one BlockEditorAttribute");
-            }
-
-            var blockEditAttribute = customEditAttributes[0] as BlockEditorAttribute;
-            if (blockEditAttribute is null)
-            {
-                throw new InvalidOperationException($"Block type {type.FullName} has a null BlockEditorAttribute");
-            }
-
-            var blockDetail = blockTypes[blockEditAttribute.Kind];
-            if (blockDetail is null)
-            {
-                throw new InvalidOperationException($"Block type {type.FullName} is for a block kind {blockEditAttribute.Kind} that does not exist.");
-            }
-
-            if (blockDetail.EditorType is not null)
-            {
-                throw new InvalidOperationException($"Block type {type.FullName} has a duplicate editor kind {blockEditAttribute.Kind}");
-            }
-
-            blockDetail.SetEditorType(type);
         }
     }
 
