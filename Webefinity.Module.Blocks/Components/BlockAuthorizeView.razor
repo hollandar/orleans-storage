@@ -1,0 +1,42 @@
+﻿@using Microsoft.AspNetCore.Components.Authorization
+@using Webefinity.Module.Blocks.Services
+
+@inject BlockSecurityPolicies securityPolicies
+
+<AuthorizeView Policy="@policy">
+    <Authorized>
+        @Authorized
+    </Authorized>
+    <NotAuthorized>
+        @NotAuthorized
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [Parameter] public RenderFragment Authorized { get; set; } = default!;
+    [Parameter] public RenderFragment NotAuthorized { get; set; } = default!;
+    [Parameter] public SecurityPolicyVariants Policy { get; set; } = SecurityPolicyVariants.AuthorPolicy;
+
+    private string? policy = null;
+
+    protected override async Task OnInitializedAsync()
+    {
+        switch (Policy)
+        {
+            case SecurityPolicyVariants.AuthorPolicy:
+                policy = securityPolicies.AuthorPolicy;
+                break;
+            default:
+                policy = null;
+                break;
+        }
+
+        if (policy is null)
+        {
+            throw new InvalidOperationException($"Policy {policy ?? "<null>"} is not supported");
+        }
+
+
+        await base.OnInitializedAsync();
+    }
+}

@@ -1,0 +1,266 @@
+﻿@using Cadence.UI.Components
+@using System.Text.Json
+@using Webefinity.Module.Blocks.Abstractions
+@using Webefinity.Module.Blocks.Services
+
+@rendermode InteractiveServer
+
+<BlockAuthorizeView Policy="SecurityPolicyVariants.AuthorPolicy">
+    <Authorized>
+
+        <HeadContent>
+            <link rel="stylesheet" href="@Assets["_content/Webefinity.Module.Blocks/css/blocks_page.css"]" />
+        </HeadContent>
+
+        @if (pageModel is not null)
+        {
+            <PageTitle>@this.pageModel.Title</PageTitle>
+            @foreach (var enumBlockState in this.blockEditorStates)
+            {
+                var blockState = enumBlockState;
+                var blockModel = blockState.Model;
+                var hasBlock = BlockProvider.HasBlock(blockModel.Kind);
+
+                <div @key="blockState.Id" class="blocks-parent @(Edit? "edit":"view")">
+                    @if (hasBlock.block)
+                    {
+                        <div class="blocks-container @(blockState.Editing? "editing": "viewing")" data-blockid="@blockModel.Id" data-blockkind="@blockModel.Kind" data-blocksequence="@blockModel.Sequence">
+                            <div class="blocks-block">
+                                <div>
+                                    @BlockProvider.RenderFragment(blockModel)
+                                </div>
+                                @if (Edit)
+                                {
+                                    if (!blockState.Editing)
+                                    {
+                                        <div class="blocks-blockbar stack horizontal" style="--stack-gap: 0.25rem;">
+                                            @if (hasBlock.editor)
+                                            {
+                                                <Button class="control" Clicked="async () => await SetEditing(blockState)"><Icon><i class="fa-solid fa-pencil fa-xs"></i></Icon></Button>
+                                            }
+                                            <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)" title="Add block above"><Icon><i class="fa-solid fa-plus fa-xs"></i></Icon></Button>
+                                            <Button class="control" Clicked="async() => await DeleteBlock(blockState)"><i class="fa-solid fa-trash fa-xs"></i></Button>
+                                        </div>
+                                    }
+                                    else
+                                    {
+                                        // Nada
+                                    }
+                                }
+                            </div>
+                            @if (Edit && blockState.Editing)
+                            {
+                                <div class="blocks-editor">
+                                    @BlockProvider.RenderEditorFragment(blockModel, BuildApply(blockState), BuildSave(blockState), BuildCancel(blockState))
+                                </div>
+                            }
+                        </div>
+                    }
+                    else if (Edit)
+                    {
+                        <div class="blocks-container viewing" data-blockid="@blockModel.Id" data-blockkind="@blockModel.Kind" data-blocksequence="@blockModel.Sequence">
+                            <div class="block-missing">
+                                Block missing: @blockModel.Kind
+                            </div>
+                            @if (!blockState.Editing)
+                            {
+                                <div class="blocks-blockbar stack horizontal" style="--stack-gap: 0.25rem;">
+                                    <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)" title="Add block above"><Icon><i class="fa-solid fa-plus fa-xs"></i></Icon></Button>
+                                    <Button class="control" Clicked="async() => await DeleteBlock(blockState)"><i class="fa-solid fa-trash fa-xs"></i></Button>
+                                </div>
+                            }
+                            else
+                            {
+                                // Nada
+                            }
+                        </div>
+                    }
+
+                </div>
+            }
+
+            @if (Edit)
+            {
+                <div class="blocks-controls">
+                    <div>End of page</div>
+                    <Button class="control" Clicked="() => ShowBlockListDialog(int.MaxValue)" title="Add block at the end"><Icon><i class="fa-solid fa-plus"></i></Icon></Button>
+                    <Button class="control" Clicked="() => DeletePageAsync()" title="Delete this page."><Icon><i class="fa-solid fa-trash"></i></Icon></Button>
+                </div>
+
+                <Dialog @ref="blockListDialog" Modal="true" class="full">
+                    <Header><h4>Blocks</h4></Header>
+                    <Content>
+                        <div class="blocks-dialog-content">
+                            @foreach (var d in BlockProvider.GetBlockDescriptions())
+                            {
+                                <div class="blocks-dialog-block" @key="d.Kind">
+                                    <div class="blocks-dialog-name">@d.Name</div>
+                                    <div class="blocks-dialog-description">@d.Description</div>
+                                    <div class="blocks-dialog-actions">
+                                        <Button class="control" Text="Add" Clicked="async () => await AddBlockAtInsertSequenceAsync(d.Kind)"><Icon><i class="fa-solid fa-plus"></i></Icon></Button>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                    </Content>
+                </Dialog>
+
+                <Dialog Modal @ref="deletePageDialog">
+                    <Header><h4>About to delete the page '@(this.pageModel.Title)'?</h4></Header>
+                    <Content><p>You are about to delete the page '@(this.pageModel.Title)' and all content on the page, are you sure?</p></Content>
+                    <Footer>
+                        <div class="actions end">
+                            <Button class="primary" Clicked="async () => await DeletePageAsync(true)">Yes</Button>
+                            <Button class="secondary" Clicked="async () => await DeletePageAsync(false)">No</Button>
+                        </div>
+                    </Footer>
+                </Dialog>
+            }
+        }
+    </Authorized>
+    <NotAuthorized>
+        <h1>Not Authorized</h1>
+        <p>You are not authorized to edit this page.</p>
+    </NotAuthorized>
+</BlockAuthorizeView>
+
+
+
+@code {
+    [Inject] public BlocksProviderService BlocksProvider { get; set; } = default!;
+    [Inject] internal BlockProviderService BlockProvider { get; set; } = default!;
+    [Inject] public NavigationManager NavigationManager { get; set; } = default!;
+
+    [Parameter] public bool Edit { get; set; } = false;
+    [Parameter] public string PageName { get; set; } = default!;
+
+    bool exists = false;
+    PageModel pageModel = default!;
+    IEnumerable<BlockEditorState> blockEditorStates = Array.Empty<BlockEditorState>();
+
+    Dialog blockListDialog = default!;
+    Dialog deletePageDialog = default!;
+    int insertSequence = -1;
+
+
+    class BlockEditorState(BlockModel model)
+    {
+        public Guid Id { get; set; } = Guid.NewGuid();
+        public bool Editing { get; set; } = false;
+        public BlockModel Model { get; set; } = model;
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        this.exists = await BlocksProvider.PageExistsAsync(PageName, CancellationToken.None);
+        if (!this.exists) return;
+
+        await RefreshPageModel();
+    }
+
+    async Task RefreshPageModel()
+    {
+        this.pageModel = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
+        this.blockEditorStates = this.pageModel.Blocks.Select(m => new BlockEditorState(m)).ToList().OrderBy(r => r.Model.Sequence);
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task SetEditing(BlockEditorState blockEditorState)
+    {
+        if (!this.Edit)
+        {
+            throw new InvalidOperationException("Cannot edit block when not in edit mode");
+        }
+
+        blockEditorState.Editing = true;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    async Task SetViewing(BlockEditorState blockEditorState)
+    {
+        blockEditorState.Editing = false;
+        await InvokeAsync(StateHasChanged);
+    }
+
+    EventCallback<JsonDocument> BuildApply(BlockEditorState blockState) => EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await ApplyBlockDocumentAsync(blockState, doc));
+    EventCallback<JsonDocument> BuildSave(BlockEditorState blockState) => EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await SaveBlockDocumentAsync(blockState, doc));
+
+    EventCallback BuildCancel(BlockEditorState blockState) => EventCallback.Factory.Create(this, () => this.SetViewing(blockState));
+
+    async Task ApplyBlockDocumentAsync(BlockEditorState blockState, JsonDocument doc)
+    {
+        var saved = await BlocksProvider.SetBlockModelAsync(blockState.Model, doc, CancellationToken.None);
+        if (!saved) throw new InvalidOperationException("Could not save");
+        if (saved)
+        {
+            blockState.Model.Data = doc;
+        }
+        await this.InvokeAsync(StateHasChanged);
+    }
+
+    async Task SaveBlockDocumentAsync(BlockEditorState blockState, JsonDocument doc)
+    {
+        var saved = await BlocksProvider.SetBlockModelAsync(blockState.Model, doc, CancellationToken.None);
+        if (!saved) throw new InvalidOperationException("Could not save");
+        if (saved)
+        {
+            blockState.Model.Data = doc;
+        }
+
+        await SetViewing(blockState);
+    }
+
+    async Task ShowBlockListDialog(int insertSequence)
+    {
+        this.insertSequence = insertSequence;
+        await blockListDialog.ShowAsync();
+    }
+
+    async Task AddBlockAtInsertSequenceAsync(string kind)
+    {
+        await blockListDialog.CloseAsync();
+        if (this.insertSequence == -1)
+        {
+            throw new InvalidOperationException("Insert sequence not set");
+        }
+
+        var blockAdded = await this.BlocksProvider.AddBlockAtAsync(this.pageModel.Id, kind, this.insertSequence, CancellationToken.None);
+        if (blockAdded)
+        {
+            await RefreshPageModel();
+        }
+
+    }
+
+    async Task DeleteBlock(BlockEditorState blockEditorState)
+    {
+        var blockDeleted = await BlocksProvider.DeleteBlockAsync(blockEditorState.Model.Id, CancellationToken.None);
+        if (blockDeleted)
+        {
+            await RefreshPageModel();
+        }
+    }
+
+    async Task DeletePageAsync(bool? action = null)
+    {
+        if (action is null)
+        {
+            await this.deletePageDialog.ShowAsync();
+        }
+        else if (action.Value)
+        {
+            var deleted = await BlocksProvider.DeletePageAsync(this.pageModel.Id, CancellationToken.None);
+            if (deleted)
+            {
+                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+            }
+        }
+        else
+        {
+            await this.deletePageDialog.CloseAsync();
+        }
+    }
+}

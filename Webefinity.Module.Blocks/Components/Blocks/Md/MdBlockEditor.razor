@@ -1,0 +1,30 @@
+﻿@using Cadence.UI.Components
+@inherits BlockEditorComponentBase<TextModel>
+@attribute [BlockEditor("md")]
+
+<h3>Edit Markdown</h3>
+<EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
+    <FluentValidator TModelType="TextModel" TValidator="TextModelValidator" />
+    <div class="field">
+        <label for="text">Text</label>
+        <InputTextArea rows="20" id="text" @bind-Value="Model.Text" />
+        <ValidationMessage For="@(() => Model.Text)" />
+    </div>
+    <div class="actions">
+        <Button class="primary" type="button" Clicked="Apply">Apply</Button>
+        <Button class="primary" type="submit">Save</Button>
+        <Button class="secondary" Clicked="CancelModel">Cancel</Button>
+    </div>
+</EditForm>
+
+@code {
+    EditForm editForm = default!;
+
+    protected async Task Apply()
+    {
+        if (editForm.EditContext?.Validate() ?? false)
+        {
+            await this.ApplyModel();
+        }
+    }
+}

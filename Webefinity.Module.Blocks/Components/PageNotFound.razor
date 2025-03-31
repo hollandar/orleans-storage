@@ -1,0 +1,80 @@
+﻿@using Webefinity.Module.Blocks.Abstractions
+@using Webefinity.Module.Blocks.Services
+
+@rendermode InteractiveServer
+
+@inject BlocksProviderService BlocksProviderService
+@inject NavigationManager NavigationManager
+
+<BlockAuthorizeView Policy="Services.SecurityPolicyVariants.AuthorPolicy">
+    <Authorized>
+        <PageTitle>Page not found</PageTitle>
+        <h1>Page not found!</h1>
+        <p>The page you are looking for does not exist.</p>
+        <div class="panel">
+            <h2>Create Page</h2>
+            <EditForm OnValidSubmit="CreatePageAsync" Model="this.createPageModel">
+                <FluentValidator TModelType="CreatePageModel" TValidator="CreatePageModelValidator" />
+
+                <div class="field">
+                    <label for="pageName">Page Name</label>
+                    <InputText type="text" id="pageName" @bind-Value="createPageModel.PageName" />
+                    <ValidationMessage For="@(() => createPageModel.PageName)" />
+                </div>
+
+                <div class="field">
+                    <label for="pageTitle">Page Title</label>
+                    <InputText type="text" id="pageTitle" @bind-Value="createPageModel.PageTitle" />
+                    <ValidationMessage For="@(() => createPageModel.PageTitle)" />
+                </div>
+
+                <div class="actions">
+                    <button type="submit" class="button primary">Create Page</button>
+                </div>
+
+            </EditForm>
+
+            @if (this.ErrorMessage is not null)
+            {
+                <div class="alert warning"><p>@ErrorMessage</p></div>
+            }
+
+        </div>
+    </Authorized>
+    <NotAuthorized>
+        <PageTitle>Page not found</PageTitle>
+        <h1>Page not found!</h1>
+        <p>The page you are looking for does not exist.</p>
+    </NotAuthorized>
+</BlockAuthorizeView>
+
+@code {
+    [Parameter, EditorRequired] public string PageName { get; set; } = default!;
+    private string? ErrorMessage = null;
+
+    CreatePageModel createPageModel = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        createPageModel = new CreatePageModel
+            {
+                PageName = PageName
+            };
+
+        await base.OnInitializedAsync();
+    }
+
+    protected async Task CreatePageAsync()
+    {
+        var createResult = await BlocksProviderService.CreatePageAsync(this.createPageModel, CancellationToken.None);
+        if (createResult)
+        {
+            NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
+        }
+        else
+        {
+            this.ErrorMessage = "Could not create page.";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+}
