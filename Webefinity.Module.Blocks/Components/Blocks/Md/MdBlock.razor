@@ -3,7 +3,9 @@
 
 @if (Model.Text is not null)
 {
-    <Cadence.UI.Components.Markdown Md="@Model.Text" />
+    <div class="for-reading">
+        <Cadence.UI.Components.Markdown Md="@Model.Text" />
+    </div>
 }
 
 @code {

@@ -11,14 +11,14 @@
             {
 
                 <div class="blocks-actionbar stack horizontal end">
-                    <a class="button" href="@ViewUri()"><i class="fa-solid fa-x"></i><span>View</span></a>
+                    <a class="button primary" href="@ViewUri()"><i class="fa-solid fa-x"></i><span>View</span></a>
                 </div>
                 <BlocksPageByName PageName="@PageName" Edit="true" />
             }
             else
             {
                 <div class="blocks-actionbar stack horizontal end">
-                    <a class="button" href="@EditUri()"><i class="fa-solid fa-pencil"></i><span>Edit</span></a>
+                    <a class="button primary" href="@EditUri()"><i class="fa-solid fa-pencil"></i><span>Edit</span></a>
                 </div>
                 <BlocksPageByName_ReadOnly PageName="@PageName" />
             }

@@ -1,4 +1,9 @@
-body {
+body.dark {
+    --blocks-actionbar--background-color: var(--color-zinc--600);
+    --blocks-blockbar--background-color: var(--color-zinc--600);
+    --blocks-controls--background-color: var(--color-zinc--600);
+    --blocks-container--editing--background-color: var(--color-zinc--600);
+    --blocks-container--editing--border: 1px solid var(--color-zinc--800);
 }
 
 .block-missing {
@@ -9,21 +14,25 @@ body {
 }
 
 .blocks-actionbar {
-    background-color: var(--color-neutral--100);
+    --_blocks-actionbar--background-color: var(--blocks-actionbar--background-color, var(--color-zinc--100));
+    background-color: var(--_blocks-actionbar--background-color);
     padding: 0.5rem;
     margin-bottom: 1rem;
 }
 
 .blocks-container {
-    --_border-radius: 5px;
+    --_blocks-container--editing--background-color: var(--blocks-container--editing--background-color, var(--color-zinc--100));
+    --_blocks-container--editing--border-radius: 5px;
+    --_blocks-container--editing--border: var(--blocks-container--editing--border, 1px solid var(--color-zinc--300));
     position: relative;
 }
 
 .blocks-blockbar {
+    --_blocks-blockbar--background-color: var(--blocks-blockbar--background-color, var(--color-zinc--100));
     position: absolute;
     right: 0;
     top: 0;
-    background-color: var(--color-neutral--100);
+    background-color: var(--_blocks-blockbar--background-color);
 }
 
 .blocks-parent.edit .blocks-container {
@@ -31,10 +40,10 @@ body {
 }
 
 .blocks-container.editing .blocks-editor {
-    --_editing-border: 1px solid var(--color-neutral--300);
-    border: var(--_editing-border);
-    border-bottom-left-radius: var(--_border-radius);
-    border-bottom-right-radius: var(--_border-radius);
+    background-color: var(--_blocks-container--editing--background-color);
+    border: var(--_blocks-container--editing--border);
+    border-bottom-left-radius: var(--_blocks-container--editing--border-radius);
+    border-bottom-right-radius: var(--_blocks-container--editing--border-radius);
     padding: 1rem;
 }
 
@@ -58,10 +67,11 @@ body {
 }
 
 .blocks-controls {
+    --_blocks-controls--background-color: var(--blocks-controls--background-color, var(--color-zinc--100));
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    background-color: var(--color-neutral--100);
+    background-color: var(--_blocks-controls--background-color);
     gap: 1rem;
 }
 

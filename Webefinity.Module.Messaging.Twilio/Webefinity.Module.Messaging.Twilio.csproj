@@ -13,6 +13,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\Webefinity.Modules.Messaging.Abstractions\Webefinity.Module.Messaging.Abstractions.csproj" />
+	  <ProjectReference Include="..\Webefinity.Module.Messaging.Abstractions\Webefinity.Module.Messaging.Abstractions.csproj" />
 	</ItemGroup>
 </Project>
