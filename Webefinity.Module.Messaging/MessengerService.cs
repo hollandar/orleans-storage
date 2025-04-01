@@ -10,10 +10,10 @@ namespace Webefinity.Module.Messaging;
 
 internal class MessengerService : IMessengerService
 {
-    private readonly MessagingDbContext dbContext;
+    private readonly IMessagingDbContext dbContext;
     private readonly IOptions<MessagingOptions> options;
 
-    public MessengerService(MessagingDbContext dbContext, IOptions<MessagingOptions> options)
+    public MessengerService(IMessagingDbContext dbContext, IOptions<MessagingOptions> options)
     {
         this.dbContext = dbContext;
         this.options = options;

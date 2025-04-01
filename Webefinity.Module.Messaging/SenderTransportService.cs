@@ -11,11 +11,11 @@ namespace Webefinity.Module.Messaging;
 
 public class SenderTransportService : ISenderTransportService
 {
-    private readonly MessagingDbContext dbContext;
+    private readonly IMessagingDbContext dbContext;
     private readonly IServiceProvider serviceProvider;
     private readonly IOptions<MessagingOptions> options;
 
-    public SenderTransportService(MessagingDbContext dbContext, IServiceProvider serviceProvider, IOptions<MessagingOptions> options)
+    public SenderTransportService(IMessagingDbContext dbContext, IServiceProvider serviceProvider, IOptions<MessagingOptions> options)
     {
         this.dbContext = dbContext;
         this.serviceProvider = serviceProvider;

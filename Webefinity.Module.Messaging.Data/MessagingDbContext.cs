@@ -1,4 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using System.Formats.Tar;
 
 namespace Webefinity.Module.Messaging.Data;
 
@@ -7,6 +9,9 @@ public interface IMessagingDbContext
     DbSet<Message> Messages { get; set; }
     DbSet<Attachment> Attachments { get; set; }
     DbSet<Address> Addresses { get; set; }
+
+    EntityEntry<TEntry> Entry<TEntry>(TEntry entry) where TEntry : class;
+    Task<int> SaveChangesAsync(CancellationToken ct = default);
 }
 
 public class MessagingDbContext : DbContext, IMessagingDbContext
@@ -20,7 +25,7 @@ public class MessagingDbContext : DbContext, IMessagingDbContext
         modelBuilder.AddMessagingModel();
     }
 }
-public class MessagingDbContextChild<TDbContext> : IMessagingDbContext where TDbContext: DbContext
+public class MessagingDbContextChild<TDbContext> : IMessagingDbContext where TDbContext : DbContext
 {
     private TDbContext context;
 
@@ -35,8 +40,13 @@ public class MessagingDbContextChild<TDbContext> : IMessagingDbContext where TDb
     public DbSet<Attachment> Attachments { get; set; } = null!;
     public DbSet<Address> Addresses { get; set; } = null!;
 
-    public Task<int> SaveChangesAsync(CancellationToken ct = default)
+    public Task<int> SaveChangesAsync(CancellationToken ct = default!)
     {
         return this.context.SaveChangesAsync(ct);
+    }
+
+    public EntityEntry<TEntry> Entry<TEntry>(TEntry entry) where TEntry : class
+    {
+        return this.context.Entry<TEntry>(entry);
     }
 }

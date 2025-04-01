@@ -34,12 +34,13 @@ public static class SetupExtensions
         });
     }
 
-    public static void AddMessagingDbContext(this ServiceCollection services, Action<DbContextOptionsBuilder> options)
+    public static void AddMessagingDbContext(this IServiceCollection services, Action<DbContextOptionsBuilder> options)
     {
         services.AddDbContext<MessagingDbContext>(options);
+        services.AddScoped<IMessagingDbContext>(sp => sp.GetRequiredService<MessagingDbContext>());
     }
 
-    public static void AddMessagingDbContext<TDbContext>(this ServiceCollection services) where TDbContext : DbContext
+    public static void AddMessagingDbContext<TDbContext>(this IServiceCollection services) where TDbContext : DbContext
     {
         services.AddScoped<IMessagingDbContext>((sp) => new MessagingDbContextChild<TDbContext>(sp.GetRequiredService<TDbContext>()));
     }
