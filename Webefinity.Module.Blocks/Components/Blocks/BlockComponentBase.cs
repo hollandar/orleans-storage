@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Components;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace Webefinity.Module.Blocks.Components.Blocks;
 
-public class BlockComponentBase<TModelType>: ComponentBase where TModelType : class, new()
+public abstract class BlockComponentBase<TModelType>: ComponentBase where TModelType : class, new()
 {
     [Parameter] public string Kind { get; set; } = string.Empty;
     [Parameter] public string Name { get; set; } = string.Empty;
@@ -12,7 +13,7 @@ public class BlockComponentBase<TModelType>: ComponentBase where TModelType : cl
     [Parameter] public JsonDocument? Data { get; set; } = null;
 
     protected TModelType Model { get; set; } = default!;
-    protected override void OnParametersSet()
+    protected override async Task OnParametersSetAsync()
     {
         if (this.Data is not null)
         {
@@ -25,6 +26,7 @@ public class BlockComponentBase<TModelType>: ComponentBase where TModelType : cl
             if (model is not null)
             {
                 this.Model = model;
+                await this.OnModelLoadedAsync();
             }
             else
             {
@@ -32,6 +34,11 @@ public class BlockComponentBase<TModelType>: ComponentBase where TModelType : cl
             }
         }
 
-        base.OnParametersSet();
+        await base.OnParametersSetAsync();
+    }
+
+    protected virtual Task OnModelLoadedAsync()
+    {
+        return Task.CompletedTask;
     }
 }

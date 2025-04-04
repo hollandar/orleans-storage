@@ -54,6 +54,7 @@ internal class BlockDetail
 
 internal class BlockProviderService
 {
+    static object lockObject = new();
     private static List<Assembly> blockAssemblies = new();
     private static Dictionary<string, BlockDetail>? blockTypes = null;
     private ILogger<BlockProviderService>? logger;
@@ -63,7 +64,10 @@ internal class BlockProviderService
         this.logger = serviceProvider.GetService<ILogger<BlockProviderService>>();
         if (blockTypes is null)
         {
-            ProbeBlockTypes();
+            lock (lockObject)
+            {
+                ProbeBlockTypes();
+            }
         }
     }
 

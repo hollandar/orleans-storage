@@ -1,6 +1,6 @@
 ﻿namespace Webefinity.Module.Blocks.Components.Blocks;
 
-internal class BlockEditorAttribute : Attribute
+public class BlockEditorAttribute : Attribute
 {
     public string Kind { get; set; } = string.Empty;
 

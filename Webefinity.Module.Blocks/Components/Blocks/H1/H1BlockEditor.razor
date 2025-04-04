@@ -5,11 +5,13 @@
 <h3>Edit Heading 1</h3>
 <EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
     <FluentValidator TModelType="TextModel" TValidator="TextModelValidator" />
+
     <div class="field">
         <label for="text">Text</label>
         <InputText type="text" id="text" @bind-Value="Model.Text" />
         <ValidationMessage For="@(() => Model.Text)" />
     </div>
+
     <div class="actions">
         <Button class="primary" type="button" Clicked="Apply">Apply</Button>
         <Button class="primary" type="submit">Save</Button>
