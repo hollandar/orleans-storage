@@ -84,6 +84,21 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         return jsonObject;
     }
 
+    public string? GetValue(string key)
+    {
+        var encryptedPayload = GetEncryptedPayload(key);
+        if (encryptedPayload == null)
+        {
+            return default;
+        }   
+
+        using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), encryptedPayload.Iv);
+        var decrypted = aesCrypt.Decrypt(encryptedPayload.Bytes);
+        var value = Encoding.UTF8.GetString(decrypted);
+
+        return value;
+    }
+
     public void SetEncryptedPayload(string key, EncryptedPayload payload)
     {
         semaphoreSlim.EnterWriteLock();
@@ -107,6 +122,15 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         var json = JsonSerializer.Serialize(value, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
         using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), iv);
         var encrypted = aesCrypt.Encrypt(Encoding.UTF8.GetBytes(json));
+        var payload = new EncryptedPayload(iv, encrypted);
+        SetEncryptedPayload(key, payload);
+    }
+    
+    public void SetValue(string key, string value)
+    {
+        var iv = RandomNumberGenerator.GetBytes(16);
+        using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), iv);
+        var encrypted = aesCrypt.Encrypt(Encoding.UTF8.GetBytes(value));
         var payload = new EncryptedPayload(iv, encrypted);
         SetEncryptedPayload(key, payload);
     }
