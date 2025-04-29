@@ -7,17 +7,17 @@ public class ListResult<TItemType> : IResult
 
     }
 
-    public ListResult(List<TItemType> items)
+    public ListResult(ICollection<TItemType> items)
     {
         this.Items = items;
     }
 
-    public static ListResult<TItemType> Ok(List<TItemType> items)
+    public static ListResult<TItemType> Ok(ICollection<TItemType> items)
     {
         return new ListResult<TItemType>(items) { Success = true };
     }
 
-    public static ListResult <TItemType> Empty() => Ok(new List<TItemType>());
+    public static ListResult<TItemType> Empty() => Ok(Array.Empty<TItemType>());
 
     public static ListResult<TItemType> Fail(string message, ResultReasonType reason = ResultReasonType.None)
     {
@@ -28,7 +28,7 @@ public class ListResult<TItemType> : IResult
 
     public bool Success { get; set; }
     public string? Message { get; set; }
-    public List<TItemType> Items { get; set; } = new();
+    public ICollection<TItemType> Items { get; set; } = Array.Empty<TItemType>();
 
     public bool HasError => Success == false;
 
