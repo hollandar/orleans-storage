@@ -21,10 +21,10 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
     {
         this.encryptedPayloads = new Dictionary<string, EncryptedPayloadEntry>();
         this.options = options;
-
-        if (!Path.Exists(options.Value.Path))
+        var path = options.Value.Path;
+        if (!Directory.Exists(path))
         {
-            throw new ArgumentException($"Path {options.Value.Path} is not valid.");
+            throw new ArgumentException($"Path {path} is not valid.");
         }
     }
 
