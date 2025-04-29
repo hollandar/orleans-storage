@@ -1,7 +1,9 @@
-﻿namespace Webefinity.Crypt.Json;
+﻿
+namespace Webefinity.Crypt.Json;
 
 public interface IEncryptedKeyValueService
 {
+    Task ClearValueAsync(string key);
     bool ContainsKey(string key);
     void EvacuateCache(bool allValues = false);
     EncryptedPayload? GetEncryptedPayload(string key);

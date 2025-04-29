@@ -9,9 +9,9 @@ using Webefinity.Crypt.Json.Options;
 
 namespace Webefinity.Crypt.Json;
 
-public record EncryptedPayloadEntry (EncryptedPayload Payload, DateTimeOffset Expires);
+public record EncryptedPayloadEntry(EncryptedPayload Payload, DateTimeOffset Expires);
 
-public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
+public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
 {
     private IDictionary<string, EncryptedPayloadEntry> encryptedPayloads;
     private readonly IOptions<EncryptedOnDiskOptions> options;
@@ -63,7 +63,8 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
             this.encryptedPayloads[key] = new EncryptedPayloadEntry(encryptedPayload, DateTimeOffset.UtcNow.AddDays(1));
 
             return encryptedPayload;
-        } finally
+        }
+        finally
         {
             semaphoreSlim.ExitReadLock();
         }
@@ -75,7 +76,7 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         if (encryptedPayload == null)
         {
             return default;
-        }   
+        }
 
         using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), encryptedPayload.Iv);
         var decrypted = aesCrypt.Decrypt(encryptedPayload.Bytes);
@@ -90,7 +91,7 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         if (encryptedPayload == null)
         {
             return default;
-        }   
+        }
 
         using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), encryptedPayload.Iv);
         var decrypted = aesCrypt.Decrypt(encryptedPayload.Bytes);
@@ -116,6 +117,25 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         }
     }
 
+    public async Task ClearValueAsync(string key)
+    {
+        try
+        {
+            semaphoreSlim.EnterWriteLock();
+            this.encryptedPayloads.Remove(key);
+            var payloadName = GetFileName(key);
+            var payloadFile = Path.Combine(options.Value.Path, payloadName);
+            if (File.Exists(payloadFile))
+            {
+                File.Delete(payloadFile);
+            }
+        }
+        finally
+        {
+            semaphoreSlim.ExitWriteLock();
+        }
+    }
+
     public void SetValue<T>(string key, T value)
     {
         var iv = RandomNumberGenerator.GetBytes(16);
@@ -125,7 +145,7 @@ public class EncryptedOnDiskKeyValueService:IEncryptedKeyValueService
         var payload = new EncryptedPayload(iv, encrypted);
         SetEncryptedPayload(key, payload);
     }
-    
+
     public void SetValue(string key, string value)
     {
         var iv = RandomNumberGenerator.GetBytes(16);
