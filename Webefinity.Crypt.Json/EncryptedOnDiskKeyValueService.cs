@@ -145,7 +145,7 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
         }
     }
 
-    public async Task ClearValueAsync(string key)
+    public  Task ClearValueAsync(string key)
     {
         try
         {
@@ -157,6 +157,8 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
                 File.Delete(payloadFile);
             }
             EvacuateCache(key);
+
+            return Task.CompletedTask;
         }
         finally
         {
