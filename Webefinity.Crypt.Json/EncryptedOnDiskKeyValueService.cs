@@ -1,9 +1,11 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Threading.Tasks;
 using Webefinity.Crypt.Json.Options;
 
@@ -13,33 +15,43 @@ public record EncryptedPayloadEntry(EncryptedPayload Payload, DateTimeOffset Exp
 
 public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
 {
-    private IDictionary<string, EncryptedPayloadEntry> encryptedPayloads;
+    const int cacheNonVolatile = 30 * 60;
+    const int cacheVolatile = 5;
+    private HashSet<string> knownKeys = new();
     private readonly IOptions<EncryptedOnDiskOptions> options;
     private readonly ReaderWriterLockSlim semaphoreSlim = new ReaderWriterLockSlim();
+    private readonly IMemoryCache? memoryCache;
 
-    public EncryptedOnDiskKeyValueService(IOptions<EncryptedOnDiskOptions> options)
+    public EncryptedOnDiskKeyValueService(IOptions<EncryptedOnDiskOptions> options, IMemoryCache memoryCache)
     {
-        this.encryptedPayloads = new Dictionary<string, EncryptedPayloadEntry>();
+        this.knownKeys = new HashSet<string>();
         this.options = options;
         var path = options.Value.Path;
         if (!Directory.Exists(path))
         {
             throw new ArgumentException($"Path {path} is not valid.");
         }
+        this.memoryCache = memoryCache;
     }
 
     private string GetFileName(string key) => $"{key}.epl";
 
     public bool ContainsKey(string key)
     {
-        if (encryptedPayloads.ContainsKey(key) && encryptedPayloads[key].Expires > DateTimeOffset.UtcNow)
+        if (this.knownKeys.Contains(key))
         {
             return true;
         }
 
         var payloadName = GetFileName(key);
         var payloadFile = Path.Combine(options.Value.Path, payloadName);
-        return File.Exists(payloadFile);
+        var keyExists = File.Exists(payloadFile);
+        if (keyExists)
+        {
+            this.knownKeys.Add(key);
+        }
+
+        return keyExists;
     }
 
     public EncryptedPayload? GetEncryptedPayload(string key)
@@ -47,9 +59,11 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
         semaphoreSlim.EnterReadLock();
         try
         {
-            if (encryptedPayloads.ContainsKey(key) && encryptedPayloads[key].Expires > DateTimeOffset.UtcNow)
+            EncryptedPayload? encryptedPayload;
+            string cacheKey = $"encryptedPayload_{key}";
+            if (this.memoryCache?.TryGetValue(key, out encryptedPayload) ?? false)
             {
-                return encryptedPayloads[key].Payload;
+                return encryptedPayload;
             }
 
             var payloadName = GetFileName(key);
@@ -59,8 +73,8 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
                 return null;
             }
 
-            var encryptedPayload = EncryptedPayloadWriter.ReadEncryptedPayload(payloadFile);
-            this.encryptedPayloads[key] = new EncryptedPayloadEntry(encryptedPayload, DateTimeOffset.UtcNow.AddDays(1));
+            encryptedPayload = EncryptedPayloadWriter.ReadEncryptedPayload(payloadFile);
+            this.memoryCache?.Set(cacheKey, encryptedPayload, DateTimeOffset.UtcNow.AddSeconds(cacheNonVolatile));
 
             return encryptedPayload;
         }
@@ -72,6 +86,13 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
 
     public T? GetValue<T>(string key)
     {
+        T? value;
+        string cacheKey = $"cryptjson_unencryptedValue_T_{key}";
+        if (this.memoryCache?.TryGetValue(cacheKey, out value) ?? false)
+        {
+            return value;
+        }
+
         var encryptedPayload = GetEncryptedPayload(key);
         if (encryptedPayload == null)
         {
@@ -80,13 +101,20 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
 
         using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), encryptedPayload.Iv);
         var decrypted = aesCrypt.Decrypt(encryptedPayload.Bytes);
-        var jsonObject = JsonSerializer.Deserialize<T>(decrypted, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
-
-        return jsonObject;
+        value = JsonSerializer.Deserialize<T>(decrypted, new JsonSerializerOptions() { PropertyNameCaseInsensitive = true });
+        this.memoryCache?.Set(cacheKey, value, DateTimeOffset.UtcNow.AddSeconds(cacheVolatile));
+        return value;
     }
 
     public string? GetValue(string key)
     {
+        string cacheKey = $"cryptjson_unencryptedValue_str_{key}";
+        string? value;
+        if (this.memoryCache?.TryGetValue(cacheKey, out value) ?? false)
+        {
+            return value;
+        }
+
         var encryptedPayload = GetEncryptedPayload(key);
         if (encryptedPayload == null)
         {
@@ -95,7 +123,8 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
 
         using var aesCrypt = new AesCrypt(Encoding.UTF8.GetBytes(options.Value.Key), encryptedPayload.Iv);
         var decrypted = aesCrypt.Decrypt(encryptedPayload.Bytes);
-        var value = Encoding.UTF8.GetString(decrypted);
+        value = Encoding.UTF8.GetString(decrypted);
+        this.memoryCache?.Set(cacheKey, value, DateTimeOffset.UtcNow.AddSeconds(cacheVolatile));
 
         return value;
     }
@@ -108,8 +137,7 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
             var payloadName = GetFileName(key);
             var payloadFile = Path.Combine(options.Value.Path, payloadName);
             EncryptedPayloadWriter.WriteEncryptedPayload(payloadFile, payload);
-            this.encryptedPayloads[key] = new EncryptedPayloadEntry(payload, DateTimeOffset.UtcNow.AddDays(1));
-            EvacuateCacheInternal(false);
+            EvacuateCache(key);
         }
         finally
         {
@@ -122,13 +150,13 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
         try
         {
             semaphoreSlim.EnterWriteLock();
-            this.encryptedPayloads.Remove(key);
             var payloadName = GetFileName(key);
             var payloadFile = Path.Combine(options.Value.Path, payloadName);
             if (File.Exists(payloadFile))
             {
                 File.Delete(payloadFile);
             }
+            EvacuateCache(key);
         }
         finally
         {
@@ -155,32 +183,18 @@ public class EncryptedOnDiskKeyValueService : IEncryptedKeyValueService
         SetEncryptedPayload(key, payload);
     }
 
-    public void EvacuateCache(bool allValues = false)
+    public void EvacuateCache(string? key = null)
     {
-        semaphoreSlim.EnterWriteLock();
-        try
+        if (key is null)
         {
-            EvacuateCacheInternal(allValues);
-        }
-        finally
-        {
-            semaphoreSlim.ExitWriteLock();
-        }
-    }
-
-    private void EvacuateCacheInternal(bool allValues)
-    {
-        if (allValues)
-        {
-            encryptedPayloads.Clear();
+            foreach (string innerKey in this.knownKeys) EvacuateCache(key);
+            this.knownKeys.Clear();
         }
         else
         {
-            var keysToRemove = encryptedPayloads.Where(kvp => kvp.Value.Expires < DateTimeOffset.UtcNow).Select(kvp => kvp.Key).ToList();
-            foreach (var key in keysToRemove)
-            {
-                encryptedPayloads.Remove(key);
-            }
+            memoryCache?.Remove($"cryptjson_unencryptedValue_str_{key}");
+            memoryCache?.Remove($"cryptjson_unencryptedValue_T_{key}");
+            memoryCache?.Remove($"encryptedPayload_{key}");
         }
     }
 }

@@ -7,6 +7,7 @@ public static class SetupExtensions
     public static IServiceCollection AddOnDiskEncryptedKeyValueService(this IServiceCollection services)
     {
         services.AddSingleton<IEncryptedKeyValueService, EncryptedOnDiskKeyValueService>();
+        services.AddMemoryCache();
         return services;
     }
 }
