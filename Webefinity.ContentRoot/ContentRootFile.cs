@@ -160,4 +160,16 @@ public class ContentRootFile : IContentRootLibrary
 
         return Task.CompletedTask;
     }
+
+    public Task RemoveAsync(CollectionDef collection, string file)
+    {
+        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        if (!File.Exists(path))
+            throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
+
+
+        File.Delete(path);
+
+        return Task.CompletedTask;
+    }
 }

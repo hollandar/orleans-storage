@@ -82,7 +82,7 @@ public partial class ContentRootS3 : IContentRootLibrary
     {
         if (folder is null)
         {
-            return String.Join("/", this.path, collection.collection);
+            return String.Join("/", this.path, collection.Collection);
         }
 
         var pathItems = new List<string>(6);
@@ -90,7 +90,7 @@ public partial class ContentRootS3 : IContentRootLibrary
         {
             pathItems.Add(this.path);
         }
-        pathItems.Add(collection.collection);
+        pathItems.Add(collection.Collection);
         pathItems.AddRange(folder.Split('/'));
 
         return String.Join("/", pathItems.Where(NotNull));
@@ -270,6 +270,29 @@ public partial class ContentRootS3 : IContentRootLibrary
                 throw new LibraryPathNotFoundException("Path not found.", e, file);
             }
 
+            throw;
+        }
+    }
+
+    public async Task RemoveAsync(CollectionDef collection, string file)
+    {
+        try
+        {
+            if (!DirectoryNameRegex().IsMatch(file))
+            {
+                throw new ArgumentException("File is not in the correct format.  Should be '/' separated directory/file names.");
+            }
+
+            var args = new RemoveObjectArgs().WithBucket(this.bucket)
+                .WithObject(BuildPath(collection, file));
+            await minioClient.RemoveObjectAsync(args);
+        }
+        catch (MinioException e)
+        {
+            if (e is ObjectNotFoundException)
+            {
+                throw new LibraryPathNotFoundException("Path not found.", e, file);
+            }
             throw;
         }
     }
