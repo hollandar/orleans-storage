@@ -37,7 +37,7 @@ namespace Webefinity.Crypt.Json
         {
             foreach (var keySize in AesAlg.LegalKeySizes)
             {
-                for (int i = keySize.MinSize; i < keySize.MaxSize; i += keySize.SkipSize)
+                for (int i = keySize.MinSize; i <= keySize.MaxSize; i += keySize.SkipSize)
                 {
                     if (i == size * 8)
                         return true;

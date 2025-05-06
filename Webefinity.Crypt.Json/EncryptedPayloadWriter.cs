@@ -1,25 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Pipes;
-using System.Linq;
-using System.Runtime.Intrinsics.Arm;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Security.Cryptography;
 
 namespace Webefinity.Crypt.Json
 {
     public class EncryptedPayloadWriter
     {
-        public static void WriteEncryptedPayload(string filePath, EncryptedPayload encryptedJson)
-        {
-            using (var fileStream = new FileStream(filePath, FileMode.Create, FileAccess.Write))
-            {
-                WriteEncryptedPayload(fileStream, encryptedJson);
-            }
-        }
-
         private static byte[] Combine(byte[] first, byte[] second)
         {
             var result = new byte[first.Length + second.Length];
@@ -40,14 +24,6 @@ namespace Webefinity.Crypt.Json
                 streamWriter.Write(hash);
                 streamWriter.Write(encryptedJson.Iv);
                 streamWriter.Write(encryptedJson.Bytes);
-            }
-        }
-
-        public static EncryptedPayload ReadEncryptedPayload(string filePath)
-        {
-            using (var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                return ReadEncryptedPayload(fileStream);
             }
         }
 
