@@ -1,9 +1,11 @@
 ﻿@using System.Net.Http.Json
 @using Cadence.UI.Components
 @using Webefinity.ContentRoot.Index.Models
+@using Webefinity.ContentRoot.IndexUI.Interfaces
 @using Webefinity.Results
 
 @inject HttpClient httpClient
+@inject IFileBrowserService FileBrowserService
 
 <div class="browser">
     <div class="panel file-browser-panel">
@@ -46,46 +48,32 @@
                 <Button Clicked="DeleteFileAsync"><i class="fa-solid fa-trash"></i><span>Delete</span></Button>
             </div>
 
-            <RenderContentView File="selectedFile"/>
+            <RenderContentView File="selectedFile" />
         </div>
     }
 </div>
 
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = "/";
-    [CascadingParameter(Name="KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
 
     private Repeater<FileMetadataModel>? fileRepeater = null;
     private FileMetadataModel? selectedFile = null;
 
     protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
     {
-        var responseMessage = await httpClient.GetAsync($"api/icr/{KC.Key}/{KC.Collection}/list?skip={args.Skip}&take={args.Take}");
-        if (responseMessage.IsSuccessStatusCode)
-        {
-            // Handle success
-            var content = await responseMessage.Content.ReadFromJsonAsync<PaginatedContainer<FileMetadataModel>>();
-            return new TableRowResult<FileMetadataModel>(content.TotalCount, content.Items);
-        }
-        else
-        {
-            // Handle failure
-            return TableRowResult<FileMetadataModel>.Empty;
-        }
+        var files = await FileBrowserService.ListFiles(KC.Collection, null, args.Skip, args.Take, KC.Key);
+        return new TableRowResult<FileMetadataModel>(files.TotalCount, files.Items);
     }
 
     protected async Task SelectFile(Guid fileId)
     {
-        var responseMessage = await httpClient.GetAsync($"api/icr/{KC.Key}/{KC.Collection}/meta/{fileId}");
-        if (responseMessage.IsSuccessStatusCode)
+        var result = await FileBrowserService.GetFileMetadataAsync(KC.Collection, fileId.ToString(), KC.Key);
+        if (result.Success)
         {
-            // Handle success
-            var content = await responseMessage.Content.ReadFromJsonAsync<ValueResult<FileMetadataModel>>();
-            if (content.Success)
-            {
-                selectedFile = content.Value;
-            }
+            selectedFile = result.Value;
         }
+
         else
         {
             // Handle failure
@@ -98,8 +86,8 @@
     protected async Task DeleteFileAsync()
     {
         ArgumentNullException.ThrowIfNull(this.selectedFile, nameof(this.selectedFile));
-        var responseMessage = await httpClient.DeleteAsync($"api/icr/{KC.Key}/{KC.Collection}/{selectedFile.FileName}");
-        if (responseMessage.IsSuccessStatusCode)
+        var result = await this.FileBrowserService.DeleteFileAsync(KC.Collection, this.selectedFile.FileName, KC.Key);
+        if (result)
         {
             this.selectedFile = null;
             await this.RefreshAsync();

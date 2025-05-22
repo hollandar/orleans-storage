@@ -27,6 +27,8 @@ public class PaginatedContainer<T>
     public static PaginatedContainer<T> Fail(string message, ResultReasonType reason = ResultReasonType.None) {
         return new PaginatedContainer<T>(message, reason);
     }
+
+    public static PaginatedContainer<T> Empty => new PaginatedContainer<T>(Enumerable.Empty<T>(), 0);
 }
 
 public class PageRequest

@@ -1,5 +1,7 @@
 ﻿@using Webefinity.ContentRoot.Index.Models
-@inject HttpClient httpClient
+@using Webefinity.ContentRoot.IndexUI.Interfaces
+
+@inject IFileBrowserService FileBrowserService
 
 @switch (ContentType)
 {
@@ -54,8 +56,19 @@
         base.OnParametersSet();
     }
 
-    protected Task<string> LoadContentAsync()
+    protected async Task<string> LoadContentAsync()
     {
-        return httpClient.GetStringAsync($"icr/{KC.Key}/{KC.Collection}/{File.FileName}");
+        var result = await FileBrowserService.LoadFileContentAsync(KC.Collection, this.File.FileName, KC.Key);
+
+        if (result.Success)
+        {
+            using var reader = new StreamReader(result.Value);
+            return await reader.ReadToEndAsync();
+        }
+        else
+        {
+            // Handle failure (e.g., log error, show message to user)
+            return string.Empty;
+        }
     }
 }

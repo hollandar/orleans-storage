@@ -1,9 +1,12 @@
 ﻿@using Cadence.UI.Components
 @using Microsoft.AspNetCore.Components.Forms
-@inject HttpClient httpClient
+@using Webefinity.ContentRoot.IndexUI.Interfaces
 
+@inject HttpClient httpClient
+@inject IFileBrowserService FileBrowserService
 
 <h2>Upload a file</h2>
+
 <div class="panel">
     <InputFile id="imageRebuildInput" OnChange="SetUploadFile" accept="*" />
     <Button Class="primary" Clicked="UploadFile" disabled="@(!uploadAvailable)">Upload</Button>
@@ -33,11 +36,9 @@
     {
         if (uploadFile != null)
         {
-            var content = new StreamContent(this.uploadFile.OpenReadStream(4096000));
-            content.Headers.Add("Content-Type", this.uploadFile.ContentType);
-            content.Headers.Add("X-FileName", this.uploadFile.Name);
-            var response = await httpClient.PostAsync($"api/icr/{KC.Key}/{KC.Collection}/upload", content);
-            if (response.IsSuccessStatusCode)
+            var fileStream = this.uploadFile.OpenReadStream(4096000);
+            var result = await FileBrowserService.UploadFileAsync(KC.Collection, this.uploadFile.Name, this.uploadFile.ContentType, fileStream, KC.Key);
+            if (result.Success)
             {
                 await OnFileUploaded.InvokeAsync(this.uploadFile.Name);
 
@@ -47,7 +48,7 @@
             }
             else
             {
-                errorMessage = "Upload failed. Please try again.";
+                errorMessage = result.Message;
             }
 
             StateHasChanged();

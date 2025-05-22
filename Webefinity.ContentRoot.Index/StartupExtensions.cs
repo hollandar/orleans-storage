@@ -9,6 +9,7 @@ using Webefinity.ContentRoot.Abstractions;
 using Webefinity.ContentRoot.Index.Data;
 using Webefinity.ContentRoot.Index.Services;
 using Webefinity.ContentRoot.Index.Handlers;
+using Webefinity.ContentRoot.IndexUI.Interfaces;
 
 namespace Webefinity.ContentRoot.Index;
 
@@ -59,6 +60,8 @@ public static class StartupExtensions
                 return new IndexedContentRootService(contentRoot, dbContext, key);
             });
         }
+        services.AddScoped<IFileBrowserService, FileBrowserService>();
+
     }
 
     public static void MapIndexedContentUI(this IEndpointRouteBuilder app, 
