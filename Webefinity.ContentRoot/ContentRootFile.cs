@@ -10,11 +10,13 @@ namespace Webefinity.ContentRoot;
 public class ContentRootFile : IContentRootLibrary
 {
     private readonly IOptions<ContentRootOptions> options;
+    private readonly IContentPathBuilder pathBuilder;
     private string contentRootPath;
 
-    public ContentRootFile(IServiceProvider serviceProvider, IOptions<ContentRootOptions> options)
+    public ContentRootFile(IServiceProvider serviceProvider, IOptions<ContentRootOptions> options, IContentPathBuilder pathBuilder)
     {
         this.options = options;
+        this.pathBuilder = pathBuilder;
         if (options.Value.Properties.TryGetValue<string>("Path", out var optionsPath))
         {
             if (!Directory.Exists(optionsPath))
@@ -30,7 +32,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public string Load(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, folder: file));
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
@@ -39,7 +41,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public async Task<string> LoadAsync(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
@@ -48,7 +50,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public StreamReader LoadReader(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
@@ -63,7 +65,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public Stream LoadReadStream(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
@@ -78,8 +80,7 @@ public class ContentRootFile : IContentRootLibrary
 #pragma warning disable CS1998
     public async IAsyncEnumerable<string> EnumerateRecursiveAsync(CollectionDef collection, string glob, string? insidePath = null)
     {
-        var relative = Path.Combine(this.contentRootPath, collection.Collection);
-        var path = insidePath is not null ? Path.Combine(contentRootPath, collection.Collection, insidePath) : Path.Combine(contentRootPath, collection.Collection);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, insidePath));
         if (!Directory.Exists(path))
             throw new LibraryPathNotFoundException("Library path was not found.", path);
 
@@ -88,7 +89,7 @@ public class ContentRootFile : IContentRootLibrary
         {
             if (Glob.IsMatch(file, glob))
             {
-                yield return Path.GetRelativePath(relative, file);
+                yield return Path.GetRelativePath(path, file);
             }
         }
 
@@ -97,8 +98,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public async IAsyncEnumerable<string> EnumerateAsync(CollectionDef collection, string glob, string? insidePath = null)
     {
-        var relative = Path.Combine(this.contentRootPath, collection.Collection);
-        var path = insidePath is not null ? Path.Combine(contentRootPath, collection.Collection, insidePath) : Path.Combine(contentRootPath, collection.Collection);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, insidePath));
         if (!Directory.Exists(path))
             throw new LibraryPathNotFoundException("Library path was not found.", path);
 
@@ -107,7 +107,7 @@ public class ContentRootFile : IContentRootLibrary
         {
             if (Glob.IsMatch(file, glob))
             {
-                yield return Path.GetRelativePath(relative, file);
+                yield return Path.GetRelativePath(path, file);
             }
         }
     }
@@ -115,7 +115,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public bool FileExists(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
         return File.Exists(path);
     }
 
@@ -126,7 +126,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public bool DirectoryExists(CollectionDef collection, string directory)
     {
-        var path = Path.Combine(contentRootPath, collection.Collection, directory);
+        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, directory));
         return Directory.Exists(path);
     }
 

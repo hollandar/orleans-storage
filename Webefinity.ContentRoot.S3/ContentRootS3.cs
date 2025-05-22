@@ -14,10 +14,11 @@ public partial class ContentRootS3 : IContentRootLibrary
 {
     private readonly IMinioClient minioClient;
     private readonly IOptions<ContentRootOptions> options;
+    private readonly IContentPathBuilder pathBuilder;
     private readonly string bucket;
     private readonly string? path = null;
 
-    public ContentRootS3(IServiceProvider serviceProvider, IOptions<ContentRootOptions> objectStoreOptions)
+    public ContentRootS3(IServiceProvider serviceProvider, IOptions<ContentRootOptions> objectStoreOptions, IContentPathBuilder pathBuilder)
     {
         if (objectStoreOptions.Value.Type != ContentRootType.S3)
         {
@@ -71,30 +72,14 @@ public partial class ContentRootS3 : IContentRootLibrary
             .Build();
 
         this.options = objectStoreOptions;
+        this.pathBuilder = pathBuilder;
     }
 
     [GeneratedRegex("^(?:(?<directoryName>[^\\/]+)[\\/]{0,1})+$")]
     private partial Regex DirectoryNameRegex();
 
-    private bool NotNull(string s) => !String.IsNullOrWhiteSpace(s);
-
-    private string BuildPath(CollectionDef collection, string? folder)
-    {
-        if (folder is null)
-        {
-            return String.Join("/", this.path, collection.Collection);
-        }
-
-        var pathItems = new List<string>(6);
-        if (this.path is not null)
-        {
-            pathItems.Add(this.path);
-        }
-        pathItems.Add(collection.Collection);
-        pathItems.AddRange(folder.Split('/'));
-
-        return String.Join("/", pathItems.Where(NotNull));
-    }
+    private string BuildPath(CollectionDef collection, string? folder) => this.pathBuilder.GetPath(collection, folder, this.path);
+    
 
     public bool DirectoryExists(CollectionDef collection, string directory) => throw new NotImplementedException("Only the async interface is supported.");
     public async Task<bool> DirectoryExistsAsync(CollectionDef collection, string directory)

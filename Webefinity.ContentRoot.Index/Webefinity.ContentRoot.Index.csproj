@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' != ''">$(CoreTargetFramework)</TargetFramework>
+	  <TargetFramework Condition="'$(CoreTargetFramework)' == ''">net8.0</TargetFramework>
+	  <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+	<ItemGroup>
+		<FrameworkReference Include="Microsoft.AspNetCore.App" />
+	</ItemGroup>
+	
+	<ItemGroup>
+		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Webefinity.ContentRoot.Abstractions\Webefinity.ContentRoot.Abstractions.csproj" />
+	  <ProjectReference Include="..\Webefinity.ContentRoot.Index.Shared\Webefinity.ContentRoot.Index.Shared.csproj" />
+	  <ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
+	</ItemGroup>
+</Project>

@@ -9,7 +9,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-		<PackageReference Include="UUIDNext" />
 	</ItemGroup>
 
 	<ItemGroup>
