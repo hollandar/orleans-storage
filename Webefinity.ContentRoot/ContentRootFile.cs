@@ -1,5 +1,6 @@
 ﻿using GlobExpressions;
 using Microsoft.Extensions.Options;
+using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Extensions;
@@ -150,11 +151,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public Task SaveAsync(CollectionDef collection, string file, Stream content, string? contentType = null)
     {
-        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
-        if (!File.Exists(path))
-            throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
-
-
+        var path = CreatePath(collection, file);
         using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
         content.CopyTo(fileStream);
 
@@ -163,7 +160,7 @@ public class ContentRootFile : IContentRootLibrary
 
     public Task RemoveAsync(CollectionDef collection, string file)
     {
-        var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
+        var path = CreatePath(collection, file);
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
@@ -171,5 +168,15 @@ public class ContentRootFile : IContentRootLibrary
         File.Delete(path);
 
         return Task.CompletedTask;
+    }
+
+    private string CreatePath(CollectionDef collection, string file)
+    {
+        var path = Path.Combine(contentRootPath, collection.Collection, file);
+        var directoryName = Path.GetDirectoryName(path);
+        if (!Directory.Exists(directoryName))
+            Directory.CreateDirectory(directoryName);
+
+        return path;
     }
 }
