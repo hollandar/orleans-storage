@@ -18,15 +18,17 @@ namespace Webefinity.ContentRoot.Hosting.Client
             this.key = key;
         }
 
-        public ContentRootClientService(HttpClient httpClient)
-        {
-            this.httpClient = httpClient;
-            this.key = String.Empty;
-        }
-
         public async Task<ContentStream> GetStreamContentAsync(string collection, string file, CancellationToken ct)
         {
-            var url = $"/content/{collection}/{file}?key={this.key}";
+            string url;
+            if (this.key is null)
+            {
+                url = $"/content/{collection}/{file}";
+            }
+            else
+            {
+                url = $"/content/{this.key}/{collection}/{file}";
+            }
             var response = await httpClient.GetAsync(url, ct);
             if (response.IsSuccessStatusCode)
             {

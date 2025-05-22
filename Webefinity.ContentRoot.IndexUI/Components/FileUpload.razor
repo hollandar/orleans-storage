@@ -1,0 +1,56 @@
+﻿@using Cadence.UI.Components
+@using Microsoft.AspNetCore.Components.Forms
+@inject HttpClient httpClient
+
+
+<h2>Upload a file</h2>
+<div class="panel">
+    <InputFile id="imageRebuildInput" OnChange="SetUploadFile" accept="*" />
+    <Button Class="primary" Clicked="UploadFile" disabled="@(!uploadAvailable)">Upload</Button>
+    @if (errorMessage is not null)
+    {
+        <p class="text-danger">@errorMessage</p>
+    }
+</div>
+
+@code {
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [Parameter] public EventCallback<string> OnFileUploaded { get; set; } = default!;
+
+
+    IBrowserFile? uploadFile = null;
+    bool uploadAvailable = false;
+    string? errorMessage = null;
+
+    public async Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)
+    {
+        this.uploadFile = inputFileChangeEventArgs.File;
+        uploadAvailable = uploadFile != null;
+        StateHasChanged();
+    }
+
+    protected async Task UploadFile()
+    {
+        if (uploadFile != null)
+        {
+            var content = new StreamContent(this.uploadFile.OpenReadStream(4096000));
+            content.Headers.Add("Content-Type", this.uploadFile.ContentType);
+            content.Headers.Add("X-FileName", this.uploadFile.Name);
+            var response = await httpClient.PostAsync($"api/icr/{KC.Key}/{KC.Collection}/upload", content);
+            if (response.IsSuccessStatusCode)
+            {
+                await OnFileUploaded.InvokeAsync(this.uploadFile.Name);
+
+                errorMessage = null;
+                this.uploadFile = null;
+                uploadAvailable = false;
+            }
+            else
+            {
+                errorMessage = "Upload failed. Please try again.";
+            }
+
+            StateHasChanged();
+        }
+    }
+}

@@ -2,7 +2,7 @@
 
 public class Attachment
 {
-    public Guid Id { get; set; } = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql);
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public string Name { get; set; } = string.Empty;
     public byte[] Data { get; set; } = Array.Empty<byte>();
     public string ContentType { get; set; } = string.Empty;

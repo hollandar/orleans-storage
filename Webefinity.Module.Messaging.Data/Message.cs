@@ -3,7 +3,7 @@
 namespace Webefinity.Module.Messaging.Data;
 public class Message
 {
-    public Guid Id { get; set; } = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql);
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public string SenderId { get; set; } = string.Empty;
     public MessageTarget Target { get; set; } = MessageTarget.None;
     public string? Subject { get; set; } = null;

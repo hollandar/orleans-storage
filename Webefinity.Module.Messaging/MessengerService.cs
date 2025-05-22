@@ -32,7 +32,7 @@ internal class MessengerService : IMessengerService
 
             var message = new Message
             {
-                Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                Id = Guid.CreateVersion7(),
                 SenderId = senderId,
                 Target = MessageTarget.Email,
                 Subject = emailMessage.Subject,
@@ -49,7 +49,7 @@ internal class MessengerService : IMessengerService
             {
                 var address = new Address
                 {
-                    Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                    Id = Guid.CreateVersion7(),
                     Email = to.Address,
                     Name = to.Name,
                     Type = AddressType.To,
@@ -63,7 +63,7 @@ internal class MessengerService : IMessengerService
             {
                 var address = new Address
                 {
-                    Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                    Id = Guid.CreateVersion7(),
                     Email = cc.Address,
                     Name = cc.Name,
                     Type = AddressType.Cc,
@@ -77,7 +77,7 @@ internal class MessengerService : IMessengerService
             {
                 var address = new Address
                 {
-                    Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                    Id = Guid.CreateVersion7(),
                     Email = bcc.Address,
                     Name = bcc.Name,
                     Type = AddressType.Bcc,
@@ -91,7 +91,7 @@ internal class MessengerService : IMessengerService
             {
                 var attachmentData = new Attachment
                 {
-                    Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                    Id = Guid.CreateVersion7(),
                     Name = attachment.Name,
                     Data = attachment.Data,
                     ContentType = attachment.ContentType,
@@ -135,7 +135,7 @@ internal class MessengerService : IMessengerService
         {
             var message = new Message
             {
-                Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                Id = Guid.CreateVersion7(),
                 SenderId = senderId,
                 Target = MessageTarget.SMS,
                 Content = smsMessageModel.Message,
@@ -152,7 +152,7 @@ internal class MessengerService : IMessengerService
             {
                 var address = new Address
                 {
-                    Id = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql),
+                    Id = Guid.CreateVersion7(),
                     Phone = to,
                     Type = AddressType.To,
                 };

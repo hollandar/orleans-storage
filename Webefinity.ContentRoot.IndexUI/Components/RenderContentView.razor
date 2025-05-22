@@ -1,0 +1,61 @@
+﻿@using Webefinity.ContentRoot.Index.Models
+@inject HttpClient httpClient
+
+@switch (ContentType)
+{
+    case var ct when ct.StartsWith("image/"):
+        {
+            <div class="card">
+                <img src="@($"icr/{KC.Key}/{KC.Collection}/{File.FileName}")" />
+            </div>
+        }
+        break;
+    case "text/x-markdown" when content is not null:
+        {
+            <div class="card">
+                <Cadence.UI.Components.Markdown Md="@content" />
+            </div>
+        }
+        break;
+    default:
+        {
+            <!-- No content loaded for @File.FileName -->
+        }
+        break;
+}
+
+@code {
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [Parameter] public FileMetadataModel File { get; set; }
+
+    static HashSet<string> loadableContentTypes = ["text/x-markdown"];
+    protected bool reload = false;
+
+    public string? ContentType => File.GetMetadataValue<string>("Content-Type");
+    private string? content = null;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (reload && ContentType is not null && loadableContentTypes.Contains(ContentType))
+        {
+            content = await LoadContentAsync();
+            reload = false;
+            StateHasChanged();
+        }
+
+        await base.OnAfterRenderAsync(firstRender);
+    }
+
+    protected override void OnParametersSet()
+    {
+        reload = true;
+        StateHasChanged();
+
+        base.OnParametersSet();
+    }
+
+    protected Task<string> LoadContentAsync()
+    {
+        return httpClient.GetStringAsync($"icr/{KC.Key}/{KC.Collection}/{File.FileName}");
+    }
+}

@@ -4,7 +4,7 @@ namespace Webefinity.Module.Messaging.Data;
 
 public class Address
 {
-    public Guid Id { get; set; } = UUIDNext.Uuid.NewDatabaseFriendly(UUIDNext.Database.PostgreSql);
+    public Guid Id { get; set; } = Guid.CreateVersion7();
     public string Email { get; set; } = string.Empty;
     public string Phone { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;

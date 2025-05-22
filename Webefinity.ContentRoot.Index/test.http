@@ -1,0 +1,17 @@
+POST https://localhost:7016/a/api/icr/IndexedContent/Default/upload
+Content-Type: text/x-markdown
+X-FILENAME: README.md
+
+This is another markdown file
+
+###
+
+GET https://localhost:7016/a/api/icr/IndexedContent/Default/list
+
+###
+
+GET https://localhost:7016/a/icr/IndexedContent/Default/README.md
+
+###
+
+DELETE https://localhost:7016/a/api/icr/IndexedContent/Default/README.md

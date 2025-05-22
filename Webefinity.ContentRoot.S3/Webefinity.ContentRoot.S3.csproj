@@ -16,6 +16,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\Webefinity.ContentRoot.Abstractions\Webefinity.ContentRoot.Abstractions.csproj" />
+		<ProjectReference Include="..\Webefinity.ContentRoot\Webefinity.ContentRoot.csproj" />
 		<ProjectReference Include="..\Webefinity.Extensions\Webefinity.Extensions.csproj" />
 	</ItemGroup>
 
