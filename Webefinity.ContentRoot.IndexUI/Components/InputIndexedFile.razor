@@ -1,0 +1,80 @@
+﻿@using Cadence.UI.Components
+@using Microsoft.AspNetCore.Components.Forms
+@using System.Diagnostics.CodeAnalysis
+@using Webefinity.ContentRoot.Index.Models
+@using Webefinity.ContentRoot.IndexUI.Interfaces
+
+@inherits InputBase<string?>
+@inject HttpClient httpClient
+@inject IFileBrowserService FileBrowserService
+
+
+<div class="input-indexed-file">
+    <input type="text" @bind-value="CurrentValueAsString" @attributes="AdditionalAttributes" />
+    <button type="button" @onclick="ShowBrowseDialogAsync">Browse</button>
+</div>
+
+<Dialog @ref="browseDialog" Modal="true" class="file-dialog narrow">
+    <Header>Browse Files</Header>
+    <Content>
+        <div class="file-repeater repeater-control repeater-2">
+            <Repeater @ref="fileRepeater" ItemsProvider="FileListProvider">
+                <Header>
+                    <div class="repeater-control-row repeater-head">
+                        <div class="file-name">
+                            Filename
+                        </div>
+                    </div>
+                </Header>
+                <Content>
+                    <div class="repeater-control-row" @key="context.Id">
+                        <div class="file-name">
+                            <button type="button" class="link" @onclick="() => OnFileSelected(context.Item)">@context.Item.FileName</button>
+                        </div>
+                    </div>
+                </Content>
+            </Repeater>
+        </div>
+    </Content>
+    <Footer>
+        <div class="actions">
+            <button type="button" class="secondary" @onclick="CloseDialog">Cancel</button>
+        </div>
+    </Footer>
+</Dialog>
+
+@code {
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    Dialog? browseDialog = default!;
+    private Repeater<FileMetadataModel>? fileRepeater = null;
+
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    {
+        result = value;
+        validationErrorMessage = null;
+        return true;
+    }
+
+    protected async Task ShowBrowseDialogAsync()
+    {
+        await browseDialog!.ShowAsync();
+    }
+
+    protected async Task OnFileSelected(FileMetadataModel fileMetadataModel)
+    {
+        // Logic to handle file selection
+        this.CurrentValueAsString = $"indexed://{KC.Key}/{KC.Collection}/{fileMetadataModel.FileName}";
+        await browseDialog!.CloseAsync();
+    }
+
+    protected async Task CloseDialog()
+    {
+        await browseDialog!.CloseAsync();
+    }
+
+    protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
+    {
+        var files = await FileBrowserService.ListFiles(KC.Collection, null, args.Skip, args.Take, KC.Key);
+        return new TableRowResult<FileMetadataModel>(files.TotalCount, files.Items);
+    }
+}

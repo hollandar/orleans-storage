@@ -25,6 +25,12 @@
                     @if (hasBlock.block)
                     {
                         <div class="blocks-container @(blockState.Editing? "editing": "viewing")" data-blockid="@blockModel.Id" data-blockkind="@blockModel.Kind" data-blocksequence="@blockModel.Sequence">
+                            @if (Edit && blockState.Editing)
+                            {
+                                <div class="blocks-editor">
+                                    @BlockProvider.RenderEditorFragment(blockModel, BuildApply(blockState), BuildSave(blockState), BuildCancel(blockState))
+                                </div>
+                            }
                             <div class="blocks-block">
                                 <div>
                                     @BlockProvider.RenderFragment(blockModel)
@@ -48,12 +54,6 @@
                                     }
                                 }
                             </div>
-                            @if (Edit && blockState.Editing)
-                            {
-                                <div class="blocks-editor">
-                                    @BlockProvider.RenderEditorFragment(blockModel, BuildApply(blockState), BuildSave(blockState), BuildCancel(blockState))
-                                </div>
-                            }
                         </div>
                     }
                     else if (Edit)

@@ -1,0 +1,14 @@
+.input-indexed-file {
+    display: grid;
+    grid-template-rows: auto;
+    grid-template-columns: 1fr auto;
+    gap: 1rem;
+}
+
+.file-dialog {
+    max-height: 100px;
+}
+
+.file-repeater {
+    overflow-y: auto;
+}

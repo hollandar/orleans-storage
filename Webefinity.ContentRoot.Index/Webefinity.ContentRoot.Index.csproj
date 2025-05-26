@@ -19,6 +19,7 @@
 	  <ProjectReference Include="..\Webefinity.ContentRoot.Abstractions\Webefinity.ContentRoot.Abstractions.csproj" />
 	  <ProjectReference Include="..\Webefinity.ContentRoot.Index.Shared\Webefinity.ContentRoot.Index.Shared.csproj" />
 	  <ProjectReference Include="..\Webefinity.ContentRoot.IndexUI\Webefinity.ContentRoot.IndexUI.csproj" />
+	  <ProjectReference Include="..\Webefinity.Extensions\Webefinity.Extensions.csproj" />
 	  <ProjectReference Include="..\Webefinity.Results\Webefinity.Results.csproj" />
 	</ItemGroup>
 </Project>
