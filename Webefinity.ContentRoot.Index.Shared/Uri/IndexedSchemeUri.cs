@@ -1,7 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using Webefinity.Extensions;
 
-namespace Webefinity.ContentRoot.Index;
+namespace Webefinity.ContentRoot.Index.Shared.Uri;
 
 public partial class IndexedSchemeUri
 {

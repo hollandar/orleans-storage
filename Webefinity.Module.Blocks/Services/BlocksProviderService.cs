@@ -45,4 +45,9 @@ public class BlocksProviderService
     {
         return this.blocksDataProvider.CreatePageAsync(createPageModel, ct);
     }
+
+    public Task<bool> MoveBlockAsync(Guid blockId, MoveDirection moveDirection, CancellationToken ct = default!)
+    {
+        return this.blocksDataProvider.MoveBlockAsync(blockId, moveDirection, ct);
+    }
 }

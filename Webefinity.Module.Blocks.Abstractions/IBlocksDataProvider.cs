@@ -13,4 +13,5 @@ public interface IBlocksDataProvider
     Task<bool> DeleteBlockAsync(Guid blockId, CancellationToken ct);
     Task<bool> CreatePageAsync(CreatePageModel createPageModel, CancellationToken ct);
     Task<bool> DeletePageAsync(Guid pageId, CancellationToken ct);
+    Task<bool> MoveBlockAsync(Guid blockId, MoveDirection moveDirection, CancellationToken ct);
 }

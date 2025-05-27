@@ -20,7 +20,7 @@ public class BlocksDataService : IBlocksDataProvider
         var blocks = this.dbContextChild.Blocks.Where(r => r.PageId == pageId).ToList();
 
         var maxSequence = blocks.Max(r => (int?)r.Sequence) ?? 0;
-        if ( sequence > maxSequence)
+        if (sequence > maxSequence)
         {
             sequence = maxSequence + 1;
         }
@@ -118,6 +118,64 @@ public class BlocksDataService : IBlocksDataProvider
     {
         await this.dbContextChild.Blocks.Where(r => r.PageId == pageId).ExecuteDeleteAsync();
         await this.dbContextChild.Pages.Where(r => r.Id == pageId).ExecuteDeleteAsync();
+
+        return true;
+    }
+
+    public async Task<bool> MoveBlockAsync(Guid blockId, MoveDirection moveDirection, CancellationToken ct)
+    {
+
+        var blockData = this.dbContextChild.Blocks.Where(r => r.Id == blockId).Select(r => new { PageId = r.PageId, BlockSequence = r.Sequence }).SingleOrDefault();
+        if (blockData is null)
+        {
+            return false;
+        }
+
+        var blocks = this.dbContextChild.Blocks.Where(r => r.PageId == blockData.PageId && r.Sequence >= blockData.BlockSequence - 1 && r.Sequence <= blockData.BlockSequence + 1).OrderBy(r => r.Sequence).ToArray();
+
+        if (blocks.Length <= 1)
+        {
+            return false;
+        }
+
+        Block movingDown;
+        Block movingUp;
+        switch (moveDirection)
+        {
+            case MoveDirection.Up:
+                if (blocks[0].Id == blockId) return false;
+                movingDown = blocks[0];
+                movingUp = blocks[1];
+                break;
+            case MoveDirection.Down:
+                if (blocks[^1].Id == blockId) return false;
+                movingDown = blocks[^2];
+                movingUp = blocks[^1];
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(moveDirection), moveDirection, null);
+        }
+
+        var movingUpSequence = movingUp.Sequence;
+        var movingDownSequence = movingDown.Sequence;
+
+        do
+        {
+            movingUp.Sequence = -Random.Shared.Next();
+        } while (this.dbContextChild.Blocks.Where(r => r.Sequence == movingUp.Sequence).Any());
+
+        await this.dbContextChild.SaveChangesAsync();
+        do
+        {
+            movingDown.Sequence = -Random.Shared.Next();
+        } while (this.dbContextChild.Blocks.Where(r => r.Sequence == movingDown.Sequence).Any());
+
+        await this.dbContextChild.SaveChangesAsync(ct);
+
+        movingUp.Sequence = movingDownSequence;
+        movingDown.Sequence = movingUpSequence;
+
+        await this.dbContextChild.SaveChangesAsync(ct);
 
         return true;
     }

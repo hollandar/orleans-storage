@@ -11,11 +11,12 @@ public abstract class BlockComponentBase<TModelType>: ComponentBase where TModel
     [Parameter] public string Description { get; set; } = string.Empty;
     [Parameter] public int Sequence { get; set; } = 0;
     [Parameter] public JsonDocument? Data { get; set; } = null;
+    [Parameter] public JsonDocument? PreviousData { get; set; } = null;
 
     protected TModelType Model { get; set; } = default!;
     protected override async Task OnParametersSetAsync()
     {
-        if (this.Data is not null)
+        if (this.Data is not null && Data != PreviousData)
         {
             var options = new JsonSerializerOptions
             {
@@ -25,6 +26,7 @@ public abstract class BlockComponentBase<TModelType>: ComponentBase where TModel
 
             if (model is not null)
             {
+                this.PreviousData = this.Data;
                 this.Model = model;
                 await this.OnModelLoadedAsync();
             }

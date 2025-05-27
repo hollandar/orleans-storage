@@ -44,6 +44,8 @@
                                             {
                                                 <Button class="control" Clicked="async () => await SetEditing(blockState)"><Icon><i class="fa-solid fa-pencil fa-xs"></i></Icon></Button>
                                             }
+                                            <Button class="control" Clicked="async() => await MoveBlockUp(blockState)"><i class="fa-solid fa-caret-up"></i></Button>
+                                            <Button class="control" Clicked="async() => await MoveBlockDown(blockState)"><i class="fa-solid fa-caret-down"></i></Button>
                                             <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)" title="Add block above"><Icon><i class="fa-solid fa-plus fa-xs"></i></Icon></Button>
                                             <Button class="control" Clicked="async() => await DeleteBlock(blockState)"><i class="fa-solid fa-trash fa-xs"></i></Button>
                                         </div>
@@ -261,6 +263,24 @@
         else
         {
             await this.deletePageDialog.CloseAsync();
+        }
+    }
+
+    async Task MoveBlockUp(BlockEditorState blockEditorState)
+    {
+        var moved = await BlocksProvider.MoveBlockAsync(blockEditorState.Model.Id, MoveDirection.Up, CancellationToken.None);
+        if (moved)
+        {
+            await RefreshPageModel();
+        }
+    }
+
+    async Task MoveBlockDown(BlockEditorState blockEditorState)
+    {
+        var moved = await BlocksProvider.MoveBlockAsync(blockEditorState.Model.Id, MoveDirection.Down, CancellationToken.None);
+        if (moved)
+        {
+            await RefreshPageModel();
         }
     }
 }

@@ -1,0 +1,33 @@
+.hero h1 {
+    margin: 0 0 2rem 0;
+}
+
+.hero p {
+    margin: 0 0 2rem 0;
+}
+
+.hero {
+    background-size: cover;
+    background-position: center;
+    min-height: 80vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    font-size: 180%;
+}
+
+@container (max-width: 1024px) {
+    .hero {
+        font-size: 120%;
+        padding: 1rem;
+    }
+}
+
+.hero .center {
+    background: linear-gradient(rgba(255,255,255,0.8) 0 0) border-box;
+    min-height: 30%;
+    min-width: 50%;
+    padding: 4rem;
+    color: var(--color-black);
+}

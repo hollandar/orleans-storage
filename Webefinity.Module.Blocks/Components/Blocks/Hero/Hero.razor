@@ -1,0 +1,21 @@
+﻿@using Cadence.UI.Components
+@using Webefinity.ContentRoot.Index
+@using Webefinity.ContentRoot.Index.Shared.Uri
+@using Webefinity.Module.Blocks.Components.Blocks
+@inherits BlockComponentBase<HeroModel>
+@attribute [BlockAttribute("hero", "Hero", "A responsive hero.")]
+
+<section class="container">
+    <div class="hero" style="background-image: url('@(UriTransformer.Transform(this.Model.Url, "unspecified.jpg"))');">
+        <div class="center">
+
+                    <Markdown Md="@Model.Text" />
+
+
+        </div>
+    </div>
+</section>
+
+@code {
+
+}

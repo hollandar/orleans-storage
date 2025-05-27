@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Webefinity.Extensions\Webefinity.Extensions.csproj" />
+  </ItemGroup>
+
 </Project>

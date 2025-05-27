@@ -1,11 +1,9 @@
-﻿namespace Webefinity.ContentRoot.Index.Uri;
-
+﻿namespace Webefinity.ContentRoot.Index.Shared.Uri;
 public static class UriTransformer
 {
-    public static string Transform(string uriString)
+    public static string Transform(string? uriString, string defaultUri = "")
     {
-        ArgumentNullException.ThrowIfNull(uriString, nameof(uriString));
-        if (uriString.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase))
+        if (uriString?.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase) ?? false)
         {
             try
             {
@@ -18,6 +16,6 @@ public static class UriTransformer
             }
         }
 
-        return uriString;
+        return uriString ?? defaultUri;
     }
 }

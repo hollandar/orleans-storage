@@ -1,0 +1,13 @@
+﻿@using Webefinity.ContentRoot.Index
+@using Webefinity.ContentRoot.Index.Shared.Uri
+@using Webefinity.Module.Blocks.Components.Blocks
+@inherits BlockComponentBase<ImageModel>
+@attribute [BlockAttribute("image", "Image", "A responsive image.")]
+
+<section class="gutter">
+    <img src="@UriTransformer.Transform(this.Model.Url)" alt="@this.Model.Alt" />
+</section>
+
+@code {
+
+}

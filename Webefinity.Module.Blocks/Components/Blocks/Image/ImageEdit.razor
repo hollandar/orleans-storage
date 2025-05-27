@@ -1,0 +1,47 @@
+﻿@using Cadence.UI.Components
+@using Webefinity.ContentRoot.IndexUI.Components
+@using Webefinity.Module.Blocks.Abstractions
+@using Webefinity.Module.Blocks.Components.Blocks
+@using Webefinity.ContentRoot.IndexUI
+
+@inherits BlockEditorComponentBase<ImageModel>
+@attribute [BlockEditor("image")]
+
+<h3>Edit Image</h3>
+<CascadingValue Name="KeyCollection" Value="@(new KeyCollection("IndexedContent", "Default"))">
+
+    <EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
+        <FluentValidator TModelType="ImageModel" TValidator="ImageModelValidator" />
+
+        <div class="field">
+            <label for="url">Url</label>
+            <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
+            <ValidationMessage For="@(() => Model.Url)" />
+        </div>
+
+        <div class="field">
+            <label for="offset">Alt</label>
+            <InputText type="text" id="alt" @bind-Value="Model.Alt" />
+            <p class="hint">Alternate text.</p>
+            <ValidationMessage For="@(() => Model.Alt)" />
+        </div>
+
+        <div class="actions">
+            <Button class="primary" type="button" Clicked="Apply">Apply</Button>
+            <Button class="primary" type="submit">Save</Button>
+            <Button class="secondary" Clicked="CancelModel">Cancel</Button>
+        </div>
+    </EditForm>
+</CascadingValue>
+
+@code {
+    EditForm editForm = default!;
+
+    protected async Task Apply()
+    {
+        if (editForm.EditContext?.Validate() ?? false)
+        {
+            await this.ApplyModel();
+        }
+    }
+}

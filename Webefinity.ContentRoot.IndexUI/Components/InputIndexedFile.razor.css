@@ -5,10 +5,7 @@
     gap: 1rem;
 }
 
-.file-dialog {
-    max-height: 100px;
-}
-
 .file-repeater {
     overflow-y: auto;
+    max-height: 80vh;
 }
