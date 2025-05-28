@@ -73,12 +73,12 @@ public static class StartupExtensions
         var getListUri = $"/api/icr/{key}/{{collection}}/list/{{search?}}";
         app.MapGet(getListUri, (IServiceProvider sp, string collection, string? search, [FromQuery] int skip = 0, [FromQuery] int take = 10) =>
             IndexedContentHandler.GetList(sp, collection, search, skip, take, indexedContentRootKey)
-        ).RequireAuthorization(browserPolicy);
+        ).RequireAuthorization(adminPolicy);
 
         var postFileUri = $"/api/icr/{key}/{{collection}}/upload";
         app.MapPost(postFileUri, (IServiceProvider sp, string collection, [FromBody] Stream content, [FromHeader(Name = "Content-Type")] string contentType, [FromHeader(Name = "X-FileName")] string fileName) =>
             IndexedContentHandler.PostFile(sp, collection, content, contentType, fileName, indexedContentRootKey)
-        ).RequireAuthorization(browserPolicy);
+        ).RequireAuthorization(adminPolicy);
 
         var getFileUri = $"/icr/{key}/{{collection}}/{{filename}}";
         app.MapGet(getFileUri, (IServiceProvider sp, HttpResponse response, string collection, string filename) =>
@@ -88,11 +88,11 @@ public static class StartupExtensions
         var getFileMetaUri = $"/api/icr/{key}/{{collection}}/meta/{{filenameorid}}";
         app.MapGet(getFileMetaUri, (IServiceProvider sp, HttpResponse response, string collection, string filenameorid) =>
             IndexedContentHandler.GetFileMeta(sp, response, collection, filenameorid, indexedContentRootKey)
-        ).RequireAuthorization(browserPolicy);
+        ).RequireAuthorization(adminPolicy);
 
         var deleteFileUri = $"/api/icr/{key}/{{collection}}/{{filename}}";
         app.MapDelete(deleteFileUri, (IServiceProvider sp, string collection, string filename) =>
             IndexedContentHandler.DeleteFile(sp, collection, filename, indexedContentRootKey)
-        ).RequireAuthorization(browserPolicy);
+        ).RequireAuthorization(adminPolicy);
     }
 }
