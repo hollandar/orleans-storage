@@ -19,7 +19,7 @@ public static class IndexedContentHandler
     }
 
     public static async Task<IResult> GetList(
-        IServiceProvider sp, string collection, string search, int skip, int take, string? key = null)
+        IServiceProvider sp, string collection, string? search, int skip, int take, string? key = null)
     {
         var indexedContentRoot = GetIndexedContentRoot(sp, key);
         var result = await indexedContentRoot.ListAsync(new CollectionDef(collection), search, skip, take);

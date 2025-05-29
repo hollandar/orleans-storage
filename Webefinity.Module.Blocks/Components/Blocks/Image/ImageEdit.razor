@@ -8,31 +8,29 @@
 @attribute [BlockEditor("image")]
 
 <h3>Edit Image</h3>
-<CascadingValue Name="KeyCollection" Value="@(new KeyCollection("IndexedContent", "Default"))">
 
-    <EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
-        <FluentValidator TModelType="ImageModel" TValidator="ImageModelValidator" />
+<EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
+    <FluentValidator TModelType="ImageModel" TValidator="ImageModelValidator" />
 
-        <div class="field">
-            <label for="url">Url</label>
-            <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
-            <ValidationMessage For="@(() => Model.Url)" />
-        </div>
+    <div class="field">
+        <label for="url">Url</label>
+        <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
+        <ValidationMessage For="@(() => Model.Url)" />
+    </div>
 
-        <div class="field">
-            <label for="offset">Alt</label>
-            <InputText type="text" id="alt" @bind-Value="Model.Alt" />
-            <p class="hint">Alternate text.</p>
-            <ValidationMessage For="@(() => Model.Alt)" />
-        </div>
+    <div class="field">
+        <label for="offset">Alt</label>
+        <InputText type="text" id="alt" @bind-Value="Model.Alt" />
+        <p class="hint">Alternate text.</p>
+        <ValidationMessage For="@(() => Model.Alt)" />
+    </div>
 
-        <div class="actions">
-            <Button class="primary" type="button" Clicked="Apply">Apply</Button>
-            <Button class="primary" type="submit">Save</Button>
-            <Button class="secondary" Clicked="CancelModel">Cancel</Button>
-        </div>
-    </EditForm>
-</CascadingValue>
+    <div class="actions">
+        <Button class="primary" type="button" Clicked="Apply">Apply</Button>
+        <Button class="primary" type="submit">Save</Button>
+        <Button class="secondary" Clicked="CancelModel">Cancel</Button>
+    </div>
+</EditForm>
 
 @code {
     EditForm editForm = default!;

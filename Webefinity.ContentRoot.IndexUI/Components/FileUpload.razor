@@ -25,11 +25,13 @@
     bool uploadAvailable = false;
     string? errorMessage = null;
 
-    public async Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)
+    public Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)
     {
         this.uploadFile = inputFileChangeEventArgs.File;
         uploadAvailable = uploadFile != null;
         StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     protected async Task UploadFile()

@@ -8,30 +8,28 @@
 @attribute [BlockEditor("hero")]
 
 <h3>Edit Hero</h3>
-<CascadingValue Name="KeyCollection" Value="@(new KeyCollection("IndexedContent", "Default"))">
 
-    <EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
-        <FluentValidator TModelType="HeroModel" TValidator="HeroModelValidator" />
+<EditForm @ref="editForm" Model="this.Model" OnValidSubmit="SaveModel">
+    <FluentValidator TModelType="HeroModel" TValidator="HeroModelValidator" />
 
-        <div class="field">
-            <label for="text">Text</label>
-            <InputTextArea rows="20" id="text" @bind-Value="Model.Text" />
-            <ValidationMessage For="@(() => Model.Text)" />
-        </div>
+    <div class="field">
+        <label for="text">Text</label>
+        <InputTextArea rows="20" id="text" @bind-Value="Model.Text" />
+        <ValidationMessage For="@(() => Model.Text)" />
+    </div>
 
-        <div class="field">
-            <label for="url">Url</label>
-            <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
-            <ValidationMessage For="@(() => Model.Url)" />
-        </div>
+    <div class="field">
+        <label for="url">Url</label>
+        <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
+        <ValidationMessage For="@(() => Model.Url)" />
+    </div>
 
-        <div class="actions">
-            <Button class="primary" type="button" Clicked="Apply">Apply</Button>
-            <Button class="primary" type="submit">Save</Button>
-            <Button class="secondary" Clicked="CancelModel">Cancel</Button>
-        </div>
-    </EditForm>
-</CascadingValue>
+    <div class="actions">
+        <Button class="primary" type="button" Clicked="Apply">Apply</Button>
+        <Button class="primary" type="submit">Save</Button>
+        <Button class="secondary" Clicked="CancelModel">Cancel</Button>
+    </div>
+</EditForm>
 
 @code {
     EditForm editForm = default!;

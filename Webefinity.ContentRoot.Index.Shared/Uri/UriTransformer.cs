@@ -16,6 +16,9 @@ public static class UriTransformer
             }
         }
 
-        return uriString ?? defaultUri;
+        if (!String.IsNullOrWhiteSpace(uriString))
+            return uriString;
+        
+        return defaultUri;
     }
 }
