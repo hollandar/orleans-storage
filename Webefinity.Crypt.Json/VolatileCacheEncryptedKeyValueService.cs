@@ -57,24 +57,24 @@ namespace Webefinity.Crypt.Json
             }
         }
 
-        public Task<T?> GetValueAsync<T>(string key)
+        public Task<T?> GetValueAsync<T>(string key, bool mustExist = false)
         {
             if (memoryCache?.TryGetValue(GetVolatileCacheKey(key), out T? value) ?? false)
             {
                 return Task.FromResult(value);
             }
 
-            return innerKeyValueService.GetValueAsync<T>(key);
+            return innerKeyValueService.GetValueAsync<T>(key, mustExist);
         }
 
-        public Task<string?> GetValueAsync(string key)
+        public Task<string?> GetValueAsync(string key, bool mustExist = false)
         {
             if (memoryCache?.TryGetValue(GetVolatileCacheKey(key), out string? value) ?? false)
             {
                 return Task.FromResult(value);
             }
 
-            return innerKeyValueService.GetValueAsync(key);
+            return innerKeyValueService.GetValueAsync(key, mustExist);
         }
 
         public async Task SetValueAsync<T>(string key, T value)

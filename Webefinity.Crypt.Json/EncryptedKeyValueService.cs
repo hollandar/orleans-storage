@@ -20,12 +20,17 @@ public class EncryptedKeyValueService : IEncryptedKeyValueService
 
     public Task<bool> ContainsKeyAsync(string key) => encryptedPayloadStore.ContainsKeyAsync(key);
     
-    public async Task<T?> GetValueAsync<T>(string key)
+    public async Task<T?> GetValueAsync<T>(string key, bool mustExist = false)
     {
         T? value;
         var encryptedPayload = await encryptedPayloadStore.GetEncryptedPayloadAsync(key);
         if (encryptedPayload == null)
         {
+            if (mustExist)
+            {
+                throw new KeyNotFoundException($"The key '{key}' does not exist.");
+            }
+
             return default;
         }
 
@@ -35,13 +40,18 @@ public class EncryptedKeyValueService : IEncryptedKeyValueService
         return value;
     }
 
-    public async Task<string?> GetValueAsync(string key)
+    public async Task<string?> GetValueAsync(string key, bool mustExist = false)
     {
         string? value;
 
         var encryptedPayload = await encryptedPayloadStore.GetEncryptedPayloadAsync(key);
         if (encryptedPayload == null)
         {
+            if (mustExist)
+            {
+                throw new KeyNotFoundException($"The key '{key}' does not exist.");
+            }
+
             return null;
         }
 
