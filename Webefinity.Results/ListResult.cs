@@ -4,12 +4,13 @@ public class ListResult<TItemType> : IResult
 {
     public ListResult()
     {
-
+        this.Success = false;
     }
 
     public ListResult(ICollection<TItemType> items)
     {
         this.Items = items;
+        this.Success = true;
     }
 
     public static ListResult<TItemType> Ok(ICollection<TItemType> items)
