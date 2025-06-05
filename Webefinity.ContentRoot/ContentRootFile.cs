@@ -1,6 +1,7 @@
 ﻿using GlobExpressions;
 using Microsoft.Extensions.Options;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Text.Json;
 using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Extensions;
@@ -12,6 +13,7 @@ public class ContentRootFile : IContentRootLibrary
     private readonly IOptions<ContentRootOptions> options;
     private readonly IContentPathBuilder pathBuilder;
     private string contentRootPath;
+    private static Dictionary<string, string> etags = new();
 
     public ContentRootFile(IServiceProvider serviceProvider, IOptions<ContentRootOptions> options, IContentPathBuilder pathBuilder)
     {
@@ -116,7 +118,8 @@ public class ContentRootFile : IContentRootLibrary
     public FileExistsResult FileExists(CollectionDef collection, string file)
     {
         var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
-        return new FileExistsResult(File.Exists(path));
+        if (!etags.ContainsKey(path)) etags[path] = Guid.NewGuid().ToString();
+        return new FileExistsResult(File.Exists(path), etags[path]);
     }
 
     public Task<FileExistsResult> FileExistsAsync(CollectionDef collection, string file)
@@ -155,6 +158,7 @@ public class ContentRootFile : IContentRootLibrary
         using var fileStream = new FileStream(path, FileMode.Create, FileAccess.Write);
         content.CopyTo(fileStream);
 
+        etags[path] = Guid.NewGuid().ToString();
         return Task.CompletedTask;
     }
 
@@ -164,7 +168,7 @@ public class ContentRootFile : IContentRootLibrary
         if (!File.Exists(path))
             throw new LibraryPathNotFoundException("File was not found in LoadReader.", path);
 
-
+        etags.Remove(path);
         File.Delete(path);
 
         return Task.CompletedTask;
