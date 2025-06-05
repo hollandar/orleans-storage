@@ -10,8 +10,8 @@ public interface IContentRootLibrary
     public Task<string> LoadAsync(CollectionDef collection, string file);
     public IAsyncEnumerable<string> EnumerateRecursiveAsync(CollectionDef collection, string glob, string? insidePath = null);
     public IAsyncEnumerable<string> EnumerateAsync(CollectionDef collection, string glob, string? insidePath = null);
-    public bool FileExists(CollectionDef collection, string file);
-    public Task<bool> FileExistsAsync(CollectionDef collection, string file);
+    public FileExistsResult FileExists(CollectionDef collection, string file);
+    public Task<FileExistsResult> FileExistsAsync(CollectionDef collection, string file);
     public bool DirectoryExists(CollectionDef collection, string directory);
     public Task<bool> DirectoryExistsAsync(CollectionDef collection, string directory);
     public Task<T> LoadJsonAsync<T>(CollectionDef collection, string file);

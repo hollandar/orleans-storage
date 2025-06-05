@@ -138,7 +138,7 @@ public partial class ContentRootS3 : IContentRootLibrary
         return EnumerateInternalAsync(collection, glob, true, insidePath);
     }
 
-    public async Task<bool> FileExistsAsync(CollectionDef collection, string file)
+    public async Task<FileExistsResult> FileExistsAsync(CollectionDef collection, string file)
     {
         try
         {
@@ -149,22 +149,20 @@ public partial class ContentRootS3 : IContentRootLibrary
 
             var statObjectArgs = new StatObjectArgs().WithBucket(this.bucket).WithObject(BuildPath(collection, file));
 
-            await this.minioClient.StatObjectAsync(statObjectArgs);
+            var objectStat = await this.minioClient.StatObjectAsync(statObjectArgs);
+            return new FileExistsResult(true, objectStat.ETag);
         }
         catch (MinioException e)
         {
             if (e is ObjectNotFoundException)
             {
-                return false;
+                return FileExistsResult.False;
             }
             throw;
         }
-
-        return true;
-
     }
 
-    public bool FileExists(CollectionDef collection, string file) => throw new NotImplementedException("Only the async interface is supported.");
+    public FileExistsResult FileExists(CollectionDef collection, string file) => throw new NotImplementedException("Only the async interface is supported.");
 
     public string Load(CollectionDef collection, string file) => throw new NotImplementedException("Only the async interface is supported.");
 

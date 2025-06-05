@@ -53,18 +53,31 @@ public static class IndexedContentHandler
     }
 
     public static async Task<IResult> GetFile(
-        IServiceProvider sp, HttpResponse response, string collection, string filename, string? key = null)
+        IServiceProvider sp, HttpRequest request, HttpResponse response, string collection, string filename, string? key = null)
     {
         var indexedContentRoot = GetIndexedContentRoot(sp, key);
         var collectionDef = new CollectionDef(collection);
         var fileExists = await indexedContentRoot.FileExistsAsync(collectionDef, filename);
-        if (fileExists.Value)
+        if (fileExists.Value?.Exists ?? false)
         {
+            if (request.Headers.ContainsKey("If-None-Match"))
+            {
+                var oldEtag = request.Headers["If-None-Match"].First();
+                if (fileExists.Value.ETag is not null && oldEtag == fileExists.Value.ETag)
+                {
+                    return HttpResults.StatusCode(304);
+                }
+            }
+
             var tuple = await indexedContentRoot.LoadReadStreamAsync(collectionDef, filename);
             var readStream = tuple.Item1;
             var metadataModel = tuple.Item2;
             var contentType = metadataModel.GetMetadataValue<string>("Content-Type") ?? "application/octet-stream";
-
+            if (fileExists.Value.ETag is not null)
+            {
+                response.Headers["ETag"] = fileExists.Value.ETag;
+            }
+            response.Headers["Cache-Control"] = "public, max-age=3600"; //  1 hour
             return HttpResults.Stream(readStream, contentType, filename);
         }
         else

@@ -22,13 +22,13 @@ public class IndexedContentRootService : IIndexedContentRootLibrary
         this.key = key;
     }
 
-    public async Task<ValueResult<bool>> FileExistsAsync(CollectionDef collection, string file)
+    public async Task<ValueResult<FileExistsResult>> FileExistsAsync(CollectionDef collection, string file)
     {
         var fileLower = file.ToLower();
         var fileMetaExists = fileMetadataDbContext.Files.Where(r => r.Collection == collection.Collection && r.Key == key && r.FileName.ToLower() == fileLower).Any();
         var contentExists = await this.contentRootLibrary.FileExistsAsync(collection, file);
 
-        return ValueResult<bool>.Ok(fileMetaExists && contentExists);
+        return ValueResult<FileExistsResult>.Ok(new FileExistsResult(fileMetaExists && contentExists, contentExists.ETag));
     }
 
     public Task<ValueResult<FileMetadataModel>> GetFileMetadataAsync(CollectionDef collection, string fileOrId)

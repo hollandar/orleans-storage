@@ -54,7 +54,8 @@ public static class StartupExtensions
             string Collection, 
             string Path, 
             IServiceProvider serviceProvider, 
-            IHttpContextAccessor httpContextAccessor
+            HttpRequest request,
+            HttpResponse response
         ) =>
         {
             IContentRootLibrary contentRootLibrary;
@@ -68,8 +69,23 @@ public static class StartupExtensions
             }
 
             var collectionDef = new CollectionDef(Collection);
-            if (await contentRootLibrary.FileExistsAsync(collectionDef, Path))
+            var fileExists = await contentRootLibrary.FileExistsAsync(collectionDef, Path);
+            if (fileExists)
             {
+                if (request.Headers.ContainsKey("If-None-Match"))
+                {
+                    var oldEtag = request.Headers["If-None-Match"].First();
+                    if (fileExists.ETag is not null && oldEtag == fileExists.ETag)
+                    {
+                        return Results.StatusCode(304);
+                    }
+                }
+
+                if (fileExists.ETag is not null)
+                {
+                    response.Headers["ETag"] = fileExists.ETag;
+                }
+                response.Headers["Cache-Control"] = "public, max-age=3600"; //  1 hour
                 return Results.Stream(await contentRootLibrary.LoadReadStreamAsync(collectionDef, Path), ContentTypes.GetContentType(Path));
             }
             else

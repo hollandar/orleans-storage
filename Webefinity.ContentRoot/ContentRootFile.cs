@@ -113,13 +113,13 @@ public class ContentRootFile : IContentRootLibrary
     }
 #pragma warning restore CS1998
 
-    public bool FileExists(CollectionDef collection, string file)
+    public FileExistsResult FileExists(CollectionDef collection, string file)
     {
         var path = Path.Combine(contentRootPath, this.pathBuilder.GetPath(collection, file));
-        return File.Exists(path);
+        return new FileExistsResult(File.Exists(path));
     }
 
-    public Task<bool> FileExistsAsync(CollectionDef collection, string file)
+    public Task<FileExistsResult> FileExistsAsync(CollectionDef collection, string file)
     {
         return Task.FromResult(FileExists(collection, file));
     }

@@ -81,8 +81,8 @@ public static class StartupExtensions
         ).RequireAuthorization(adminPolicy);
 
         var getFileUri = $"/icr/{key}/{{collection}}/{{filename}}";
-        app.MapGet(getFileUri, (IServiceProvider sp, HttpResponse response, string collection, string filename) =>
-            IndexedContentHandler.GetFile(sp, response, collection, filename, indexedContentRootKey)
+        app.MapGet(getFileUri, (IServiceProvider sp, HttpRequest request, HttpResponse response, string collection, string filename) =>
+            IndexedContentHandler.GetFile(sp, request, response, collection, filename, indexedContentRootKey)
         ).RequireAuthorization(browserPolicy);
 
         var getFileMetaUri = $"/api/icr/{key}/{{collection}}/meta/{{filenameorid}}";
