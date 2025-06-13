@@ -26,7 +26,7 @@ public static class SetupExtensions
         {
             builder.Services.AddLogging(loggingBuilder =>
             {
-                loggingBuilder.AddConsole();
+                loggingBuilder.AddConsole().SetMinimumLevel(LogLevel.Debug);
             });
 
             return;
