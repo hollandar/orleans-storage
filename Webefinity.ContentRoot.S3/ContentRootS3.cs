@@ -150,7 +150,7 @@ public partial class ContentRootS3 : IContentRootLibrary
             var statObjectArgs = new StatObjectArgs().WithBucket(this.bucket).WithObject(BuildPath(collection, file));
 
             var objectStat = await this.minioClient.StatObjectAsync(statObjectArgs);
-            return new FileExistsResult(true, objectStat.ETag);
+            return new FileExistsResult(true, objectStat.ETag, objectStat.ContentType);
         }
         catch (MinioException e)
         {
