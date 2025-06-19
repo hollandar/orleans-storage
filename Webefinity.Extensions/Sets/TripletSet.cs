@@ -6,34 +6,41 @@ using System.Threading.Tasks;
 
 namespace Webefinity.Extensions.Work;
 
-public class Triplet<TKey>
+public class Triplet<TKey, TData>
 {
     public TKey Key { get; set; }
     public string Value { get; init; } = string.Empty;
-    public string DisplayValue { get; init; } = String.Empty;
+    public TData Data { get; init; } = default(TData);
 
-    public Triplet(TKey key, string value, string displayValue)
+    public Triplet(TKey key, string value, TData data)
     {
         Key = key;
         Value = value;
-        DisplayValue = displayValue;
+        Data = data;
     }
 
     public override string ToString() => Value;
+    public override int GetHashCode() => Key.GetHashCode();
+    public override bool Equals(object? obj)
+    {
+        return obj switch
+        {
+            Triplet<TKey, TData> triplet => this.Key?.Equals(triplet.Key) ?? false,
+            TKey key => Key?.Equals(key) ?? false,
+            _ => false
+        };
+    }
 }
 
-public abstract class TripletSet<TKey> where TKey: notnull, Enum
+public abstract class TripletSet<TKey, TData> where TKey: notnull, Enum
 {
-    private Dictionary<TKey, Triplet<TKey>> triplets = new();
+    private Dictionary<TKey, Triplet<TKey, TData>> triplets = new();
+    public IEnumerable<Triplet<TKey, TData>> Values => this.triplets.Values;
 
-    public TripletSet() : base() {
-        if (triplets.Count == 0)
-        {
-            throw new Exception("TripletSet must be initialized with at least one triplet.");
-        }
+    protected TripletSet() : base() {
     }
 
-    protected void Add(params IEnumerable<Triplet<TKey>> addTriplets)
+    protected void Add(params IEnumerable<Triplet<TKey, TData>> addTriplets)
     {
         foreach (var triplet in addTriplets)
         {
@@ -49,7 +56,37 @@ public abstract class TripletSet<TKey> where TKey: notnull, Enum
         return triplets.ContainsKey(key);
     }   
 
-    public Triplet<TKey> this[TKey key]
+    public bool ContainsValue(string value)
+    {
+        return triplets.Values.Any(t => t.Value.Equals(value));
+    }
+
+    public Triplet<TKey, TData> this[string key]
+    {
+        get
+        {
+            var triplet = this.triplets.Values.Where(r => r.Value == key).FirstOrDefault();
+            if (triplet is not null)
+            {
+                return triplet;
+            }
+            throw new KeyNotFoundException($"Triplet with key '{key}' not found.");
+        }
+    }
+
+    public Triplet<TKey, TData> OrFirst(string? key)
+    {
+        if (key is null) return triplets.Values.First();
+        return this[key];
+    }
+
+    public Triplet<TKey, TData> OrFirst(TKey? key)
+    {
+        if (key is null) return triplets.Values.First();
+        return this[key];
+    }
+
+    public Triplet<TKey, TData> this[TKey key]
     {
         get
         {
@@ -59,6 +96,16 @@ public abstract class TripletSet<TKey> where TKey: notnull, Enum
             }
             throw new KeyNotFoundException($"Triplet with key {key} not found.");
         }
+    }
+
+    public TKey GetKey(string value, TKey? def = default(TKey))
+    {
+        if (this.ContainsValue(value))
+        {
+            return this[value].Key;
+        }
+
+        return def ?? throw new KeyNotFoundException($"No triplet found with value '{value}'.");
     }
 
     public string GetValue(TKey key)
@@ -71,13 +118,38 @@ public abstract class TripletSet<TKey> where TKey: notnull, Enum
         throw new KeyNotFoundException($"No triplet found with key {key}.");
     }
 
-    public string GetDisplayValue(TKey key)
+    public TData GetData(TKey key)
     {
         if (triplets.TryGetValue(key, out var triplet))
         {
-            return triplet.DisplayValue;
+            return triplet.Data;
         }
         
         throw new KeyNotFoundException($"No triplet found with key {key}.");
+    }
+
+    public IEnumerable<KeyValuePair<string, TData>> GetKeyValues() =>
+        this.triplets.Values.Select(t => new KeyValuePair<string, TData>(t.Value, t.Data));
+
+    public IEnumerable<Triplet<TKey, TData>> FromString(string? s)
+    {
+        var items = (s ?? String.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries);
+        foreach (var item in items)
+        {
+            if (item is not null && ContainsValue(item))
+            {
+                yield return this[item];
+            }
+        }
+    }
+
+    public override string ToString()
+    {
+        return ToString(triplets.Values);
+    }
+
+    public string ToString(params IEnumerable<Triplet<TKey, TData>> triplets)
+    {
+        return string.Join(',', triplets.Select(r => r.Value));
     }
 }

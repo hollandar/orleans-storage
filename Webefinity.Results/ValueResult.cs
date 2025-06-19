@@ -23,7 +23,7 @@ public class ValueResult<TResultType> : IResult
 
     public static ValueResult<TResultType> Ok(TResultType value)
     {
-        Debug.Assert(value is not null);
+        //Debug.Assert(value is not null);
         return new ValueResult<TResultType>(value) { Success = true };
     }
 
