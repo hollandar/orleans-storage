@@ -9,16 +9,21 @@
         @if (pageExists) {
             @if (Mode == "edit")
             {
-
-                <div class="blocks-actionbar stack horizontal end">
-                    <a class="button primary" href="@ViewUri()"><i class="fa-solid fa-x"></i><span>View</span></a>
+                <div class="blocks-actionbar stack horizontal start gap-2">
+                    <div class="bold">Page</div>
+                    <div><a class="button inline" href="@ViewUri()"><i class="fa-solid fa-x"></i></a></div>
+                    <div><a class="button inline"><i class="fa-solid fa-trash"></i></a></div>
+                    <div><a class="button inline"><i class="fa-solid fa-eye"></i></a></div>
+                    <div>This page is in draft.</div>
                 </div>
                 <BlocksPageByName PageName="@PageName" Edit="true" />
             }
             else
             {
-                <div class="blocks-actionbar stack horizontal end">
-                    <a class="button primary" href="@EditUri()"><i class="fa-solid fa-pencil"></i><span>Edit</span></a>
+                <div class="blocks-actionbar stack horizontal start gap-2">
+                    <div class="bold">Page</div>
+                    <div><a class="button inline" href="@EditUri()"><i class="fa-solid fa-pencil"></i></a></div>
+                    <div>This page is in draft.</div>
                 </div>
                 <BlocksPageByName_ReadOnly PageName="@PageName" />
             }

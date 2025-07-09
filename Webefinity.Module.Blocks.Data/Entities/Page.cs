@@ -13,4 +13,5 @@ public class Page
     public string Name { get; set; } = string.Empty;
     public virtual ICollection<Block> Blocks { get; set; } = new List<Block>();
     public string Title { get; set; } = string.Empty;
+    public PublishState State { get; set; } = PublishState.Draft;
 }
