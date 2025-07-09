@@ -14,7 +14,6 @@
 
         @if (pageModel is not null)
         {
-            <PageTitle>@this.pageModel.Title</PageTitle>
             @foreach (var enumBlockState in this.blockEditorStates)
             {
                 var blockState = enumBlockState;
@@ -86,7 +85,6 @@
                 <div class="blocks-controls">
                     <div>End of page</div>
                     <Button class="control" Clicked="() => ShowBlockListDialog(int.MaxValue)" title="Add block at the end"><Icon><i class="fa-solid fa-plus"></i></Icon></Button>
-                    <Button class="control" Clicked="() => DeletePageAsync()" title="Delete this page."><Icon><i class="fa-solid fa-trash"></i></Icon></Button>
                 </div>
 
                 <Dialog @ref="blockListDialog" Modal="true" class="full">
@@ -108,16 +106,7 @@
                     </Content>
                 </Dialog>
 
-                <Dialog Modal @ref="deletePageDialog">
-                    <Header><h4>About to delete the page '@(this.pageModel.Title)'?</h4></Header>
-                    <Content><p>You are about to delete the page '@(this.pageModel.Title)' and all content on the page, are you sure?</p></Content>
-                    <Footer>
-                        <div class="actions end">
-                            <Button class="primary" Clicked="async () => await DeletePageAsync(true)">Yes</Button>
-                            <Button class="secondary" Clicked="async () => await DeletePageAsync(false)">No</Button>
-                        </div>
-                    </Footer>
-                </Dialog>
+                
             }
         }
     </Authorized>
@@ -137,13 +126,11 @@
     [Parameter] public bool Edit { get; set; } = false;
     [Parameter] public string PageName { get; set; } = default!;
 
-    bool exists = false;
     PageModel pageModel = default!;
     IEnumerable<BlockEditorState> blockEditorStates = Array.Empty<BlockEditorState>();
 
     Dialog blockListDialog = default!;
-    Dialog deletePageDialog = default!;
-    int insertSequence = -1;
+     int insertSequence = -1;
 
 
     class BlockEditorState(BlockModel model)
@@ -155,12 +142,8 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await base.OnInitializedAsync();
-
-        this.exists = await BlocksProvider.PageExistsAsync(PageName, CancellationToken.None);
-        if (!this.exists) return;
-
         await RefreshPageModel();
+        await base.OnInitializedAsync();
     }
 
     async Task RefreshPageModel()
@@ -246,25 +229,7 @@
         }
     }
 
-    async Task DeletePageAsync(bool? action = null)
-    {
-        if (action is null)
-        {
-            await this.deletePageDialog.ShowAsync();
-        }
-        else if (action.Value)
-        {
-            var deleted = await BlocksProvider.DeletePageAsync(this.pageModel.Id, CancellationToken.None);
-            if (deleted)
-            {
-                NavigationManager.NavigateTo(NavigationManager.Uri, forceLoad: true);
-            }
-        }
-        else
-        {
-            await this.deletePageDialog.CloseAsync();
-        }
-    }
+    
 
     async Task MoveBlockUp(BlockEditorState blockEditorState)
     {
