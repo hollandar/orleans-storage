@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Data.Entities;
@@ -56,11 +57,18 @@ public class BlocksDataService : IBlocksDataProvider
         return Task.FromResult(PageMapper.Map(page));
     }
 
-    public Task<bool> PageExistsAsync(string name, CancellationToken ct)
+    public Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct)
     {
         var lowerName = name.ToLower();
-        var pageExists = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Any();
-        return Task.FromResult(pageExists);
+        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name });
+        var pageExists = pages.Any();
+        if (!pageExists)
+        {
+            return Task.FromResult(PageExistsModel.DoesNotExist);
+        }
+        var page = pages.Single();
+
+        return Task.FromResult(new PageExistsModel(pageExists, page.Id, page.Title, page.Name));
     }
 
     public async Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct)
@@ -178,5 +186,18 @@ public class BlocksDataService : IBlocksDataProvider
         await this.dbContextChild.SaveChangesAsync(ct);
 
         return true;
+    }
+
+    public async Task UpdatePageAsync(UpdateBlockSettingsRequest settingsModel, CancellationToken ct)
+    {
+        var page = this.dbContextChild.Pages.Find(settingsModel.Id);
+        if (page is null)
+        {
+            throw new ArgumentException($"Page with ID {settingsModel.Id} not found", nameof(settingsModel.Id));
+        }
+
+        page.Name = settingsModel.Name;
+        page.Title = settingsModel.Title;
+        await this.dbContextChild.SaveChangesAsync(ct);
     }
 }

@@ -12,10 +12,11 @@ public class BlocksProviderService
         this.blocksDataProvider = blocksDataProvider;
     }
 
-    public Task <bool> PageExistsAsync(string name, CancellationToken ct = default!)
+    public Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.PageExistsAsync(name, ct);
     }
+
     public Task<PageModel> GetPageModelAsync(string name, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.GetPageModelAsync(name, ct);
@@ -35,7 +36,7 @@ public class BlocksProviderService
     {
         return this.blocksDataProvider.DeleteBlockAsync(blockId, ct);
     }
-    
+
     public Task<bool> DeletePageAsync(Guid pageId, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.DeletePageAsync(pageId, ct);
@@ -49,5 +50,10 @@ public class BlocksProviderService
     public Task<bool> MoveBlockAsync(Guid blockId, MoveDirection moveDirection, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.MoveBlockAsync(blockId, moveDirection, ct);
+    }
+    
+    public Task UpdatePageAsync(UpdateBlockSettingsRequest settingsModel, CancellationToken ct = default!)
+    {
+        return this.blocksDataProvider.UpdatePageAsync(settingsModel, ct);
     }
 }
