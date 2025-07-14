@@ -8,5 +8,5 @@ namespace Webefinity.Crypt.Json.Options;
 
 public class EncryptedOnDiskOptions : JsonCryptOptionsBase
 {
-    public string Path { get; set; }
+    public string Path { get; set; } = string.Empty;
 }

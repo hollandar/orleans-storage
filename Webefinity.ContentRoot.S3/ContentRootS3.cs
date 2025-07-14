@@ -107,7 +107,7 @@ public partial class ContentRootS3 : IContentRootLibrary
         return true;
     }
 
-    private async IAsyncEnumerable<string> EnumerateInternalAsync(CollectionDef collection, string glob, bool recursive, string? insidePath = null)
+    private async IAsyncEnumerable<string> EnumerateInternalAsync(CollectionDef collection, string glob, bool recursive, string insidePath = "")
     {
         if (!DirectoryNameRegex().IsMatch(insidePath))
         {
@@ -128,12 +128,12 @@ public partial class ContentRootS3 : IContentRootLibrary
         }
     }
 
-    public IAsyncEnumerable<string> EnumerateAsync(CollectionDef collection, string glob, string? insidePath = null)
+    public IAsyncEnumerable<string> EnumerateAsync(CollectionDef collection, string glob, string insidePath = "")
     {
         return EnumerateInternalAsync(collection, glob, false, insidePath);
     }
 
-    public IAsyncEnumerable<string> EnumerateRecursiveAsync(CollectionDef collection, string glob, string? insidePath = null)
+    public IAsyncEnumerable<string> EnumerateRecursiveAsync(CollectionDef collection, string glob, string insidePath = "")
     {
         return EnumerateInternalAsync(collection, glob, true, insidePath);
     }
