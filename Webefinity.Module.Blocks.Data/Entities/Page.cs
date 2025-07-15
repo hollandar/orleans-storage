@@ -4,6 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Text;
 using System.Threading.Tasks;
+using Webefinity.Module.Blocks.Abstractions;
 
 namespace Webefinity.Module.Blocks.Data.Entities;
 

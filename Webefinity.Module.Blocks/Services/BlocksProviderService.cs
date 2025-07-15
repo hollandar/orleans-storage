@@ -51,9 +51,14 @@ public class BlocksProviderService
     {
         return this.blocksDataProvider.MoveBlockAsync(blockId, moveDirection, ct);
     }
-    
+
     public Task UpdatePageAsync(UpdateBlockSettingsRequest settingsModel, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.UpdatePageAsync(settingsModel, ct);
+    }
+
+    public Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct)
+    {
+        return this.blocksDataProvider.PublishPageAsync(pageId, publishState, ct);
     }
 }

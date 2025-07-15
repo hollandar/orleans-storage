@@ -60,7 +60,7 @@ public class BlocksDataService : IBlocksDataProvider
     public Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct)
     {
         var lowerName = name.ToLower();
-        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name });
+        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name, r.State });
         var pageExists = pages.Any();
         if (!pageExists)
         {
@@ -68,7 +68,7 @@ public class BlocksDataService : IBlocksDataProvider
         }
         var page = pages.Single();
 
-        return Task.FromResult(new PageExistsModel(pageExists, page.Id, page.Title, page.Name));
+        return Task.FromResult(new PageExistsModel(pageExists, page.Id, page.Title, page.Name, page.State));
     }
 
     public async Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct)
@@ -198,6 +198,26 @@ public class BlocksDataService : IBlocksDataProvider
 
         page.Name = settingsModel.Name;
         page.Title = settingsModel.Title;
+        page.State = settingsModel.State;
         await this.dbContextChild.SaveChangesAsync(ct);
+    }
+
+    public async Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct)
+    {
+        var page = this.dbContextChild.Pages.Find(pageId);
+        if (page is null)
+        {
+            throw new ArgumentException($"Page with ID {pageId} not found", nameof(pageId));
+        }
+
+        if (!page.State.GetAllowedTransitions().Contains(publishState))
+        {
+            throw new InvalidOperationException($"Cannot transition from {page.State.ToDisplayString()} to {publishState.ToDisplayString()}");
+        }
+
+        page.State = publishState;
+        await this.dbContextChild.SaveChangesAsync(ct);
+
+        return page.State;
     }
 }

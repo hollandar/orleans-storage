@@ -1,0 +1,15 @@
+﻿@page "/{**PageName}"
+@using Webefinity.Module.Blocks.Services
+
+<BlockAuthorizeView Policy="SecurityPolicyVariants.AuthorPolicy">
+    <Authorized>
+        <BlocksPageEditor PageName="@PageName" />
+    </Authorized>
+    <NotAuthorized>
+        <BlocksPageByName_ReadOnly PageName="@PageName" />
+    </NotAuthorized>
+</BlockAuthorizeView>
+
+@code {
+    [Parameter] public string PageName { get; set; } = string.Empty;
+}

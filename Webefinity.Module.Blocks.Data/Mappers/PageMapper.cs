@@ -10,6 +10,7 @@ public static class PageMapper
         Id = page.Id,
         Name = page.Name,
         Title = page.Title,
+        State = page.State,
         Blocks = page.Blocks.Select(BlockMapper.Map).ToList()
     };
 }
