@@ -9,9 +9,7 @@
 
 @rendermode InteractiveServer
 
-<PageTitle>@(pageExists?.Title ?? "Loading...")</PageTitle>
-
-@if (pageExists?.Exists ?? false)
+@if (pageOutline?.Exists ?? false)
 {
     <div class="blocks-actionbar stack horizontal start gap-2">
         <div class="bold">Page</div>
@@ -33,9 +31,9 @@
             <Button class="button inline" Clicked="ShowPageSettingsAsync"><i class="fa-solid fa-cog"></i></Button>
         </div>
         <div>
-            <PublishStateDisplay State="@pageExists.State" />
+            <PublishStateDisplay State="@pageOutline.State" />
         </div>
-        @foreach (var targetState in pageExists.State.GetAllowedTransitions())
+        @foreach (var targetState in pageOutline.State.GetAllowedTransitions())
         {
             <div @key="@targetState">
                 @switch (targetState)
@@ -137,7 +135,7 @@ else
 
 <Dialog Modal @ref="deletePageDialog">
     <Header>
-        <h4>About to delete '@pageExists.Title'?</h4>
+        <h4>About to delete '@pageOutline.Title'?</h4>
     </Header>
     <Content>
         <p>You are about to delete this page and all content on the page, are you sure?
@@ -147,7 +145,7 @@ else
     <Footer>
         <div class="actions end">
             <Button class="danger" Clicked="async () => await DeletePageAsync(true)">Yes, delete
-                @(pageExists.Title)</Button>
+                @(pageOutline.Title)</Button>
             <Button class="secondary" Clicked="async () => await DeletePageAsync(false)">No, keep it!</Button>
         </div>
     </Footer>
@@ -161,7 +159,7 @@ else
     }
     [Parameter] public string? PageName { get; set; } = default!;
     [Parameter] public PageRenderMode RenderMode { get; set; } = PageRenderMode.ReadOnly;
-    private PageExistsModel? pageExists = default!;
+    private PageOutlineModel? pageOutline = default!;
     Dialog deletePageDialog = default!;
     UpdateBlockSettingsRequest settingsModel = new();
     bool showSettings = false;
@@ -177,27 +175,8 @@ else
 
     async Task RefreshPageAsync()
     {
-        pageExists = await BlocksProvider.PageExistsAsync(PageName, CancellationToken.None);
-        if (pageExists.Exists)
-        {
-            settingsModel = new UpdateBlockSettingsRequest
-            {
-                Id = pageExists?.PageId ?? Guid.Empty,
-                Name = pageExists?.Name ?? string.Empty,
-                Title = pageExists?.Title ?? string.Empty,
-                State = pageExists?.State ?? PublishState.Draft
-            };
-        }
-        else
-        {
-            settingsModel = new UpdateBlockSettingsRequest
-            {
-                Id = Guid.Empty,
-                Name = string.Empty,
-                Title = string.Empty,
-                State = PublishState.Draft
-            };
-        }
+        pageOutline = await BlocksProvider.GetPageOutlineAsync(PageName, CancellationToken.None);
+
         await InvokeAsync(StateHasChanged);
     }
 
@@ -211,8 +190,8 @@ else
         }
         else if (action.Value)
         {
-            ArgumentNullException.ThrowIfNull(this.pageExists?.PageId, nameof(this.pageExists.PageId));
-            var deleted = await BlocksProvider.DeletePageAsync(this.pageExists.PageId.Value, CancellationToken.None);
+            ArgumentNullException.ThrowIfNull(this.pageOutline?.PageId, nameof(this.pageOutline.PageId));
+            var deleted = await BlocksProvider.DeletePageAsync(this.pageOutline.PageId.Value, CancellationToken.None);
             if (deleted)
             {
                 Nav.NavigateTo(Nav.Uri, forceLoad: true);
@@ -227,6 +206,30 @@ else
     async Task ShowPageSettingsAsync()
     {
         showSettings = !showSettings;
+
+        if (showSettings)
+        {
+            if (pageOutline.Exists)
+            {
+                settingsModel = new UpdateBlockSettingsRequest
+                {
+                    Id = pageOutline?.PageId ?? Guid.Empty,
+                    Name = pageOutline?.Name ?? string.Empty,
+                    Title = pageOutline?.Title ?? string.Empty,
+                    State = pageOutline?.State ?? PublishState.Draft
+                };
+            }
+            else
+            {
+                settingsModel = new UpdateBlockSettingsRequest
+                {
+                    Id = Guid.Empty,
+                    Name = string.Empty,
+                    Title = string.Empty,
+                    State = PublishState.Draft
+                };
+            }
+        }
         StateHasChanged();
     }
 
@@ -254,8 +257,8 @@ else
 
     async Task PublishPageAsync(PublishState publishState)
     {
-        ArgumentNullException.ThrowIfNull(pageExists?.PageId, nameof(pageExists.PageId));
-        this.pageExists.State = await BlocksProvider.PublishPageAsync(pageExists.PageId.Value, publishState,
+        ArgumentNullException.ThrowIfNull(pageOutline?.PageId, nameof(pageOutline.PageId));
+        this.pageOutline.State = await BlocksProvider.PublishPageAsync(pageOutline.PageId.Value, publishState,
         CancellationToken.None);
 
         await RefreshPageAsync();

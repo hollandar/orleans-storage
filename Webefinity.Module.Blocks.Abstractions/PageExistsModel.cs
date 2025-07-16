@@ -2,7 +2,7 @@ using System;
 
 namespace Webefinity.Module.Blocks.Abstractions;
 
-public class PageExistsModel
+public class PageOutlineModel
 {
     public bool Exists { get; set; } = false;
     public Guid? PageId { get; set; } = null;
@@ -10,9 +10,9 @@ public class PageExistsModel
     public string Name { get; set; } = string.Empty;
     public PublishState State { get; set; } = PublishState.Draft;
 
-    public PageExistsModel() { }
+    public PageOutlineModel() { }
 
-    public PageExistsModel(bool exists, Guid? pageId, string title, string name, PublishState state = PublishState.Draft)
+    public PageOutlineModel(bool exists, Guid? pageId, string title, string name, PublishState state = PublishState.Draft)
     {
         Exists = exists;
         PageId = pageId;
@@ -21,5 +21,5 @@ public class PageExistsModel
         State = state;
     }
 
-    public static PageExistsModel DoesNotExist { get => new PageExistsModel(false, null, string.Empty, string.Empty); }
+    public static PageOutlineModel DoesNotExist { get => new PageOutlineModel(false, null, string.Empty, string.Empty); }
 }

@@ -5,11 +5,13 @@
 @inject HttpClient httpClient
 @inject IFileBrowserService FileBrowserService
 
-<h2>Upload a file</h2>
 
 <div class="panel">
+    <h2>Upload a file</h2>
+    <div class="stack horizontal between gap-2">
     <InputFile id="imageRebuildInput" OnChange="SetUploadFile" accept="*" />
     <Button Class="primary" Clicked="UploadFile" disabled="@(!uploadAvailable)">Upload</Button>
+    </div>
     @if (errorMessage is not null)
     {
         <p class="text-danger">@errorMessage</p>

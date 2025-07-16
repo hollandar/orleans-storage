@@ -12,9 +12,9 @@ public class BlocksProviderService
         this.blocksDataProvider = blocksDataProvider;
     }
 
-    public Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct = default!)
+    public Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct = default!)
     {
-        return this.blocksDataProvider.PageExistsAsync(name, ct);
+        return this.blocksDataProvider.GetPageOutlineAsync(name, ct);
     }
 
     public Task<PageModel> GetPageModelAsync(string name, CancellationToken ct = default!)

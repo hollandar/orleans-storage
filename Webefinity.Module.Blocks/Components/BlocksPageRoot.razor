@@ -3,13 +3,15 @@
 
 <BlockAuthorizeView Policy="SecurityPolicyVariants.AuthorPolicy">
     <Authorized>
-        <BlocksPageEditor PageName="@PageName" />
+        <BlocksPageEditor PageName="@GetPageName()" />
     </Authorized>
     <NotAuthorized>
-        <BlocksPageByName_ReadOnly PageName="@PageName" />
+        <BlocksPageByName_ReadOnly PageName="@GetPageName()" />
     </NotAuthorized>
 </BlockAuthorizeView>
 
 @code {
-    [Parameter] public string PageName { get; set; } = string.Empty;
+    [Parameter] public string PageName { get; set; } = default!;
+
+    protected string GetPageName() => PageName?.ToLowerInvariant() ?? "home";
 }

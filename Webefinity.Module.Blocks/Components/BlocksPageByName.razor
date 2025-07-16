@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="@Assets["_content/Webefinity.Module.Blocks/css/blocks_page.css"]" />
 </HeadContent>
 
+<PageTitle>@(pageModel?.Title ?? "Loading...")</PageTitle>
+
 @if (pageModel is not null)
 {
     @foreach (var enumBlockState in this.blockEditorStates)

@@ -15,4 +15,6 @@ public class Page
     public virtual ICollection<Block> Blocks { get; set; } = new List<Block>();
     public string Title { get; set; } = string.Empty;
     public PublishState State { get; set; } = PublishState.Draft;
+    public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
 }

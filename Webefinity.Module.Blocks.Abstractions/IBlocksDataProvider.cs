@@ -6,7 +6,7 @@ namespace Webefinity.Module.Blocks.Abstractions;
 
 public interface IBlocksDataProvider
 {
-    Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct);
+    Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct);
     Task<PageModel> GetPageModelAsync(string name, CancellationToken ct);
     Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct);
     Task<bool> AddBlockAtAsync(Guid pageId, string kind, int sequence, CancellationToken ct);
