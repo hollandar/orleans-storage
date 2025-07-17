@@ -1,0 +1,48 @@
+﻿@using Webefinity.Module.Guides.Abstractions
+@using Webefinity.Module.Guides.Services
+
+@rendermode InteractiveAuto
+@implements IDisposable
+
+@inject IGuideService GuideService
+
+<div class="guide-content">
+    @((MarkupString)(this.guideContent))
+</div>
+
+<button @onclick="CloseAsync">
+    Close
+</button>
+
+
+@GuideService.IsVisible
+
+@code {
+
+    private string guideContent = "<p>Loading...</p>";
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        this.guideContent = await GuideService.GetGuideContentAsync("introduction");
+        this.GuideService.RegisterGuide(this);
+    }
+
+    public void Dispose()
+    {
+        this.GuideService.UnregisterGuide(this);
+    }
+
+    private Task CloseAsync()
+    {
+        this.GuideService.ToggleVisibilityAsync();
+        return Task.CompletedTask;
+    }
+
+    public async Task RefreshAsync() {
+        await InvokeAsync(StateHasChanged);
+    }
+
+
+}
