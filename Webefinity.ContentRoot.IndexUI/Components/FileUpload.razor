@@ -19,13 +19,23 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
     [Parameter] public EventCallback<string> OnFileUploaded { get; set; } = default!;
 
 
     IBrowserFile? uploadFile = null;
     bool uploadAvailable = false;
     string? errorMessage = null;
+
+    protected override void OnParametersSet()
+    {
+        if (KC is null)
+        {
+            throw new InvalidOperationException("KeyCollection must be set before rendering.");
+        }
+
+        base.OnParametersSet();
+    }
 
     public Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)
     {

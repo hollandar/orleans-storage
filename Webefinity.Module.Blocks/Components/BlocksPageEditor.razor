@@ -133,23 +133,26 @@ else
     <PageNotFound PageName="@PageName" />
 }
 
-<Dialog Modal @ref="deletePageDialog">
-    <Header>
-        <h4>About to delete '@pageOutline.Title'?</h4>
-    </Header>
-    <Content>
-        <p>You are about to delete this page and all content on the page, are you sure?
-        </p>
-        <p>You can instead change page settings to mark it archived or deleted.</p>
-    </Content>
-    <Footer>
-        <div class="actions end">
-            <Button class="danger" Clicked="async () => await DeletePageAsync(true)">Yes, delete
-                @(pageOutline.Title)</Button>
-            <Button class="secondary" Clicked="async () => await DeletePageAsync(false)">No, keep it!</Button>
-        </div>
-    </Footer>
-</Dialog>
+@if (pageOutline is not null)
+{
+    <Dialog Modal @ref="deletePageDialog">
+        <Header>
+            <h4>About to delete '@pageOutline.Title'?</h4>
+        </Header>
+        <Content>
+            <p>You are about to delete this page and all content on the page, are you sure?
+            </p>
+            <p>You can instead change page settings to mark it archived or deleted.</p>
+        </Content>
+        <Footer>
+            <div class="actions end">
+                <Button class="danger" Clicked="async () => await DeletePageAsync(true)">Yes, delete
+                    @(pageOutline.Title)</Button>
+                <Button class="secondary" Clicked="async () => await DeletePageAsync(false)">No, keep it!</Button>
+            </div>
+        </Footer>
+    </Dialog>
+}
 
 @code {
     public enum PageRenderMode
@@ -157,7 +160,7 @@ else
         ReadOnly,
         Edit
     }
-    [Parameter] public string? PageName { get; set; } = default!;
+    [Parameter,EditorRequired] public string PageName { get; set; } = default!;
     [Parameter] public PageRenderMode RenderMode { get; set; } = PageRenderMode.ReadOnly;
     private PageOutlineModel? pageOutline = default!;
     Dialog deletePageDialog = default!;
@@ -203,13 +206,13 @@ else
         }
     }
 
-    async Task ShowPageSettingsAsync()
+    Task ShowPageSettingsAsync()
     {
         showSettings = !showSettings;
 
         if (showSettings)
         {
-            if (pageOutline.Exists)
+            if (pageOutline?.Exists ?? false)
             {
                 settingsModel = new UpdateBlockSettingsRequest
                 {
@@ -230,7 +233,10 @@ else
                 };
             }
         }
+
         StateHasChanged();
+
+        return Task.CompletedTask;
     }
 
     async Task UpdateBlockSettingsAsync()
