@@ -6,27 +6,38 @@
 
 @inject IGuideService GuideService
 
-<div class="guide-content">
-    @((MarkupString)(this.guideContent))
-</div>
+@if (isAvailable && this.GuideService.IsVisible)
+{
+    <div class="guide">
 
-<button @onclick="CloseAsync">
-    Close
-</button>
+        <div class="guide-header">
+            <Button class="control" Clicked="CloseAsync"><i class="fa-solid fa-xmark fa-xl"></i></Button>
+        </div>
+
+        <div class="guide-content">
+            @((MarkupString)(this.guideContent))
+        </div>
 
 
-@GuideService.IsVisible
+        <div class="guide-footer actions">
+            <Button class="control" Clicked="DoNotShowAgainAsync" Text="Do not show again."><Icon><i class="fa-solid fa-xmark"></i></Icon></Button>
+        </div>
+    </div>
+}
 
 @code {
 
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    private bool isAvailable = false;
     private string guideContent = "<p>Loading...</p>";
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
 
-        this.guideContent = await GuideService.GetGuideContentAsync("introduction");
+        this.guideContent = await GuideService.GetGuideContentAsync("introduction", CancellationToken.None);
         this.GuideService.RegisterGuide(this);
+        await this.GuideService.RefreshAsync();
     }
 
     public void Dispose()
@@ -40,9 +51,17 @@
         return Task.CompletedTask;
     }
 
-    public async Task RefreshAsync() {
+    public async Task RefreshAsync()
+    {
+        this.isAvailable = await GuideService.IsGuideAvailableAsync(CancellationToken.None) && !await GuideService.IsGuideHiddenAsync(CancellationToken.None);
         await InvokeAsync(StateHasChanged);
     }
 
+    private async Task DoNotShowAgainAsync()
+    {
+        await GuideService.SetIsGuideHiddenAsync(true, CancellationToken.None);
+        this.isAvailable = false;
+        await InvokeAsync(StateHasChanged);
+    }
 
 }
