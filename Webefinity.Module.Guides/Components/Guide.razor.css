@@ -3,14 +3,14 @@
     grid-template-columns: auto;
     grid-template-rows: min-content auto min-content;
     grid-template-areas: "header" "content" "footer";
-    padding: 0.5rem;
+    margin: 1rem;
 }
 
 .guide-header {
     grid-area: header;
     display: flex;
     align-items: center;
-    justify-content: end;
+    justify-content: space-between;
 }
 .guide-content {
     grid-area: content;

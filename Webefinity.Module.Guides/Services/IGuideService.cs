@@ -2,13 +2,14 @@ using System;
 using System.IO.Pipelines;
 using Webefinity.Module.Guides.Components;
 using Markdig.Parsers;
+using Webefinity.Module.Guides.Abstractions;
 
 namespace Webefinity.Module.Guides.Services;
 
 public interface IGuideService
 {
     bool IsVisible { get; }
-    Task<string> GetGuideContentAsync(string guideName, CancellationToken cancellationToken);
+    Task<GuideContentRecord> GetGuideContentAsync(string guideName, CancellationToken cancellationToken);
     void RegisterGuide(Guide guideInstance);
     void UnregisterGuide(Guide guideInstance);
     Task ToggleVisibilityAsync();
@@ -16,4 +17,5 @@ public interface IGuideService
     Task<bool> IsGuideHiddenAsync(CancellationToken cancellationToken);
     Task SetIsGuideHiddenAsync(bool hidden, CancellationToken cancellationToken);
     Task RefreshAsync();
+
 }

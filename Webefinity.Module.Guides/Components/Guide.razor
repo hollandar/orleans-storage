@@ -1,26 +1,33 @@
 ﻿@using Webefinity.Module.Guides.Abstractions
 @using Webefinity.Module.Guides.Services
+@using Microsoft.JSInterop;
 
 @rendermode InteractiveAuto
-@implements IDisposable
+@implements IAsyncDisposable
+@inject IJSRuntime JS
+
 
 @inject IGuideService GuideService
 
 @if (isAvailable && this.GuideService.IsVisible)
 {
-    <div class="guide">
+    <div class="guide" @ref="guideElement">
 
         <div class="guide-header">
-            <Button class="control" Clicked="CloseAsync"><i class="fa-solid fa-xmark fa-xl"></i></Button>
+            <div>
+                <h1>@this.guideContent.Title</h1>
+            </div><Button class="control" Clicked="CloseAsync"><i class="fa-solid fa-xmark fa-xl"></i></Button>
         </div>
 
         <div class="guide-content">
-            @((MarkupString)(this.guideContent))
+            @((MarkupString)(this.guideContent.Content))
         </div>
 
 
         <div class="guide-footer actions">
-            <Button class="control" Clicked="DoNotShowAgainAsync" Text="Do not show again."><Icon><i class="fa-solid fa-xmark"></i></Icon></Button>
+            <Button class="control" Clicked="DoNotShowAgainAsync" Text="Do not show again.">
+                <Icon><i class="fa-solid fa-xmark"></i></Icon>
+            </Button>
         </div>
     </div>
 }
@@ -29,19 +36,49 @@
 
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
     private bool isAvailable = false;
-    private string guideContent = "<p>Loading...</p>";
+    private GuideContentRecord guideContent = new("Loading", "<p>Loading...</p>");
+    private IJSObjectReference? jsModule;
+    private ElementReference guideElement;
+    private DotNetObjectReference<Guide>? dotNetObjectReference = null;
+    
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-
-        this.guideContent = await GuideService.GetGuideContentAsync("introduction", CancellationToken.None);
-        this.GuideService.RegisterGuide(this);
-        await this.GuideService.RefreshAsync();
+        await ReloadAsync("welcome");
     }
 
-    public void Dispose()
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            this.jsModule = await JS.InvokeAsync<IJSObjectReference>("import",
+            "./_content/Webefinity.Module.Guides/Components/Guide.razor.js");
+        }
+
+        if (this.jsModule is not null)
+        {
+            dotNetObjectReference ??= DotNetObjectReference.Create(this);
+            await this.jsModule.InvokeVoidAsync("adjustAnchors", guideElement, dotNetObjectReference);
+        }
+    }
+
+    [JSInvokable]
+    public async Task VisitAnchorAsync(string anchor)
+    {
+        Console.WriteLine($"Visiting anchor: {anchor}");
+        await this.ReloadAsync(anchor, CancellationToken.None);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        this.dotNetObjectReference?.Dispose();
+        if (this.jsModule is not null)
+        {
+            await this.jsModule.DisposeAsync();
+            this.jsModule = null;
+        }
+
         this.GuideService.UnregisterGuide(this);
     }
 
@@ -53,8 +90,16 @@
 
     public async Task RefreshAsync()
     {
-        this.isAvailable = await GuideService.IsGuideAvailableAsync(CancellationToken.None) && !await GuideService.IsGuideHiddenAsync(CancellationToken.None);
+        this.isAvailable = await GuideService.IsGuideAvailableAsync(CancellationToken.None) && !await
+        GuideService.IsGuideHiddenAsync(CancellationToken.None);
         await InvokeAsync(StateHasChanged);
+    }
+
+    public async Task ReloadAsync(string guide, CancellationToken cancellationToken = default)
+    {
+        Console.WriteLine($"Reloading {guide} Guide");
+        this.guideContent = await GuideService.GetGuideContentAsync(guide, cancellationToken);
+        await RefreshAsync();
     }
 
     private async Task DoNotShowAgainAsync()

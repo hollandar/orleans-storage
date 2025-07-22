@@ -14,6 +14,7 @@
   <ItemGroup>
     		<ProjectReference Include="..\..\webefinity-cadence\Cadence.UI\Cadence.UI.csproj" />
     		<ProjectReference Include="..\Webefinity.Module.Guides.Abstractions\Webefinity.Module.Guides.Abstractions.csproj" />
+    		<ProjectReference Include="..\Webefinity.Module.Frontmatter\Webefinity.Module.Frontmatter.csproj" />
   </ItemGroup>
 
   <ItemGroup>
