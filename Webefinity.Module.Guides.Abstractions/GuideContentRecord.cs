@@ -1,3 +1,3 @@
 namespace Webefinity.Module.Guides.Abstractions;
 
-public record GuideContentRecord(string Title, string Content);
+public record GuideContentRecord(string Name, string Title, string Content);

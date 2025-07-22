@@ -12,10 +12,11 @@ public interface IGuideService
     Task<GuideContentRecord> GetGuideContentAsync(string guideName, CancellationToken cancellationToken);
     void RegisterGuide(Guide guideInstance);
     void UnregisterGuide(Guide guideInstance);
-    Task ToggleVisibilityAsync();
+    Task SetVisibilityAsync(bool? visible = null);
     Task<bool> IsGuideAvailableAsync(CancellationToken cancellationToken);
     Task<bool> IsGuideHiddenAsync(CancellationToken cancellationToken);
     Task SetIsGuideHiddenAsync(bool hidden, CancellationToken cancellationToken);
     Task RefreshAsync();
-
+    Task ShowGuideAsync(string guideName, CancellationToken cancellationToken);
+    Task TransitionGuideAsync(string guideName, CancellationToken cancellationToken = default);
 }

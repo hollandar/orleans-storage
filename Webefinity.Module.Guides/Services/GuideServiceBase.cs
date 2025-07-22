@@ -1,5 +1,6 @@
 using System;
 using System.Net.Http.Json;
+using System.Security.Cryptography.X509Certificates;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 using Webefinity.Module.Guides.Abstractions;
@@ -11,6 +12,7 @@ public abstract class GuideServiceBase
     protected abstract HttpClient HttpClient { get; }
     protected readonly IGuideAvailable? guideAvailableService;
     private bool isVisible;
+    private bool? overrideHidden;
     private HashSet<Components.Guide> registeredGuides = new HashSet<Components.Guide>();
     private GuideIndex? index;
 
@@ -46,7 +48,7 @@ public abstract class GuideServiceBase
         var response = await HttpClient.GetAsync($"guide/{guide.Md}", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
-            return new(guide.Title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
+            return new(guideName, guide.Title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
         }
 
         return await LoadErrorGuideAsync($"Could not load {guideName}", cancellationToken);
@@ -57,7 +59,7 @@ public abstract class GuideServiceBase
         var response = await this.HttpClient.GetAsync("guide/notfound.md", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
-            return new(title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
+            return new("notfound", title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
         }
 
         throw new Exception("Not found guide 'notfound.md' is missing.");
@@ -68,7 +70,7 @@ public abstract class GuideServiceBase
         var response = await this.HttpClient.GetAsync("guide/error.md", cancellationToken);
         if (response.IsSuccessStatusCode)
         {
-            return new(title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
+            return new("error", title, Markdig.Markdown.ToHtml(await response.Content.ReadAsStringAsync(cancellationToken)));
         }
 
         throw new Exception("Error guide 'error.md' is missing.");
@@ -86,23 +88,28 @@ public abstract class GuideServiceBase
         }
     }
 
-    public async Task ToggleVisibilityAsync()
+    public async Task SetVisibilityAsync(bool? value = null)
     {
-        isVisible = !isVisible;
+        isVisible = value ?? !isVisible;
         if (isVisible)
         {
             await RefreshAsync();
         }
     }
 
-    public Task<bool> IsGuideHiddenAsync(CancellationToken cancellationToken)
+    public async Task<bool> IsGuideHiddenAsync(CancellationToken cancellationToken)
     {
-        if (guideAvailableService is null)
+        if (overrideHidden.HasValue)
         {
-            return Task.FromResult(false);
+            return overrideHidden.Value;
         }
 
-        return guideAvailableService.IsGuideHiddenAsync(cancellationToken);
+        if (guideAvailableService is null)
+        {
+            return false;
+        }
+
+        return  await guideAvailableService.IsGuideHiddenAsync(cancellationToken);
     }
 
     public Task SetIsGuideHiddenAsync(bool hidden, CancellationToken cancellationToken)
@@ -112,6 +119,7 @@ public abstract class GuideServiceBase
             return Task.CompletedTask;
         }
 
+        overrideHidden = null;
         return guideAvailableService.SetGuideHiddenAsync(hidden, cancellationToken);
     }
 
@@ -140,5 +148,32 @@ public abstract class GuideServiceBase
         {
             await guide.ReloadAsync(guideName, cancellationToken);
         }
+    }
+
+    public async Task TransitionGuideAsync(string guideName, CancellationToken cancellationToken = default)
+    {
+        if (overrideHidden.HasValue && overrideHidden.Value)
+        {
+            return;
+        }
+
+        if (!isVisible)
+        {
+            return;
+        }
+
+        if (!await IsGuideAvailableAsync(cancellationToken))
+        {
+            return;
+        }
+
+        await ReloadAsync(guideName, cancellationToken);
+    }
+
+    public async Task ShowGuideAsync(string guideName, CancellationToken cancellationToken = default)
+    {
+        await ReloadAsync(guideName, cancellationToken);
+        overrideHidden = false;
+        await SetVisibilityAsync(true);
     }
 }

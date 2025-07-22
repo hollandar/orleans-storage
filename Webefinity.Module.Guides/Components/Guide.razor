@@ -9,7 +9,7 @@
 
 @inject IGuideService GuideService
 
-@if (isAvailable && this.GuideService.IsVisible)
+@if (isAvailable && this.GuideService.IsVisible && guideContent is not null)
 {
     <div class="guide" @ref="guideElement">
 
@@ -36,16 +36,16 @@
 
     [Parameter] public RenderFragment ChildContent { get; set; } = default!;
     private bool isAvailable = false;
-    private GuideContentRecord guideContent = new("Loading", "<p>Loading...</p>");
+    private GuideContentRecord? guideContent;
     private IJSObjectReference? jsModule;
-    private ElementReference guideElement;
+    private ElementReference? guideElement;
     private DotNetObjectReference<Guide>? dotNetObjectReference = null;
-    
+
 
     protected override async Task OnInitializedAsync()
     {
         await base.OnInitializedAsync();
-        await ReloadAsync("welcome");
+        this.GuideService.RegisterGuide(this);
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -56,7 +56,7 @@
             "./_content/Webefinity.Module.Guides/Components/Guide.razor.js");
         }
 
-        if (this.jsModule is not null)
+        if (this.jsModule is not null && this.guideElement is not null)
         {
             dotNetObjectReference ??= DotNetObjectReference.Create(this);
             await this.jsModule.InvokeVoidAsync("adjustAnchors", guideElement, dotNetObjectReference);
@@ -72,7 +72,12 @@
 
     public async ValueTask DisposeAsync()
     {
-        this.dotNetObjectReference?.Dispose();
+        if (this.dotNetObjectReference is not null)
+        {
+            this.dotNetObjectReference?.Dispose();
+            this.dotNetObjectReference = null;
+        }
+
         if (this.jsModule is not null)
         {
             await this.jsModule.DisposeAsync();
@@ -82,23 +87,30 @@
         this.GuideService.UnregisterGuide(this);
     }
 
-    private Task CloseAsync()
+    private async Task CloseAsync()
     {
-        this.GuideService.ToggleVisibilityAsync();
-        return Task.CompletedTask;
+        await this.GuideService.SetVisibilityAsync(false);
+        if (this.jsModule is not null) {
+            await this.jsModule.InvokeVoidAsync("windowResize");
+        }
     }
 
     public async Task RefreshAsync()
     {
         this.isAvailable = await GuideService.IsGuideAvailableAsync(CancellationToken.None) && !await
         GuideService.IsGuideHiddenAsync(CancellationToken.None);
+        if (this.jsModule is not null) {
+            await this.jsModule.InvokeVoidAsync("windowResize");
+        }
         await InvokeAsync(StateHasChanged);
     }
 
     public async Task ReloadAsync(string guide, CancellationToken cancellationToken = default)
     {
         Console.WriteLine($"Reloading {guide} Guide");
-        this.guideContent = await GuideService.GetGuideContentAsync(guide, cancellationToken);
+        if (this.guideContent?.Name != guide) {
+            this.guideContent = await GuideService.GetGuideContentAsync(guide, cancellationToken);
+        }
         await RefreshAsync();
     }
 
