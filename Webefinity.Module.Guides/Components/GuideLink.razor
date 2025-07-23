@@ -1,0 +1,31 @@
+﻿@using Webefinity.Module.Guides.Services;
+@inject IGuideService GuideService
+
+<div class="guide-link flex-between-center">
+    <div class="guide-link-content">
+        @ChildContent
+    </div>
+    <div class="guide-link-link">
+        @if (RendererInfo.IsInteractive)
+        {
+            <Button class="secondary" Clicked="ShowGuideAsync" Text="Guide">
+                <Icon><i class="fa-solid fa-question"></i></Icon>
+            </Button>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    [Parameter, EditorRequired] public string GuideName { get; set; } = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await this.GuideService.TransitionGuideAsync(this.GuideName, CancellationToken.None);
+    }
+
+    private async Task ShowGuideAsync() {
+        await this.GuideService.ShowGuideAsync(this.GuideName, CancellationToken.None);
+    }
+}

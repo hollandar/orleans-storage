@@ -80,8 +80,14 @@
 
         if (this.jsModule is not null)
         {
+            try {
             await this.jsModule.DisposeAsync();
             this.jsModule = null;
+            } 
+            catch (JSDisconnectedException)
+            {
+                // Not necessary to handle this, as the runtime disconnected.
+            }
         }
 
         this.GuideService.UnregisterGuide(this);
@@ -107,7 +113,6 @@
 
     public async Task ReloadAsync(string guide, CancellationToken cancellationToken = default)
     {
-        Console.WriteLine($"Reloading {guide} Guide");
         if (this.guideContent?.Name != guide) {
             this.guideContent = await GuideService.GetGuideContentAsync(guide, cancellationToken);
         }
