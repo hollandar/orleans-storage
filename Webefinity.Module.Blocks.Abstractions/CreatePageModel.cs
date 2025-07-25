@@ -4,7 +4,7 @@ namespace Webefinity.Module.Blocks.Abstractions;
 
 public class CreatePageModel
 {
-    public string PageName { get; set; }
+    public string PageName { get; set; } = string.Empty;
     public string PageTitle { get; set; } = string.Empty;
 }
 

@@ -5,11 +5,13 @@
 @inject HttpClient httpClient
 @inject IFileBrowserService FileBrowserService
 
-<h2>Upload a file</h2>
 
 <div class="panel">
+    <h2>Upload a file</h2>
+    <div class="stack horizontal between gap-2">
     <InputFile id="imageRebuildInput" OnChange="SetUploadFile" accept="*" />
     <Button Class="primary" Clicked="UploadFile" disabled="@(!uploadAvailable)">Upload</Button>
+    </div>
     @if (errorMessage is not null)
     {
         <p class="text-danger">@errorMessage</p>
@@ -17,13 +19,23 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
     [Parameter] public EventCallback<string> OnFileUploaded { get; set; } = default!;
 
 
     IBrowserFile? uploadFile = null;
     bool uploadAvailable = false;
     string? errorMessage = null;
+
+    protected override void OnParametersSet()
+    {
+        if (KC is null)
+        {
+            throw new InvalidOperationException("KeyCollection must be set before rendering.");
+        }
+
+        base.OnParametersSet();
+    }
 
     public Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)
     {

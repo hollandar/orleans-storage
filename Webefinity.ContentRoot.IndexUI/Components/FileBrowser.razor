@@ -44,7 +44,7 @@
             </ul>
 
             <div class="actions">
-                <a class="button" target="_blank" href="@($"icr/{KC.Key}/{KC.Collection}/{selectedFile.FileName}")" title="@($"Download {selectedFile.FileName}")"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Download</span></a>
+                <a class="button" target="_blank" href="@($"icr/{KC!.Key}/{KC.Collection}/{selectedFile.FileName}")" title="@($"Download {selectedFile.FileName}")"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Download</span></a>
                 <Button Clicked="DeleteFileAsync"><i class="fa-solid fa-trash"></i><span>Delete</span></Button>
             </div>
 
@@ -55,10 +55,20 @@
 
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = "/";
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
 
     private Repeater<FileMetadataModel>? fileRepeater = null;
     private FileMetadataModel? selectedFile = null;
+
+    protected override void OnParametersSet()
+    {
+        if (KC is null)
+        {
+            throw new InvalidOperationException("KeyCollection must be set before rendering.");
+        }
+
+        base.OnParametersSet();
+    }
 
     protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
     {

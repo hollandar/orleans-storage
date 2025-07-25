@@ -50,25 +50,26 @@ public class BlocksDataService : IBlocksDataProvider
 
     public Task<PageModel> GetPageModelAsync(string name, CancellationToken ct)
     {
-        var page = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).FirstOrDefault();
+        var lowerName = name.ToLower() ?? string.Empty;
+        var page = dbContextChild.Pages.Where(r => r.Name.ToLower() == lowerName).FirstOrDefault();
         if (page is null) throw new ArgumentException($"Page {name} not found", nameof(name));
 
         dbContextChild.Pages.Entry(page).Collection(r => r.Blocks).Load();
         return Task.FromResult(PageMapper.Map(page));
     }
 
-    public Task<PageExistsModel> PageExistsAsync(string name, CancellationToken ct)
+    public Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct)
     {
         var lowerName = name.ToLower();
-        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name });
+        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name, r.State });
         var pageExists = pages.Any();
         if (!pageExists)
         {
-            return Task.FromResult(PageExistsModel.DoesNotExist);
+            return Task.FromResult(PageOutlineModel.DoesNotExist);
         }
         var page = pages.Single();
 
-        return Task.FromResult(new PageExistsModel(pageExists, page.Id, page.Title, page.Name));
+        return Task.FromResult(new PageOutlineModel(pageExists, page.Id, page.Title, page.Name, page.State));
     }
 
     public async Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct)
@@ -80,9 +81,21 @@ public class BlocksDataService : IBlocksDataProvider
         }
 
         block.Data = jsonDocument;
+
+        MarkBlockPageAsModified(block.PageId);
+
         await dbContextChild.SaveChangesAsync(ct);
 
         return true;
+    }
+
+    private void MarkBlockPageAsModified(Guid pageId)
+    {
+        var page = dbContextChild.Pages.Find(pageId);
+        if (page is null) return;
+
+        page.UpdatedAt = DateTimeOffset.UtcNow;
+        dbContextChild.Pages.Update(page);
     }
 
     public async Task<bool> DeleteBlockAsync(Guid blockId, CancellationToken ct)
@@ -99,6 +112,9 @@ public class BlocksDataService : IBlocksDataProvider
         }
 
         this.dbContextChild.Blocks.Remove(block);
+
+        MarkBlockPageAsModified(block.PageId);
+
         await this.dbContextChild.SaveChangesAsync();
 
         return true;
@@ -113,7 +129,7 @@ public class BlocksDataService : IBlocksDataProvider
             return false;
         }
 
-        var page = new Page { Id = Guid.CreateVersion7(), Name = createPageModel.PageName, Title = createPageModel.PageTitle };
+        var page = new Page { Id = Guid.CreateVersion7(), Name = createPageModel.PageName, Title = createPageModel.PageTitle, CreatedAt = DateTimeOffset.UtcNow, UpdatedAt = DateTimeOffset.UtcNow, State = PublishState.Draft };
         this.dbContextChild.Pages.Add(page);
 
         await this.dbContextChild.SaveChangesAsync();
@@ -183,6 +199,8 @@ public class BlocksDataService : IBlocksDataProvider
         movingUp.Sequence = movingDownSequence;
         movingDown.Sequence = movingUpSequence;
 
+        MarkBlockPageAsModified(blockData.PageId);
+
         await this.dbContextChild.SaveChangesAsync(ct);
 
         return true;
@@ -198,6 +216,28 @@ public class BlocksDataService : IBlocksDataProvider
 
         page.Name = settingsModel.Name;
         page.Title = settingsModel.Title;
+        page.State = settingsModel.State;
+        page.UpdatedAt = DateTimeOffset.UtcNow;
         await this.dbContextChild.SaveChangesAsync(ct);
+    }
+
+    public async Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct)
+    {
+        var page = this.dbContextChild.Pages.Find(pageId);
+        if (page is null)
+        {
+            throw new ArgumentException($"Page with ID {pageId} not found", nameof(pageId));
+        }
+
+        if (!page.State.GetAllowedTransitions().Contains(publishState))
+        {
+            throw new InvalidOperationException($"Cannot transition from {page.State.ToDisplayString()} to {publishState.ToDisplayString()}");
+        }
+
+        page.State = publishState;
+        page.UpdatedAt = DateTimeOffset.UtcNow;
+        await this.dbContextChild.SaveChangesAsync(ct);
+
+        return page.State;
     }
 }
