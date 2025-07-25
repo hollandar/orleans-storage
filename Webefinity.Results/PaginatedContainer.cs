@@ -57,12 +57,13 @@ public class PageRequestWithId:PageRequest
     public string Id { get; set; } = string.Empty;
 }
 
-public class PageRequestWithId<TIdType>:PageRequest
+public class PageRequestWithId<TIdType> : PageRequest
 {
     public PageRequestWithId() : base() { }
     public PageRequestWithId(TIdType id, int skip, int take, string? search = null) : base(skip, take, search)
-    { 
+    {
         Id = id;
     }
     public TIdType Id { get; set; } = default!;
+    
 }
