@@ -152,10 +152,7 @@ public abstract class GuideServiceBase
 
     public async Task TransitionGuideAsync(string guideName, CancellationToken cancellationToken = default)
     {
-        if (overrideHidden.HasValue && overrideHidden.Value)
-        {
-            return;
-        }
+        overrideHidden = null;
 
         if (!isVisible)
         {
@@ -170,10 +167,16 @@ public abstract class GuideServiceBase
         await ReloadAsync(guideName, cancellationToken);
     }
 
+    public async Task HideGuideAsync(CancellationToken cancellationToken = default)
+    {
+        overrideHidden = true;
+        await RefreshAsync();
+    }
+
     public async Task ShowGuideAsync(string guideName, CancellationToken cancellationToken = default)
     {
-        await ReloadAsync(guideName, cancellationToken);
         overrideHidden = false;
         await SetVisibilityAsync(true);
+        await ReloadAsync(guideName, cancellationToken);
     }
 }

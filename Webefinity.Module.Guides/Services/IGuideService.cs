@@ -19,4 +19,5 @@ public interface IGuideService
     Task RefreshAsync();
     Task ShowGuideAsync(string guideName, CancellationToken cancellationToken);
     Task TransitionGuideAsync(string guideName, CancellationToken cancellationToken = default);
+    Task HideGuideAsync(CancellationToken cancellationToken = default);
 }
