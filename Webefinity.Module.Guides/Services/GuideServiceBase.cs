@@ -152,7 +152,10 @@ public abstract class GuideServiceBase
 
     public async Task TransitionGuideAsync(string guideName, CancellationToken cancellationToken = default)
     {
-        overrideHidden = null;
+        if (overrideHidden.HasValue && overrideHidden.Value)
+        {
+            return;
+        }
 
         if (!isVisible)
         {
