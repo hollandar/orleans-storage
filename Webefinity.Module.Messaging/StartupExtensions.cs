@@ -14,6 +14,11 @@ public static class StartupExtensions
         services.TryAddScoped<IMessagingActive, AlwaysMessagingActiveService>();
         services.AddScoped<ISenderTransportService, SenderTransportService>();
         services.AddScoped<IMessengerService, MessengerService>();
+        return services;
+    }
+    
+    public static IServiceCollection AddMessagingHost(this IServiceCollection services)
+    {
         services.AddHostedService<MessagingSenderService>();
         return services;
     }

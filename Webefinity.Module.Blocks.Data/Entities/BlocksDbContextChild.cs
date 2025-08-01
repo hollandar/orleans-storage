@@ -17,10 +17,12 @@ public class BlocksDbContextChild<TDbContext> : IBlocksDbContextChild where TDbC
     public BlocksDbContextChild(TDbContext dbContext)
     {
         this.dbContext = dbContext;
+        this.Blocks = this.dbContext.Set<Block>();
+        this.Pages = this.dbContext.Set<Page>();
     }
 
-    public DbSet<Block> Blocks => dbContext.Set<Block>();
-    public DbSet<Page> Pages => dbContext.Set<Page>();
+    public DbSet<Block> Blocks { get; private set; }
+    public DbSet<Page> Pages { get; private set; }
 
     public async Task<int> SaveChangesAsync(CancellationToken ct = default!) { return await dbContext.SaveChangesAsync(ct); }
 }
