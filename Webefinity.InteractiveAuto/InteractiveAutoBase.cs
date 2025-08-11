@@ -45,7 +45,7 @@ public abstract class InteractiveAutoBase<TState> : ComponentBase, IDisposable w
         await this.InvokeAsync(StateHasChanged);
     }
 
-    public void Dispose()
+    public virtual void Dispose()
     {
         this.componentStateRegistration?.Dispose();
     }

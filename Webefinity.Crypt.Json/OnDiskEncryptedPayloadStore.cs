@@ -88,6 +88,7 @@ namespace Webefinity.Crypt.Json
             }
         }
 
+#pragma warning disable CS1998 // Async method lacks 'await' operators and will run synchronously
         public async IAsyncEnumerable<string> EnumerateKeysAsync()
         {
             var payloadPath = this.path;
@@ -106,6 +107,7 @@ namespace Webefinity.Crypt.Json
                 }
             }
         }
+#pragma warning restore CS1998 // Async method lacks 'await' operators and will run synchronously
 
         public Task<bool> ContainsKeyAsync(string key)
         {

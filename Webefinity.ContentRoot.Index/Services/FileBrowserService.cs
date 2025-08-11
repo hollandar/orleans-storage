@@ -53,7 +53,7 @@ public class FileBrowserService : IFileBrowserService
         var indexedContentRoot = GetIndexedContentRoot(key);
         var collectionDef = new CollectionDef(collection);
         var fileExists = await indexedContentRoot.FileExistsAsync(collectionDef, filenameOrId);
-        if (fileExists.Value)
+        if (fileExists?.Value?.Exists ?? false)
         {
             var tuple = await indexedContentRoot.LoadReadStreamAsync(collectionDef, filenameOrId);
             var readStream = tuple.Item1;

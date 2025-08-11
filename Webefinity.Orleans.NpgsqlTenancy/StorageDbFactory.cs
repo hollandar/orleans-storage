@@ -15,7 +15,6 @@ public class StorageDbFactory<TDbContext> where TDbContext : DbContext
     static SemaphoreSlim creationSemaphore = new SemaphoreSlim(1);
     private readonly IServiceProvider serviceProvider;
     private readonly IConfiguration configuration;
-    private readonly IOptions<TenancyStorageOptions> tenancyDbOptions;
 
     public StorageDbFactory(IServiceProvider serviceProvider, IConfiguration configuration)
     {

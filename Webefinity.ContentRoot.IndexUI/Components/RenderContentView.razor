@@ -5,10 +5,10 @@
 
 @switch (ContentType)
 {
-    case var ct when ct.StartsWith("image/"):
+    case var ct when ct?.StartsWith("image/") ?? false:
         {
             <div class="card">
-                <img src="@($"icr/{KC.Key}/{KC.Collection}/{File.FileName}")" />
+                <img src="@($"icr/{KC!.Key}/{KC.Collection}/{File.FileName}")" />
             </div>
         }
         break;
@@ -27,8 +27,8 @@
 }
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
-    [Parameter] public FileMetadataModel File { get; set; }
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
+    [Parameter, EditorRequired] public FileMetadataModel File { get; set; } = default!;
 
     static HashSet<string> loadableContentTypes = ["text/x-markdown"];
     protected bool reload = false;
@@ -50,6 +50,11 @@
 
     protected override void OnParametersSet()
     {
+        if (KC is null)
+        {
+            throw new InvalidOperationException("KeyCollection must be set before rendering.");
+        }
+
         reload = true;
         StateHasChanged();
 
@@ -60,7 +65,7 @@
     {
         var result = await FileBrowserService.LoadFileContentAsync(KC.Collection, this.File.FileName, KC.Key);
 
-        if (result.Success)
+        if (result.Success && result.Value is not null)
         {
             using var reader = new StreamReader(result.Value);
             return await reader.ReadToEndAsync();

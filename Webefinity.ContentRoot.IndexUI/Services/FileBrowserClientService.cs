@@ -42,13 +42,13 @@ public class FileBrowserClientService : IFileBrowserService
         {
             // Handle success
             var content = await responseMessage.Content.ReadFromJsonAsync<PaginatedContainer<FileMetadataModel>>();
-            return content;
+            if (content is not null)
+            {
+                return content;
+            }
         }
-        else
-        {
-            // Handle failure
-            return PaginatedContainer<FileMetadataModel>.Empty;
-        }
+        // Handle failure
+        return PaginatedContainer<FileMetadataModel>.Empty;
     }
 
     public async Task<ValueResult<Stream>> LoadFileContentAsync(string collection, string filenameOrId, string? key)

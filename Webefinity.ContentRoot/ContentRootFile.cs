@@ -178,7 +178,7 @@ public class ContentRootFile : IContentRootLibrary
     {
         var path = Path.Combine(contentRootPath, collection.Collection, file);
         var directoryName = Path.GetDirectoryName(path);
-        if (!Directory.Exists(directoryName))
+        if (directoryName is not null && !Directory.Exists(directoryName))
             Directory.CreateDirectory(directoryName);
 
         return path;

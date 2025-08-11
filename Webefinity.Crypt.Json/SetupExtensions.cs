@@ -16,7 +16,7 @@ public static class SetupExtensions
         {
             services.AddSingleton<IEncryptedKeyValueService>((sp) => {
                 var options = Microsoft.Extensions.Options.Options.Create(new EncryptedOnDiskOptions());
-                var configuration = sp.GetService<IConfiguration>();
+                var configuration = sp.GetRequiredService<IConfiguration>();
                 if (configurationSection is null)
                 {
                     options = sp.GetRequiredService<IOptions<EncryptedOnDiskOptions>>();
@@ -42,7 +42,7 @@ public static class SetupExtensions
         {
             services.AddKeyedSingleton<IEncryptedKeyValueService>(key, (sp, _) => {
                 var options = Microsoft.Extensions.Options.Options.Create(new EncryptedOnDiskOptions());
-                var configuration = sp.GetService<IConfiguration>();
+                var configuration = sp.GetRequiredService<IConfiguration>();
                 if (configurationSection is null)
                 {
                     options = sp.GetRequiredService<IOptions<EncryptedOnDiskOptions>>();

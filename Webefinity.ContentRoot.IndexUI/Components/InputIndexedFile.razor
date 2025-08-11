@@ -44,7 +44,7 @@
 </Dialog>
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection? KC { get; set; } = null;
+    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
     Dialog? browseDialog = default!;
     private Repeater<FileMetadataModel>? fileRepeater = null;
 

@@ -8,9 +8,9 @@ namespace Webefinity.Extensions.Work;
 
 public class Triplet<TKey, TData>
 {
-    public TKey Key { get; set; }
+    public TKey Key { get; set; } = default!;
     public string Value { get; init; } = string.Empty;
-    public TData Data { get; init; } = default(TData);
+    public TData Data { get; init; } = default!;
 
     public Triplet(TKey key, string value, TData data)
     {
@@ -20,7 +20,7 @@ public class Triplet<TKey, TData>
     }
 
     public override string ToString() => Value;
-    public override int GetHashCode() => Key.GetHashCode();
+    public override int GetHashCode() => Key?.GetHashCode() ?? 0;
     public override bool Equals(object? obj)
     {
         return obj switch

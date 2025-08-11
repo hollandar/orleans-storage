@@ -14,6 +14,16 @@ public static class StartupExtensions
         services.TryAddScoped<IMessagingActive, AlwaysMessagingActiveService>();
         services.AddScoped<ISenderTransportService, SenderTransportService>();
         services.AddScoped<IMessengerService, MessengerService>();
+        return services;
+    }
+    
+    /// <summary>
+    /// Messaging host is optional, if it is not added you should arrange for SenderTransportService to be called manually, periodically.
+    /// </summary>
+    /// <param name="services"></param>
+    /// <returns></returns>
+    public static IServiceCollection AddMessagingHost(this IServiceCollection services)
+    {
         services.AddHostedService<MessagingSenderService>();
         return services;
     }

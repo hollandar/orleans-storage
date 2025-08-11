@@ -1,0 +1,14 @@
+﻿@using Webefinity.Module.Guides.Services
+@inject IGuideService GuideService
+
+@ChildContent
+
+@code {
+
+    [Parameter] public RenderFragment ChildContent { get; set; } = default!;
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        await this.GuideService.HideGuideAsync(CancellationToken.None);
+    }
+}

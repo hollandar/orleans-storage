@@ -1,0 +1,21 @@
+﻿<div class="publish-state-display">
+    <span class="@GetStateClass()">@GetStateText()</span>
+</div>
+
+@code {
+    [Parameter] public PublishState State { get; set; } = PublishState.Draft;
+
+    private string GetStateClass()
+    {
+        return State switch
+        {
+            PublishState.Draft => "badge badge-blue",
+            PublishState.Published => "badge badge-green",
+            PublishState.Archived => "badge badge-red",
+            _ => "badge badge-gray"
+        };
+    }
+
+    private string GetStateText() => State.ToDisplayString();
+    
+}
