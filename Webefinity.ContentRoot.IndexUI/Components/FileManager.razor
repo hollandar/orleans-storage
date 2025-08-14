@@ -35,7 +35,6 @@ else
 <FileUpload OnFileUploaded="OnFileUploaded" KeyCollection="this.keyCollection" />
 
 @code {
-    [Parameter, SupplyParameterFromQuery(Name = "r")] public string ReturnUrl { get; set; } = "/";
     FileBrowser fileBrowser = default!;
     KeysAndPolicyModel keysAndPolicyModel = default!;
     KeyCollection keyCollection = default!;
