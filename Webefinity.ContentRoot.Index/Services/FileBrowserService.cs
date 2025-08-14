@@ -1,12 +1,15 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
+using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Webefinity.ContentRoot.Abstractions;
+using Webefinity.ContentRoot.Index.Interfaces;
 using Webefinity.ContentRoot.Index.Models;
 using Webefinity.ContentRoot.IndexUI.Interfaces;
+using Webefinity.ContentRoot.IndexUI.Models;
 using Webefinity.Results;
 
 namespace Webefinity.ContentRoot.Index.Services;
@@ -14,10 +17,25 @@ namespace Webefinity.ContentRoot.Index.Services;
 public class FileBrowserService : IFileBrowserService
 {
     private readonly IServiceProvider serviceProvider;
+    private readonly IKeyCollectionsService keyCollectionsService;
+    private readonly IFileBrowserPolicyService fileBrowserPolicyService;
 
     public FileBrowserService(IServiceProvider serviceProvider)
     {
         this.serviceProvider = serviceProvider;
+        this.keyCollectionsService = serviceProvider.GetRequiredService<IKeyCollectionsService>();
+        this.fileBrowserPolicyService = serviceProvider.GetRequiredService<IFileBrowserPolicyService>();
+    }
+
+    public Task<KeysAndPolicyModel> GetKeysAndPolicyAsync()
+    {
+        var keyCollections = keyCollectionsService.GetKeyCollections();
+        var adminPolicy = fileBrowserPolicyService.GetAdminPolicy();
+        return Task.FromResult(new KeysAndPolicyModel
+        {
+            KeyCollections = keyCollections,
+            AdminPolicy = adminPolicy
+        });
     }
 
     private IIndexedContentRootLibrary GetIndexedContentRoot(string? key)

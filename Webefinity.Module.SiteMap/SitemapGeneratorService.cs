@@ -26,7 +26,7 @@ public class SitemapGeneratorService
             var sitemapElement = xmlDoc.CreateElement("sitemap");
 
             var locElement = xmlDoc.CreateElement("loc");
-            locElement.InnerText = $"{baseUrl}/{section.Name}/sitemap.xml";
+            locElement.InnerText = $"{baseUrl.TrimEnd('/')}/{section.Name}/sitemap.xml";
             sitemapElement.AppendChild(locElement);
 
             var lastModifiedElement = xmlDoc.CreateElement("lastmod");
@@ -58,7 +58,7 @@ public class SitemapGeneratorService
             var urlElement = xmlDoc.CreateElement("url");
 
             var locElement = xmlDoc.CreateElement("loc");
-            locElement.InnerText = $"{baseUrl}/{node.Url}";
+            locElement.InnerText = $"{baseUrl.TrimEnd('/')}/{node.Url.TrimStart('/')}";
             urlElement.AppendChild(locElement);
 
             var lastModifiedElement = xmlDoc.CreateElement("lastmod");

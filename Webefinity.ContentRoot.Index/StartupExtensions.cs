@@ -10,6 +10,11 @@ using Webefinity.ContentRoot.Index.Data;
 using Webefinity.ContentRoot.Index.Services;
 using Webefinity.ContentRoot.Index.Handlers;
 using Webefinity.ContentRoot.IndexUI.Interfaces;
+using Webefinity.ContentRoot.Index.Interfaces;
+using Webefinity.ContentRoot.IndexUI.Services;
+using Webefinity.ContentRoot.IndexUI;
+using Webefinity.ContentRoot.IndexUI.Components;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Webefinity.ContentRoot.Index;
 
@@ -46,15 +51,17 @@ public static class StartupExtensions
     {
         if (key is null)
         {
-            services.AddScoped<IIndexedContentRootLibrary>((sp) => { 
+            services.AddScoped<IIndexedContentRootLibrary>((sp) =>
+            {
                 var contentRoot = sp.GetRequiredService<IContentRootLibrary>();
                 var dbContext = sp.GetRequiredService<IFileMetadataDbContext>();
                 return new IndexedContentRootService(contentRoot, dbContext, "Default");
             });
-        } 
+        }
         else
         {
-            services.AddKeyedScoped<IIndexedContentRootLibrary>(key, (sp, k) => {
+            services.AddKeyedScoped<IIndexedContentRootLibrary>(key, (sp, k) =>
+            {
                 var contentRoot = sp.GetRequiredKeyedService<IContentRootLibrary>(key);
                 var dbContext = sp.GetRequiredService<IFileMetadataDbContext>();
                 return new IndexedContentRootService(contentRoot, dbContext, key);
@@ -64,35 +71,50 @@ public static class StartupExtensions
 
     }
 
-    public static void MapIndexedContentUI(this IEndpointRouteBuilder app, 
-        string browserPolicy = "IC_Browser",
-        string adminPolicy = "IC_Admin", 
-        string? key = null)
+    public static void AddFileBrowserService(this IServiceCollection services, string adminPolicy = "IC_Admin", string? browserPolicy = null, params KeyCollection[] keyCollections)
     {
-        var indexedContentRootKey = key;
-        var getListUri = $"/api/icr/{key}/{{collection}}/list/{{search?}}";
-        app.MapGet(getListUri, (IServiceProvider sp, string collection, string? search, [FromQuery] int skip = 0, [FromQuery] int take = 10) =>
-            IndexedContentHandler.GetList(sp, collection, search, skip, take, indexedContentRootKey)
-        ).RequireAuthorization(adminPolicy);
+        services.AddSingleton<IKeyCollectionsService, KeyCollectionService>(provider => new KeyCollectionService(keyCollections));
+        services.AddSingleton<IFileBrowserPolicyService>(provider => new FileBrowserPolicyService(browserPolicy, adminPolicy));
+    }
 
-        var postFileUri = $"/api/icr/{key}/{{collection}}/upload";
-        app.MapPost(postFileUri, (IServiceProvider sp, string collection, [FromBody] Stream content, [FromHeader(Name = "Content-Type")] string contentType, [FromHeader(Name = "X-FileName")] string fileName) =>
-            IndexedContentHandler.PostFile(sp, collection, content, contentType, fileName, indexedContentRootKey)
-        ).RequireAuthorization(adminPolicy);
+    public static void MapIndexedContentUI(this IEndpointRouteBuilder app)
+    {
 
-        var getFileUri = $"/icr/{key}/{{collection}}/{{filename}}";
-        app.MapGet(getFileUri, (IServiceProvider sp, HttpRequest request, HttpResponse response, string collection, string filename) =>
-            IndexedContentHandler.GetFile(sp, request, response, collection, filename, indexedContentRootKey)
-        ).RequireAuthorization(browserPolicy);
+        var policyProvider = app.ServiceProvider.GetRequiredService<IFileBrowserPolicyService>();
 
-        var getFileMetaUri = $"/api/icr/{key}/{{collection}}/meta/{{filenameorid}}";
-        app.MapGet(getFileMetaUri, (IServiceProvider sp, HttpResponse response, string collection, string filenameorid) =>
-            IndexedContentHandler.GetFileMeta(sp, response, collection, filenameorid, indexedContentRootKey)
-        ).RequireAuthorization(adminPolicy);
+        var getListUri = "/api/icr/{key}/{collection}/list/{search?}";
+        app.MapGet(getListUri, (IServiceProvider sp, string key, string collection, string? search, [FromQuery] int skip = 0, [FromQuery] int take = 10) =>
+            IndexedContentHandler.GetList(sp, collection, search, skip, take, key)
+        ).RequireAuthorization(policyProvider.GetAdminPolicy());
 
-        var deleteFileUri = $"/api/icr/{key}/{{collection}}/{{filename}}";
-        app.MapDelete(deleteFileUri, (IServiceProvider sp, string collection, string filename) =>
-            IndexedContentHandler.DeleteFile(sp, collection, filename, indexedContentRootKey)
-        ).RequireAuthorization(adminPolicy);
+        var postFileUri = "/api/icr/{key}/{collection}/upload";
+        app.MapPost(postFileUri, (IServiceProvider sp, string key, string collection, [FromBody] Stream content, [FromHeader(Name = "Content-Type")] string contentType, [FromHeader(Name = "X-FileName")] string fileName) =>
+            IndexedContentHandler.PostFile(sp, collection, content, contentType, fileName, key)
+        ).RequireAuthorization(policyProvider.GetAdminPolicy());
+
+        var getFileUri = "/icr/{key}/{collection}/{filename}";
+        var getFileMap = app.MapGet(getFileUri, (IServiceProvider sp, HttpRequest request, HttpResponse response, string key, string collection, string filename) =>
+            IndexedContentHandler.GetFile(sp, request, response, collection, filename, key)
+        );
+
+        if (policyProvider.GetBrowserPolicy() is not null)
+            getFileMap.RequireAuthorization(policyProvider.GetBrowserPolicy()!);
+
+        var getFileMetaUri = "/api/icr/{key}/{collection}/meta/{filenameorid}";
+        app.MapGet(getFileMetaUri, (IServiceProvider sp, HttpResponse response, string key, string collection, string filenameorid) =>
+            IndexedContentHandler.GetFileMeta(sp, response, collection, filenameorid, key)
+        ).RequireAuthorization(policyProvider.GetAdminPolicy());
+
+        var deleteFileUri = "/api/icr/{key}/{collection}/{filename}";
+        app.MapDelete(deleteFileUri, (IServiceProvider sp, string key, string collection, string filename) =>
+            IndexedContentHandler.DeleteFile(sp, collection, filename, key)
+        ).RequireAuthorization(policyProvider.GetAdminPolicy());
+
+        var getKeysAndPolicyUri = $"/api/icr/keysandpolicy";
+        app.MapGet(getKeysAndPolicyUri, (IServiceProvider sp) =>
+        {
+            var fileBrowserService = sp.GetRequiredService<IFileBrowserService>();
+            return fileBrowserService.GetKeysAndPolicyAsync();
+        }).RequireAuthorization(policyProvider.GetAdminPolicy());
     }
 }

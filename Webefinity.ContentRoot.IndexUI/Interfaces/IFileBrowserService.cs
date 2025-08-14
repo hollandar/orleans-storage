@@ -1,5 +1,6 @@
 ﻿using Webefinity.ContentRoot.Abstractions;
 using Webefinity.ContentRoot.Index.Models;
+using Webefinity.ContentRoot.IndexUI.Models;
 using Webefinity.Results;
 
 namespace Webefinity.ContentRoot.IndexUI.Interfaces;
@@ -11,4 +12,5 @@ public interface IFileBrowserService
     Task<Result> DeleteFileAsync(string collection, string filenameOrId, string? key);
     Task<ValueResult<Stream>> LoadFileContentAsync(string collection, string filenameOrId, string? key);
     Task<Result> UploadFileAsync(string collection, string filename, string contentType, Stream content, string? key);
+    Task<KeysAndPolicyModel> GetKeysAndPolicyAsync();
 }

@@ -44,25 +44,25 @@
             </ul>
 
             <div class="actions">
-                <a class="button" target="_blank" href="@($"icr/{KC!.Key}/{KC.Collection}/{selectedFile.FileName}")" title="@($"Download {selectedFile.FileName}")"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Download</span></a>
+                <a class="button" target="_blank" href="@($"icr/{KeyCollection!.Key}/{KeyCollection.Collection}/{selectedFile.FileName}")" title="@($"Download {selectedFile.FileName}")"><i class="fa-solid fa-arrow-up-right-from-square"></i><span>Download</span></a>
                 <Button Clicked="DeleteFileAsync"><i class="fa-solid fa-trash"></i><span>Delete</span></Button>
             </div>
 
-            <RenderContentView File="selectedFile" />
+            <RenderContentView File="selectedFile" KeyCollection="KeyCollection"/>
         </div>
     }
 </div>
 
 @code {
     [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = "/";
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
+    [Parameter] public KeyCollection KeyCollection { get; set; } = default!;
 
     private Repeater<FileMetadataModel>? fileRepeater = null;
     private FileMetadataModel? selectedFile = null;
 
     protected override void OnParametersSet()
     {
-        if (KC is null)
+        if (KeyCollection is null)
         {
             throw new InvalidOperationException("KeyCollection must be set before rendering.");
         }
@@ -72,13 +72,13 @@
 
     protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
     {
-        var files = await FileBrowserService.ListFiles(KC.Collection, null, args.Skip, args.Take, KC.Key);
+        var files = await FileBrowserService.ListFiles(KeyCollection.Collection, null, args.Skip, args.Take, KeyCollection.Key);
         return new TableRowResult<FileMetadataModel>(files.TotalCount, files.Items);
     }
 
     protected async Task SelectFile(Guid fileId)
     {
-        var result = await FileBrowserService.GetFileMetadataAsync(KC.Collection, fileId.ToString(), KC.Key);
+        var result = await FileBrowserService.GetFileMetadataAsync(KeyCollection.Collection, fileId.ToString(), KeyCollection.Key);
         if (result.Success)
         {
             selectedFile = result.Value;
@@ -96,7 +96,7 @@
     protected async Task DeleteFileAsync()
     {
         ArgumentNullException.ThrowIfNull(this.selectedFile, nameof(this.selectedFile));
-        var result = await this.FileBrowserService.DeleteFileAsync(KC.Collection, this.selectedFile.FileName, KC.Key);
+        var result = await this.FileBrowserService.DeleteFileAsync(KeyCollection.Collection, this.selectedFile.FileName, KeyCollection.Key);
         if (result)
         {
             this.selectedFile = null;
@@ -110,5 +110,12 @@
     {
         if (fileRepeater is not null)
             await fileRepeater.RefreshAsync();
+    }
+
+    public async Task SetKeyCollectionAsync(KeyCollection keyCollection)
+    {
+        this.KeyCollection = keyCollection;
+        await this.InvokeAsync(StateHasChanged);
+        await this.RefreshAsync();
     }
 }

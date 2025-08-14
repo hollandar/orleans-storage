@@ -1,6 +1,7 @@
 ﻿using System.Net.Http.Json;
 using Webefinity.ContentRoot.Index.Models;
 using Webefinity.ContentRoot.IndexUI.Interfaces;
+using Webefinity.ContentRoot.IndexUI.Models;
 using Webefinity.Results;
 
 namespace Webefinity.ContentRoot.IndexUI.Services;
@@ -70,5 +71,20 @@ public class FileBrowserClientService : IFileBrowserService
         {
             return Result.Fail($"Unable to upload file. {response.StatusCode}.");
         }
+    }
+
+    public async Task<KeysAndPolicyModel> GetKeysAndPolicyAsync()
+    {
+        var responseMessage = await httpClient.GetAsync($"api/icr/keysandpolicy");
+        if (responseMessage.IsSuccessStatusCode)
+        {
+            // Handle success
+            var keysAndPolicy = await responseMessage.Content.ReadFromJsonAsync<KeysAndPolicyModel>();
+            ArgumentNullException.ThrowIfNull(keysAndPolicy, nameof(keysAndPolicy));
+
+            return keysAndPolicy;
+        }
+
+        throw new Exception($"Unable to query keys and policy limits.");
     }
 }

@@ -19,7 +19,7 @@
 </div>
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
+    [Parameter] public KeyCollection KeyCollection { get; set; } = default!;
     [Parameter] public EventCallback<string> OnFileUploaded { get; set; } = default!;
 
 
@@ -29,7 +29,7 @@
 
     protected override void OnParametersSet()
     {
-        if (KC is null)
+        if (KeyCollection is null)
         {
             throw new InvalidOperationException("KeyCollection must be set before rendering.");
         }
@@ -51,7 +51,7 @@
         if (uploadFile != null)
         {
             var fileStream = this.uploadFile.OpenReadStream(4096000);
-            var result = await FileBrowserService.UploadFileAsync(KC.Collection, this.uploadFile.Name, this.uploadFile.ContentType, fileStream, KC.Key);
+            var result = await FileBrowserService.UploadFileAsync(KeyCollection.Collection, this.uploadFile.Name, this.uploadFile.ContentType, fileStream, KeyCollection.Key);
             if (result.Success)
             {
                 await OnFileUploaded.InvokeAsync(this.uploadFile.Name);

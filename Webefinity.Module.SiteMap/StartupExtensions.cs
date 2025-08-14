@@ -4,13 +4,25 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Net.Http.Headers;
+using Webefinity.Module.SiteMap.Abstractions;
 
 namespace Webefinity.Module.SiteMap;
 
 public static class StartupExtensions
 {
-    public static IServiceCollection AddSitemapGenerator(this IServiceCollection services)
+    public static IServiceCollection AddSitemapGenerator(this IServiceCollection services, Action<SiteMapConfiguration>? configure = null)
     {
+        if (configure is not null)
+        {
+            var siteMapConfiguration = new SiteMapConfiguration();
+            configure(siteMapConfiguration);
+
+            foreach (var section in siteMapConfiguration.Sections)
+            {
+                services.AddSingleton<ISitemapGenerator>(new AppSitemapGenerator(section));
+            }
+        }
+
         services.AddScoped<SitemapGeneratorService>();
 
         return services;

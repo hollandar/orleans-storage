@@ -3,6 +3,7 @@
 @using System.Diagnostics.CodeAnalysis
 @using Webefinity.ContentRoot.Index.Models
 @using Webefinity.ContentRoot.IndexUI.Interfaces
+@using Webefinity.ContentRoot.IndexUI.Models
 
 @inherits InputBase<string?>
 @inject HttpClient httpClient
@@ -17,6 +18,12 @@
 <Dialog @ref="browseDialog" Modal="true" class="file-dialog narrow">
     <Header>Browse Files</Header>
     <Content>
+        @if (this.keysAndPolicyModel?.KeyCollections.Count() > 1) {
+            <div class="key-collection">
+                <Select TKey="Guid" TValue="String" Options="keyCollectionValues"
+                        SelectedValue="KeyCollection.Id" SelectedValueChanged="KeyCollectionChanged"/>
+            </div>
+        }
         <div class="file-repeater repeater-control repeater-2">
             <Repeater @ref="fileRepeater" ItemsProvider="FileListProvider">
                 <Header>
@@ -29,7 +36,8 @@
                 <Content>
                     <div class="repeater-control-row" @key="context.Id">
                         <div class="file-name">
-                            <button type="button" class="link" @onclick="() => OnFileSelected(context.Item)">@context.Item.FileName</button>
+                            <button type="button" class="link"
+                                @onclick="() => OnFileSelected(context.Item)">@context.Item.FileName</button>
                         </div>
                     </div>
                 </Content>
@@ -44,11 +52,28 @@
 </Dialog>
 
 @code {
-    [CascadingParameter(Name = "KeyCollection")] public KeyCollection KC { get; set; } = default!;
+    public KeyCollection KeyCollection { get; set; } = default!;
     Dialog? browseDialog = default!;
     private Repeater<FileMetadataModel>? fileRepeater = null;
 
-    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string? validationErrorMessage)
+    KeysAndPolicyModel keysAndPolicyModel = default!;
+    List<KeyValuePair<Guid, string>> keyCollectionValues = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.keysAndPolicyModel = await FileBrowserService.GetKeysAndPolicyAsync();
+        if (this.keysAndPolicyModel.KeyCollections.Count() == 0)
+        {
+            throw new InvalidOperationException("No key collections available for the file browser.");
+        }
+        KeyCollection = this.keysAndPolicyModel.KeyCollections.First();
+        this.keyCollectionValues = this.keysAndPolicyModel.KeyCollections
+            .Select(kc => new KeyValuePair<Guid, string>(kc.Id, kc.Collection))
+            .ToList();
+    }
+
+    protected override bool TryParseValueFromString(string? value, out string? result, [NotNullWhen(false)] out string?
+    validationErrorMessage)
     {
         result = value;
         validationErrorMessage = null;
@@ -63,7 +88,7 @@
     protected async Task OnFileSelected(FileMetadataModel fileMetadataModel)
     {
         // Logic to handle file selection
-        this.CurrentValueAsString = $"indexed://{KC.Key}/{KC.Collection}/{fileMetadataModel.FileName}";
+        this.CurrentValueAsString = $"indexed://{KeyCollection.Key}/{KeyCollection.Collection}/{fileMetadataModel.FileName}";
         await browseDialog!.CloseAsync();
     }
 
@@ -74,7 +99,13 @@
 
     protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
     {
-        var files = await FileBrowserService.ListFiles(KC.Collection, null, args.Skip, args.Take, KC.Key);
+        var files = await FileBrowserService.ListFiles(KeyCollection.Collection, null, args.Skip, args.Take, KeyCollection.Key);
         return new TableRowResult<FileMetadataModel>(files.TotalCount, files.Items);
+    }
+
+    protected async Task KeyCollectionChanged(Guid key)
+    {
+        this.KeyCollection = this.keysAndPolicyModel.KeyCollections.FirstOrDefault(kc => kc.Id == key) ?? this.KeyCollection;
+        await fileRepeater!.RefreshAsync();
     }
 }

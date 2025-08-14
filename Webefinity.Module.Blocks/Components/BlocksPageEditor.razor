@@ -1,4 +1,5 @@
 ﻿@using Cadence.UI.Components
+@using Cadence.UI.Extensions
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 @using Webefinity.Module.Blocks.Services
@@ -6,6 +7,7 @@
 @inject NavigationManager Nav
 @inject IHttpContextAccessor HttpContextAccessor
 @inject BlocksProviderService BlocksProvider
+@inject IEnumerable<PageControlLink> PageControlLinks
 
 @rendermode InteractiveServer
 
@@ -67,10 +69,18 @@
                 }
             </div>
         }
-        <div>
+        <div class="actions">
             <Button class="control" Clicked="() => DeletePageAsync()" title="Delete this page.">
                 <Icon><i class="fa-solid fa-trash"></i></Icon>
             </Button>
+
+            @foreach (var link in PageControlLinks)
+            {
+                <Button class="control" Clicked="() => Nav.NavigateToWithReturn(link.link)">
+                    <Icon><i class="@link.icon"></i></Icon>
+                </Button>
+            }
+
         </div>
     </div>
 

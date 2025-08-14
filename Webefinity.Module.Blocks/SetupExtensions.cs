@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.ObjectPool;
 using System.Reflection;
+using Webefinity.Module.Blocks.Abstractions;
 using Webefinity.Module.Blocks.Services;
 using Webefinity.Module.SiteMap.Abstractions;
 
@@ -16,4 +18,9 @@ public static class SetupExtensions
         services.AddSingleton<BlockSecurityPolicies>(securityPolicies);
         services.AddScoped<ISitemapGenerator, PageSitemapGeneratorService>();
     }
+
+    public static void AddPageControlLink(this IServiceCollection services, string icon, string alt, string link, int order = 0, string? text = null)
+    {
+        services.AddSingleton(new PageControlLink(icon, alt, link, order, text));
+    }   
 }

@@ -1,0 +1,81 @@
+﻿@using Cadence.UI.Components
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using System.Threading.Tasks
+@using Webefinity.ContentRoot.IndexUI
+@using Webefinity.ContentRoot.IndexUI.Components
+@using Webefinity.ContentRoot.IndexUI.Interfaces
+@using Webefinity.ContentRoot.IndexUI.Models
+
+@inject IFileBrowserService FileBrowserService
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+
+@if (this.keysAndPolicyModel.KeyCollections.Count() == 0)
+{
+    <div class="alert alert-warning">
+        No key collections available for the file browser.
+    </div>
+}
+else if (this.keysAndPolicyModel.KeyCollections.Count() > 1)
+{
+    <div class="alert">
+            <Select TKey="Guid" TValue="String" Options="keyCollectionValues"
+                    SelectedValue="keyCollection.Id" SelectedValueChanged="KeyCollectionChanged"/>
+    </div>
+}
+else
+{
+    <div class="alert">
+        Using collection: @keyCollection.Collection
+    </div>
+}
+
+<FileBrowser @ref="fileBrowser" KeyCollection="this.keyCollection" />
+<FileUpload OnFileUploaded="OnFileUploaded" KeyCollection="this.keyCollection" />
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "r")] public string ReturnUrl { get; set; } = "/";
+    FileBrowser fileBrowser = default!;
+    KeysAndPolicyModel keysAndPolicyModel = default!;
+    KeyCollection keyCollection = default!;
+    KeyValuePair<Guid, string>[] keyCollectionValues = default!;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.keysAndPolicyModel = await FileBrowserService.GetKeysAndPolicyAsync();
+        var authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        var authorizationResult = await this.AuthorizationService.AuthorizeAsync(authenticationState.User,
+        keysAndPolicyModel.AdminPolicy);
+        if (!authorizationResult.Succeeded)
+        {
+            throw new UnauthorizedAccessException("You do not have permission to access the file browser.");
+        }
+        if (keysAndPolicyModel.KeyCollections.Count() == 0)
+        {
+            throw new InvalidOperationException("No key collections available for the file browser.");
+        }
+        else if (keysAndPolicyModel.KeyCollections.Count() == 1)
+        {
+            this.keyCollection = keysAndPolicyModel.KeyCollections.Single();
+        }
+        else
+        {
+            this.keyCollection = keysAndPolicyModel.KeyCollections.First();
+        }
+        
+        this.keyCollectionValues = this.keysAndPolicyModel.KeyCollections.Select(kc => new KeyValuePair<Guid, string>(kc.Id, kc.Collection))
+            .ToArray();
+    }
+
+    protected async Task OnFileUploaded(string name)
+    {
+        await fileBrowser.RefreshAsync();
+    }
+
+    protected async Task KeyCollectionChanged(Guid id)
+    {
+        this.keyCollection = keysAndPolicyModel.KeyCollections.Single(k => k.Id == id);
+        await fileBrowser.SetKeyCollectionAsync(this.keyCollection);
+    }
+}
