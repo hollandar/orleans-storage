@@ -15,6 +15,8 @@ using Webefinity.ContentRoot.IndexUI.Services;
 using Webefinity.ContentRoot.IndexUI;
 using Webefinity.ContentRoot.IndexUI.Components;
 using Microsoft.AspNetCore.Mvc.RazorPages;
+using Webefinity.ContentRoot.Index.Shared;
+using HttpResults = Microsoft.AspNetCore.Http.Results;
 
 namespace Webefinity.ContentRoot.Index;
 
@@ -99,6 +101,12 @@ public static class StartupExtensions
 
         if (policyProvider.GetBrowserPolicy() is not null)
             getFileMap.RequireAuthorization(policyProvider.GetBrowserPolicy()!);
+
+        var getSizedFileUri = "/icr/{key}/{collection}/s/{imagesize}/{filename}";
+        var getSizedFileMap = app.MapGet(getSizedFileUri, IndexedContentHandler.GetSizedFile);
+
+        if (policyProvider.GetBrowserPolicy() is not null)
+            getSizedFileMap.RequireAuthorization(policyProvider.GetBrowserPolicy()!);
 
         var getFileMetaUri = "/api/icr/{key}/{collection}/meta/{filenameorid}";
         app.MapGet(getFileMetaUri, (IServiceProvider sp, HttpResponse response, string key, string collection, string filenameorid) =>

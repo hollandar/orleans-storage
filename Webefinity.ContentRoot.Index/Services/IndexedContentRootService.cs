@@ -88,8 +88,9 @@ public class IndexedContentRootService : IIndexedContentRootLibrary
     public Task<PaginatedContainer<FileMetadataModel>> ListAsync(CollectionDef collection, string? search = null, int skip = 0, int take = 10)
     {
         var files = this.fileMetadataDbContext.Files.Include("Metadata")
-                        .Where(r => r.Key == this.key && r.Collection == collection.Collection)
-                        .OrderBy(r => r.FileName).AsQueryable();
+                .Where(r => r.Key == this.key && r.Collection == collection.Collection)
+                .Where(r => !r.Metadata.Any(p => p.Key == "Is-Derived"))
+                .OrderBy(r => r.FileName).AsQueryable();
 
         if (!String.IsNullOrEmpty(search))
         {

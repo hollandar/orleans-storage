@@ -52,5 +52,18 @@ public partial class IndexedSchemeUri
         });
     }
 
+    public string ToString(string format, ImageSizeEnum size)
+    {
+        ArgumentNullException.ThrowIfNull(format, nameof(format));
+        return format.ExtendedFormat(new Dictionary<string, string?>
+        {
+            { "Path", this.Path },
+            { "Key", this.Key },
+            { "Collection", this.Collection },
+            { "File", this.FileName },
+            { "Size", size.ToString().ToLowerInvariant() }
+        });
+    }
+
 
 }
