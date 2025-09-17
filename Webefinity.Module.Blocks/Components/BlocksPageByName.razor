@@ -2,6 +2,7 @@
 @using System.Text.Json
 @using Webefinity.Module.Blocks.Abstractions
 @using Webefinity.Module.Blocks.Services
+@using static Webefinity.Module.Blocks.Services.BlockProviderService
 
 @rendermode InteractiveServer
 
@@ -33,12 +34,11 @@
                         </div>
                     }
                     <div class="blocks-block">
-                        <div>
-                            @BlockProvider.RenderFragment(blockModel)
-                        </div>
+                        
                             @if (!blockState.Editing)
                             {
-                                <div class="blocks-blockbar stack horizontal" style="--stack-gap: 0.25rem;">
+                                <div class="blocks-blockbar" style="--stack-gap: 0.25rem;">
+                                    <div class="badge">@(this.blockDescriptions.Where(r => r.Kind == blockState.Model.Kind).Select(r => r.Name).FirstOrDefault() ?? blockState.Model.Kind)</div>
                                     @if (hasBlock.editor)
                                     {
                                         <Button class="control" Clicked="async () => await SetEditing(blockState)">
@@ -61,6 +61,10 @@
                             {
                                 // Nada
                             }
+
+                        <div>
+                            @BlockProvider.RenderFragment(blockModel)
+                        </div>
                     </div>
                 </div>
             }
@@ -134,6 +138,7 @@
 
     PageModel pageModel = default!;
     IEnumerable<BlockEditorState> blockEditorStates = Array.Empty<BlockEditorState>();
+	IEnumerable<BlockDescription> blockDescriptions = Array.Empty<BlockDescription>();
 
     Dialog blockListDialog = default!;
     int insertSequence = -1;
@@ -148,6 +153,7 @@
 
     protected override async Task OnInitializedAsync()
     {
+		this.blockDescriptions = BlockProvider.GetBlockDescriptions();
         await RefreshPageModel();
         await base.OnInitializedAsync();
     }
@@ -173,9 +179,9 @@
     }
 
     EventCallback<JsonDocument> BuildApply(BlockEditorState blockState) =>
-    EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await ApplyBlockDocumentAsync(blockState, doc));
+        EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await ApplyBlockDocumentAsync(blockState, doc));
     EventCallback<JsonDocument> BuildSave(BlockEditorState blockState) =>
-    EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await SaveBlockDocumentAsync(blockState, doc));
+        EventCallback.Factory.Create<JsonDocument>(blockState, async (doc) => await SaveBlockDocumentAsync(blockState, doc));
 
     EventCallback BuildCancel(BlockEditorState blockState) => EventCallback.Factory.Create(this, () =>
     this.SetViewing(blockState));

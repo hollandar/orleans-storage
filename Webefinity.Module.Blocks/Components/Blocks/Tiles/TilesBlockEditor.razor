@@ -1,0 +1,84 @@
+﻿@using Cadence.UI.Components
+@inherits BlockEditorComponentBase<TilesModel>
+@attribute [BlockEditor("tiles")]
+<CascadingValue Name="Model" Value="Model">
+	<CascadingValue Name="Editor" Value="this">
+		@switch (editorState)
+		{
+			case var mode when mode.Mode == EditorMode.View && mode.TileId is null:
+				<_View />
+				break;
+			case var mode when mode.Mode == EditorMode.EditTiles && mode.TileId is null:
+				<_Edit/>
+				break;
+
+			case var mode when mode.Mode == EditorMode.EditTile && mode.TileId is not null:
+				<_EditTile />
+				break;
+
+			case var mode when mode.Mode == EditorMode.AddTile && mode.TileId is null:
+				<_EditTile />
+				break;
+
+			default:
+				{
+					<p class="text-danger">Unknown editor state @editorState</p>
+				}
+				break;
+		}
+	</CascadingValue>
+</CascadingValue>
+
+
+
+@code {
+	public enum EditorMode
+	{
+		View,
+		EditTiles,
+		AddTile,
+		EditTile
+	}
+
+	public record EditorState(EditorMode Mode, Guid? TileId = null);
+
+	EditorState editorState = new(EditorMode.View, null);
+
+	public EditorState State => editorState;
+
+	public async Task CancelAsync() => await this.CancelModel();
+	public async Task SaveAsync() => await this.SaveModel();
+
+	public async Task ApplyAsync()
+	{
+		var tilesValidator = new TilesModelValidator();
+		var validationResult = tilesValidator.Validate(Model);
+		if (validationResult.IsValid)
+		{
+			await this.ApplyModel();
+		}
+	}
+
+	public async Task SetEditorModeAsync(EditorMode mode, Guid? tileId = null)
+	{
+		this.editorState = new(mode, tileId);
+		await this.InvokeAsync(StateHasChanged);
+	}
+
+	public async Task AddTileAsync()
+	{
+		await SetEditorModeAsync(EditorMode.AddTile, null);
+	}
+
+	public async Task EditTileAsync(Guid id)
+	{
+		await SetEditorModeAsync(EditorMode.EditTile, id);
+	}
+
+	public async Task RemoveTileAsync(Guid id)
+	{
+		var removeTile = Model.Tiles.FirstOrDefault(r => r.Id == id) ?? throw new InvalidOperationException($"Tile with id {id} not found.");
+		Model.Tiles.Remove(removeTile);
+		await this.SetEditorModeAsync(EditorMode.View, null);
+	}
+}

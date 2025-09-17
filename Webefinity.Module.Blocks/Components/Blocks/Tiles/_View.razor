@@ -1,0 +1,77 @@
+﻿@using Cadence.UI.Components
+<h3>View</h3>
+
+<div class="properties">
+	<div class="property">
+		<div class="key">Texture Uri</div>
+		<div class="value">@Model.Detail.TextureUri</div>
+	</div>
+
+	<div class="property">
+		<div class="key">Texture Size</div>
+		<div class="value">@Model.Detail.TextureSize</div>
+	</div>
+
+	<div class="property">
+		<div class="key">Tile Size</div>
+		<div class="value">@Model.Detail.TileSize</div>
+	</div>
+
+	<div class="property">
+		<div class="key">Texture X</div>
+		<div class="value">@Model.Detail.X</div>
+	</div>
+
+	<div class="property">
+		<div class="key">Texture Y</div>
+		<div class="value">@Model.Detail.Y</div>
+	</div>
+
+</div>
+
+<div class="actions">
+	<button class="primary" type="button" @onclick="() => Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.EditTiles)">Update Detail</button>
+</div>
+
+<table class="table">
+	<tr>
+		<th>Title</th>
+		<th></th>
+	</tr>
+	@if (Model.Tiles is not null && Model.Tiles.Any())
+	{
+		@foreach (var tile in Model.Tiles)
+		{
+			<tr @key="tile.Id">
+				<td>@tile.Title (Icon: @tile.TextureIndex)</td>
+				<td>
+					<div class="actions">
+						<Button class="control" Clicked="() => Editor.EditTileAsync(tile.Id)"><Icon><i class="fa-solid fa-pencil"></i></Icon></Button>
+						<Button class="control" Clicked="() => Editor.RemoveTileAsync(tile.Id)"><Icon><i class="fa-solid fa-trash"></i></Icon></Button>
+					</div>
+				</td>
+			</tr>
+		}
+	}
+	else
+	{
+		<tr><td colspan="2">No tiles defined.</td></tr>
+	}
+</table>
+
+<div class="actions">
+	<Button class="primary" type="button" Clicked="Editor.AddTileAsync">Add Tile</Button>
+</div>
+
+<div class="actions">
+	<Button class="primary" type="button" Clicked="Editor.ApplyAsync">Apply</Button>
+	<Button class="primary" type="button" Clicked="Editor.SaveAsync">Save</Button>
+	<Button class="secondary" Clicked="Editor.CancelAsync">Cancel</Button>
+</div>
+
+@code {
+	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
+	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
+
+
+}

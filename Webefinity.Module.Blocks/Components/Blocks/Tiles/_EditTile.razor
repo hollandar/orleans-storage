@@ -1,0 +1,85 @@
+﻿<h3>Edit Tile</h3>
+
+<EditForm Model="this.tile" OnValidSubmit="SaveTileAsync">
+	<FluentValidator TModelType="TileModel" TValidator="TileModelValidator"/>
+
+	<div class="field">
+		<div class="field">
+			<label for="TextureIndex">Texture Index</label>
+			<InputNumber id="TextureIndex" @bind-Value="tile.TextureIndex" />
+			<ValidationMessage For="@(() => tile.TextureIndex)" />
+		</div>
+
+
+		<div class="field">
+			<label for="Title">Title</label>
+			<InputText type="text" @bind-Value="tile.Title" />
+			<ValidationMessage For="() => tile.Title" />
+		</div>
+
+		<div class="field">
+			<label for="Md">Content (Markdown)</label>
+			<InputTextArea @bind-Value="tile.Md" rows="5" />
+			<ValidationMessage For="() => tile.Md" />
+		</div>
+
+		<div class="actions">
+				<button class="primary" type="submit">Save</button>
+				<button type="button" class="secondary" @onclick="CancelModelAsync">Cancel</button>
+		</div>
+
+	</div>
+
+</EditForm>
+@code {
+	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
+	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
+	TileModel? tile = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		if (Editor.State.Mode == TilesBlockEditor.EditorMode.AddTile && Editor.State.TileId is null)
+		{
+			tile = new()
+				{
+					Id = Guid.NewGuid(),
+					TextureIndex = 0,
+					Title = "",
+					Md = ""
+				};
+		} else
+		{
+			var tileEditing = Model.Tiles.FirstOrDefault(r => r.Id == Editor.State.TileId) ?? throw new InvalidOperationException($"Tile {Editor.State.TileId} not found.");
+			tile = new()
+				{
+					Id = tileEditing.Id,
+					Title = tileEditing.Title,
+					TextureIndex = tileEditing.TextureIndex,
+					Md = tileEditing.Md
+				};
+		}
+		await base.OnInitializedAsync();
+	}
+
+	protected async Task SaveTileAsync()
+	{
+		var tileEditing = Model.Tiles.FirstOrDefault(r => r.Id == Editor.State.TileId);
+
+		if (tileEditing is null)
+		{
+			tileEditing = new() { Id = tile.Id };
+			Model.Tiles.Add(tileEditing);
+		}
+
+		tileEditing.TextureIndex = tile.TextureIndex;
+		tileEditing.Title = tile.Title;
+		tileEditing.Md = tile.Md;
+
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+
+	protected async Task CancelModelAsync()
+	{
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+}
