@@ -42,7 +42,8 @@ public class SenderTransportService : ISenderTransportService
                 r.Status == SendStatus.Pending ||
                 (r.Status == SendStatus.Failed && r.RetryAfter != null && r.RetryAfter < guardDate && r.RetryCount > 0)
             )
-            .OrderBy(r => r.Created);
+            .OrderBy(r => r.Created)
+            .AsNoTracking();
 
         var sendQueue = new Queue<Message>(sendAvailableMessageQuery.ToList());
 
@@ -67,16 +68,18 @@ public class SenderTransportService : ISenderTransportService
                         throw new NotImplementedException();
                 }
 
-                message.Status = SendStatus.Sent;
-                message.Sent = DateTimeOffset.UtcNow;
-                await dbContext.SaveChangesAsync(ct);
+                dbContext.Messages.Where(r => r.Id == message.Id).ExecuteUpdate(
+                    r => r.SetProperty(m => m.Status, SendStatus.Sent)
+                          .SetProperty(m => m.Sent, DateTimeOffset.UtcNow)
+                );
             } catch (Exception ex)
             {
-                message.RetryCount -= 1;
-                message.RetryAfter = guardDate.AddMinutes(this.options.Value.RetryDelay);
-                message.Status = SendStatus.Failed;
-                message.Error = ex.Message;
-                await dbContext.SaveChangesAsync(ct);
+                dbContext.Messages.Where(r => r.Id == message.Id).ExecuteUpdate(
+                    r => r.SetProperty(m => m.Status, SendStatus.Failed)
+                    .SetProperty(m => m.RetryAfter, guardDate.AddMinutes(this.options.Value.RetryDelay))
+                    .SetProperty(m => m.RetryCount, r => r.RetryCount - 1)
+                    .SetProperty(m => m.Error, ex.Message)
+                );
             }
             finally
             {
