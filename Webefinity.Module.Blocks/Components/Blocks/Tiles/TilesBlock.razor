@@ -1,0 +1,24 @@
+﻿@using Cadence.UI.Components
+@using Webefinity.ContentRoot.Index.Shared.Uri
+@inherits BlockComponentBase<TilesModel>
+@attribute [BlockAttribute("tiles", "Tiles", "A block that renders a number of tiles.")]
+
+<TextureMap Src="@(UriTransformer.Transform(Model.Detail.TextureUri))" TextureSize="@($"{Model.Detail.TextureSize}px")" XCount="@Model.Detail.X" YCount="@Model.Detail.Y" ImageSize="@($"{Model.Detail.TileSize}px")">
+    <Features Basis="@($"{Model.Detail.TileSize}px")">
+        @foreach (var tile in Model.Tiles)
+        {
+            <FeatureItem id="@tile.Id" @key="@tile.Id">
+                <TextureImage Index="@tile.TextureIndex" />
+                <h2>@tile.Title</h2>
+                @if (!string.IsNullOrWhiteSpace(tile.Md))
+                {
+                    <Markdown Md="@tile.Md" />
+                }
+            </FeatureItem>
+		}
+    </Features>
+</TextureMap>
+
+@code {
+
+}

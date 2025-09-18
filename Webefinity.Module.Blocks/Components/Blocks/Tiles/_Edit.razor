@@ -1,0 +1,74 @@
+﻿@using Webefinity.ContentRoot.IndexUI.Components
+<h3>_Edit</h3>
+<EditForm Model="this.Model.Detail" OnValidSubmit="SaveModelAsync">
+	<FluentValidator TModelType="TilesDetailModel" TValidator="TilesDetailModelValidator" />
+
+	<div class="field">
+		<label for="TextureSize">Texture Size</label>
+		<InputNumber id="TextureSize" @bind-Value="tilesDetail.TextureSize" />
+		<ValidationMessage For="@(() => tilesDetail.TextureSize)" />
+	</div>
+	<div class="field">
+		<label for="TileSize">Tile Size</label>
+		<InputNumber id="TileSize" @bind-Value="tilesDetail.TileSize" />
+		<ValidationMessage For="@(() => tilesDetail.TileSize)" />
+	</div>
+
+	<div class="field">
+		<label for="TextureUri">Texture Uri</label>
+		<InputIndexedFile id="TextureUri" @bind-Value="tilesDetail.TextureUri" />
+		<ValidationMessage For="@(() => tilesDetail.TextureUri)" />
+	</div>
+
+	<div class="field">
+		<label for="X">Texture X</label>
+		<InputNumber id="X" @bind-Value="tilesDetail.X" />
+		<ValidationMessage For="@(() => tilesDetail.X)" />
+	</div>
+
+	<div class="field">
+		<label for="Y">Texture Y</label>
+		<InputNumber id="Y" @bind-Value="tilesDetail.Y" />
+		<ValidationMessage For="@(() => tilesDetail.Y)" />
+	</div>
+
+	<div class="actions">
+		<button class="primary" type="submit">Update Detail</button>
+		<button type="button" @onclick="CancelModelAsync">Cancel</button>
+	</div>
+
+</EditForm>
+
+@code {
+	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
+	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
+	TilesDetailModel? tilesDetail = null;
+
+	protected override async Task OnInitializedAsync()
+	{
+		tilesDetail = new();
+		tilesDetail.TextureSize = Model.Detail.TextureSize;
+		tilesDetail.TileSize = Model.Detail.TileSize;
+		tilesDetail.TextureUri = Model.Detail.TextureUri;
+		tilesDetail.X = Model.Detail.X;
+		tilesDetail.Y = Model.Detail.Y;
+
+		await base.OnInitializedAsync();
+	}
+
+	protected async Task SaveModelAsync()
+	{
+		Model.Detail.TextureSize = tilesDetail.TextureSize;
+		Model.Detail.TileSize = tilesDetail.TileSize;
+		Model.Detail.TextureUri = tilesDetail.TextureUri;
+		Model.Detail.X = tilesDetail.X;
+		Model.Detail.Y = tilesDetail.Y;
+
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+
+	protected async Task CancelModelAsync()
+	{
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+}

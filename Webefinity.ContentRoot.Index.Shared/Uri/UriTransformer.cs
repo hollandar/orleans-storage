@@ -2,14 +2,14 @@
 
 public static class UriTransformer
 {
-    public static string Transform(string? uriString, string defaultUri = "")
+    public static string Transform(string? uriString, string defaultUri = "", bool useRoot = true)
     {
         if (uriString?.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase) ?? false)
         {
             try
             {
                 var uri = new IndexedSchemeUri(uriString);
-                return uri.ToString("icr/{Key}/{Collection}/{Path?/}{File}");
+                return uri.ToString((useRoot ? "/": "") + "icr/{Key}/{Collection}/{Path?/}{File}");
             }
             catch (ArgumentException)
             {
@@ -23,14 +23,14 @@ public static class UriTransformer
         return defaultUri;
     }
     
-    public static string TransformSize(string? uriString, ImageSizeEnum imageSize, string defaultUri = "")
+    public static string TransformSize(string? uriString, ImageSizeEnum imageSize, string defaultUri = "", bool useRoot = true)
     {
         if (uriString?.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase) ?? false)
         {
             try
             {
                 var uri = new IndexedSchemeUri(uriString);
-                return uri.ToString("icr/{Key}/{Collection}/s/{Size}/{Path?/}{File}", imageSize);
+                return uri.ToString((useRoot? "/": "") + "icr/{Key}/{Collection}/s/{Size}/{Path?/}{File}", imageSize);
             }
             catch (ArgumentException)
             {

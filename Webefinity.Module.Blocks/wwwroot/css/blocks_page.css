@@ -26,12 +26,20 @@ body.dark {
     position: relative;
 }
 
+    .blocks-container.viewing, .blocks-container.editing {
+        border: var(--_blocks-container--editing--border);
+        padding: 5px;
+        margin: 5px;
+        border-radius: 4px;
+    }
+
 .blocks-blockbar {
     --_blocks-blockbar--background-color: var(--blocks-blockbar--background-color, var(--color-zinc--100));
-    position: absolute;
-    right: 0;
-    top: 0;
     background-color: var(--_blocks-blockbar--background-color);
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
 }
 
 .blocks-parent.edit .blocks-container {
