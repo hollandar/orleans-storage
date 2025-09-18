@@ -22,15 +22,16 @@ public class MessagingSenderService : BackgroundService
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        using var scope = this.serviceProvider.CreateScope();
-        var logger = scope.ServiceProvider.GetService<ILogger<MessagingSenderService>>();
-        var senderTransportService = scope.ServiceProvider.GetRequiredService<ISenderTransportService>();
-        var messagingActive = scope.ServiceProvider.GetRequiredService<IMessagingActive>();
 
+        var logger = this.serviceProvider.GetService<ILogger<MessagingSenderService>>();
         logger?.LogInformation("MessagingSenderService is starting.");
 
         while (!stoppingToken.IsCancellationRequested)
         {
+            using var scope = this.serviceProvider.CreateScope();
+            var senderTransportService = scope.ServiceProvider.GetRequiredService<ISenderTransportService>();
+            var messagingActive = scope.ServiceProvider.GetRequiredService<IMessagingActive>();
+
             if (!await messagingActive.IsMessagingAsync())
             {
                 if (waitTime < this.options.Value.MaxWaitTime)
@@ -58,7 +59,7 @@ public class MessagingSenderService : BackgroundService
             try
             {
                 var workDone = await senderTransportService.SendAsync(stoppingToken);
-                
+
                 if (workDone == 0 && waitTime < this.options.Value.MaxWaitTime)
                 {
                     waitTime += this.options.Value.WaitTime;
@@ -79,7 +80,7 @@ public class MessagingSenderService : BackgroundService
     public override Task StopAsync(CancellationToken cancellationToken)
     {
         using var scope = this.serviceProvider.CreateScope();
-        var logger = scope.ServiceProvider.GetService<ILogger<MessagingSenderService>>(); 
+        var logger = scope.ServiceProvider.GetService<ILogger<MessagingSenderService>>();
         logger?.LogInformation("MessagingSenderService is stopping.");
         return base.StopAsync(cancellationToken);
     }
