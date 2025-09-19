@@ -7,4 +7,5 @@ public class MessagingOptions
     public int MaxWaitTime { get; set; } = 300000; // Milliseconds, 5 minutes
     public int RetryCount { get; set; } = 5;
     public int RetryDelay { get; set; } = 60; // Minutes
+    public int IntraMessageDelay { get; set; } = 1000 / 10; // Milliseconds, 10 messages per second
 }

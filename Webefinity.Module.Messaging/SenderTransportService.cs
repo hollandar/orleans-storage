@@ -84,6 +84,7 @@ public class SenderTransportService : ISenderTransportService
             finally
             {
                 workDone++;
+                await Task.Delay(this.options.Value.IntraMessageDelay, ct);
             }
         }
 
