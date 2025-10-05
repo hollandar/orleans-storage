@@ -30,6 +30,10 @@ namespace Webefinity.Module.Messaging.Mailkit
             }
 
             this.logger = serviceProvider.GetRequiredService<ILogger<MailkitEmailSender>>();
+
+            this.logger.LogInformation(
+                "MailKit: Email sender initialized with SMTP server {Host}:{Port}, UseSsl={UseSsl}, RequiresAuthentication={RequiresAuthentication}, From={From}", 
+                this.smtpOptions.Host, this.smtpOptions.Port, this.smtpOptions.UseSsl, this.smtpOptions.RequiresAuthentication, this.smtpOptions.From);
         }
 
         public Task SendAsync(EmailMessageModel emailMessage, CancellationToken? ct)
