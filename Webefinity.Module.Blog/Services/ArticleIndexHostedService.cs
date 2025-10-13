@@ -20,13 +20,11 @@ namespace Webefinity.Module.Blog.Services
 {
     public partial class ArticleIndexHostedService : IHostedService
     {
-        private readonly IContentRootLibrary contentRootLibrary;
         private readonly ILogger<ArticleIndexHostedService> logger;
         private readonly IServiceProvider serviceProvider;
 
-        public ArticleIndexHostedService(IContentRootLibrary contentRootLibrary, ILogger<ArticleIndexHostedService> logger, IServiceProvider serviceProvider)
+        public ArticleIndexHostedService(ILogger<ArticleIndexHostedService> logger, IServiceProvider serviceProvider)
         {
-            this.contentRootLibrary = contentRootLibrary;
             this.logger = logger;
             this.serviceProvider = serviceProvider;
         }
@@ -35,6 +33,7 @@ namespace Webefinity.Module.Blog.Services
         {
             // Resolve a db context
             using var scope = this.serviceProvider.CreateScope();
+            var contentRootLibrary = scope.ServiceProvider.GetRequiredService<IContentRootLibrary>();
             var dbContext = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
 
             // Set up a database
@@ -42,10 +41,10 @@ namespace Webefinity.Module.Blog.Services
 
             // Index all articles
             HashSet<string> articleIds = new HashSet<string>();
-            var enumerable = this.contentRootLibrary.EnumerateRecursiveAsync(Constants.BlogCollection, "*.md");
+            var enumerable = contentRootLibrary.EnumerateRecursiveAsync(Constants.BlogCollection, "*.md");
             await foreach (var file in enumerable)
             {
-                using var article = this.contentRootLibrary.LoadReader(Constants.BlogCollection, file);
+                using var article = contentRootLibrary.LoadReader(Constants.BlogCollection, file);
                 var frontmatterResult = await FrontmatterLoader.LoadAsync<ArticleFrontmatter>(article);
 
                 if (frontmatterResult.Frontmatter is null)

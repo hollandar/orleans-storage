@@ -27,11 +27,11 @@ namespace Webefinity.Module.Blog
 
         public static void MapWebefinityBlogEndpoints(this WebApplication builder)
         {
-            var contentRootOptions = builder.Services.GetRequiredService<IContentRootLibrary>();
             
-            builder.Map("/contentroot/blog/{*slug}", (string slug, IContentRootLibrary contentRootLibrary) =>
+            builder.Map("/contentroot/blog/{*slug}", (string slug, IServiceProvider serviceProvider) =>
             {
 
+                var contentRootLibrary = serviceProvider.GetRequiredService<IContentRootLibrary>();
                 if (contentRootLibrary.FileExists(Constants.BlogCollection, slug))
                     return Results.File(contentRootLibrary.LoadReadStream(Constants.BlogCollection, slug));
                 else
