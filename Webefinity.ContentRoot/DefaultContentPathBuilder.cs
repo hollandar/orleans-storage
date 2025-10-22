@@ -27,7 +27,11 @@ public class DefaultContentPathBuilder : IContentPathBuilder
     {
         var pathItems = new List<string>(6);
         AddBasePath(pathItems, basePath);
-        AddCollection(pathItems, collection);
+        if (collection != CollectionDef.RootCollection)
+        {
+            AddCollection(pathItems, collection);
+        }
+
         AddFolder(pathItems, folder);
 
         return Combine(pathItems);
