@@ -5,7 +5,16 @@ public class Result : IResult
 {
     public Result()
     {
+        Success = true;
+        Message = null;
+        Reason = ResultReasonType.None;
+    }
 
+    public Result(string message, ResultReasonType reason)
+    {
+        Success = false;
+        Message = message;
+        Reason = reason;
     }
 
     public bool Success { get; set; }
