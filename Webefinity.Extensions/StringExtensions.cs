@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Webefinity.Extensions;
@@ -26,8 +27,9 @@ public static partial class StringExtensions
         }
     }
 
-    public static string Or(this string? subject, params IEnumerable<string?> def) {
-        return string.IsNullOrWhiteSpace(subject) ? 
+    public static string Or(this string? subject, params IEnumerable<string?> def)
+    {
+        return string.IsNullOrWhiteSpace(subject) ?
             def.FirstOrDefault(r => !String.IsNullOrWhiteSpace(r)) ?? throw new ArgumentException("No non-empty defaults.")
             : subject;
     }
@@ -132,5 +134,31 @@ public static partial class StringExtensions
         }
 
         return stringBuilder.ToString();
+    }
+
+    public static HashSet<int> RangesToNumbers(this String input)
+    {
+        // Example: "1-3,5,7-9" => {1,2,3,5,7,8,9}
+        var result = new HashSet<int>();
+        var parts = input.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        foreach (var part in parts)
+        {
+            var rangeParts = part.Split('-', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+            if (rangeParts.Length == 1 && int.TryParse(rangeParts[0], out int singleNumber))
+            {
+                result.Add(singleNumber);
+            }
+            else if (rangeParts.Length == 2
+                && int.TryParse(rangeParts[0], out int start)
+                && int.TryParse(rangeParts[1], out int end)
+                && end >= start)
+            {
+                for (int i = start; i <= end; i++)
+                {
+                    result.Add(i);
+                }
+            }
+        }
+        return result;
     }
 }
