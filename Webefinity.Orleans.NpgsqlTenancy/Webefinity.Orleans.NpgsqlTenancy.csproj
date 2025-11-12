@@ -10,7 +10,6 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Orleans.Core" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" />
-		<PackageReference Include="System.Text.Json"/>
 	</ItemGroup>
 
 </Project>
