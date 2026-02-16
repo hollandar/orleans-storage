@@ -10,6 +10,8 @@
 	<ItemGroup>
 		<PackageReference Include="Serilog.AspNetCore" />
 		<PackageReference Include="Serilog.Sinks.AwsCloudWatch" />
+		<PackageReference Include="AWSSDK.CloudWatchLogs" />
+		<PackageReference Include="AWSSDK.Core" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" />
 		<PackageReference Include="Microsoft.Extensions.Configuration" />
 	</ItemGroup>
