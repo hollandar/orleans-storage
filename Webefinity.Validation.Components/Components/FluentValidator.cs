@@ -59,7 +59,12 @@ namespace Webefinity.Validation.Components
 
         private void ValidateModel(EditContext editContext, ValidationMessageStore messages)
         {
-            var validationResult = validator.Validate(new ValidationContext<TModelType>((TModelType)editContext.Model));
+            if (editContext.Model is not TModelType typedModel)
+            {
+                throw new InvalidOperationException(
+                    $"FluentValidator<{typeof(TModelType).Name}, {typeof(TValidator).Name}> expects a model of type '{typeof(TModelType).Name}', but the EditContext model is '{editContext.Model?.GetType().Name ?? "null"}'.");
+            }
+            var validationResult = validator.Validate(new ValidationContext<TModelType>(typedModel));
             messages.Clear();
             foreach (var error in validationResult.Errors)
             {
