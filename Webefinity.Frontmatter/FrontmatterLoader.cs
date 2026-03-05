@@ -1,10 +1,11 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Net.Mime;
+using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.RegularExpressions;
-using YamlDotNet.Serialization.NamingConventions;
 using YamlDotNet.Serialization;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Webefinity.Frontmatter
 {
@@ -146,6 +147,13 @@ namespace Webefinity.Frontmatter
 
                 return (frontmatterString, contentString);
             }
+        }
+
+        public static Task<FrontmatterContent<TFrontmatterType>> LoadAsync<TFrontmatterType>(string content, FrontmatterLoaderOptions? loaderOptions = null)
+        {
+            using var memoryStream = new MemoryStream(Encoding.UTF8.GetBytes(content));
+            using var streamReader = new StreamReader(memoryStream);
+            return LoadAsync<TFrontmatterType>(streamReader, loaderOptions);
         }
 
         public static Task<FrontmatterContent<TFrontmatterType>> LoadAsync<TFrontmatterType>(StreamReader streamReader, FrontmatterLoaderOptions? loaderOptions = null)
