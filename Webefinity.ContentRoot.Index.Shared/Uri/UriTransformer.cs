@@ -2,7 +2,7 @@
 
 public static class UriTransformer
 {
-    public static string Transform(string? uriString, string defaultUri = "", bool useRoot = true)
+    public static string Transform(string? uriString, string defaultUri = "", bool useRoot = false)
     {
         if (uriString?.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase) ?? false)
         {
@@ -23,7 +23,7 @@ public static class UriTransformer
         return defaultUri;
     }
     
-    public static string TransformSize(string? uriString, ImageSizeEnum imageSize, string defaultUri = "", bool useRoot = true)
+    public static string TransformSize(string? uriString, ImageSizeEnum imageSize, string defaultUri = "", bool useRoot = false)
     {
         if (uriString?.StartsWith("indexed://", StringComparison.OrdinalIgnoreCase) ?? false)
         {

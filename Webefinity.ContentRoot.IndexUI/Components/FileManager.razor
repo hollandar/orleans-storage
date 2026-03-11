@@ -10,8 +10,11 @@
 @inject IFileBrowserService FileBrowserService
 @inject IAuthorizationService AuthorizationService
 @inject AuthenticationStateProvider AuthenticationStateProvider
-
-@if (this.keysAndPolicyModel.KeyCollections.Count() == 0)
+@if (this.keysAndPolicyModel is null)
+{
+    <loading/>
+}
+else if (this.keysAndPolicyModel.KeyCollections.Count() == 0)
 {
     <div class="alert alert-warning">
         No key collections available for the file browser.
