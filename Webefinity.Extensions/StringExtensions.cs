@@ -1,4 +1,6 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -160,5 +162,20 @@ public static partial class StringExtensions
             }
         }
         return result;
+    }
+
+    extension (String) { 
+        public static string Random(int length, string? baseCharacters = null)
+        {
+            string chars = baseCharacters ?? "abcdefghijklmnopqrstuvwxyz0123456789";
+            var builder = new StringBuilder();
+            for (int i = 0; i < length; i++)
+            {
+                builder.Append(chars[RandomNumberGenerator.GetInt32(chars.Length)]);
+            }
+
+            Debug.Assert(builder.Length == length);
+            return builder.ToString();
+        }
     }
 }
