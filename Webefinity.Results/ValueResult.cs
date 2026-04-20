@@ -14,7 +14,8 @@ public class ValueResult<TResultType> : IResult
     }
 
     public bool Success { get; set; }
-    public string? Message { get; set; } = null;
+    public string Message => String.Join(',', Messages);
+    public string[] Messages { get; set; } = [];
     public TResultType? Value { get; set; }
     public bool HasError => Message != null;
     public ResultReasonType Reason { get; set; } = ResultReasonType.None;
@@ -29,7 +30,12 @@ public class ValueResult<TResultType> : IResult
 
     public static ValueResult<TResultType> Fail(string message, ResultReasonType reason = ResultReasonType.None)
     {
-        return new ValueResult<TResultType>() { Success = false, Message = message, Reason = reason };
+        return new ValueResult<TResultType>() { Success = false, Messages = [message], Reason = reason };
+    }
+
+    public static ValueResult<TResultType> Fail(string[] messages, ResultReasonType reason = ResultReasonType.None)
+    {
+        return new ValueResult<TResultType>() { Success = false, Messages = messages, Reason = reason };
     }
 
     public static implicit operator ValueResult<TResultType>(bool success)
@@ -59,11 +65,11 @@ public class ValueResult<TResultType> : IResult
 
     public static implicit operator ValueResult<TResultType>(Result result)
     {
-        return new ValueResult<TResultType>() { Success = result.Success, Message = result.Message, Reason = result.Reason };
+        return new ValueResult<TResultType>() { Success = result.Success, Messages = result.Messages, Reason = result.Reason };
     }
 
     public static implicit operator Result(ValueResult<TResultType> result)
     {
-        return new Result() { Success = result.Success, Message = result.Message, Reason = result.Reason };
+        return new Result() { Success = result.Success, Messages = result.Messages, Reason = result.Reason };
     }
 }

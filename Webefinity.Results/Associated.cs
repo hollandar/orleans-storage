@@ -23,7 +23,8 @@ public class AssociatedResult<TValue, TAssociated> : IResult
 {
     public Associated<TValue, TAssociated>? AssociatedValue { get; set; } = null;
     public bool Success { get; set; } = false;
-    public string? Message { get; set; } = null;
+    public string Message => String.Join(',', Messages);
+    public string[] Messages { get; set; } = [];
 
     public bool HasError => !Success;
 
@@ -36,14 +37,22 @@ public class AssociatedResult<TValue, TAssociated> : IResult
     public AssociatedResult(Associated<TValue, TAssociated> value)
     {
         this.Success = true;
-        this.Message = null;
+        this.Messages = [];
         this.AssociatedValue = value;
     }
 
     public AssociatedResult(string message, ResultReasonType reason = ResultReasonType.None)
     {
         this.Success = false;
-        this.Message = message;
+        this.Messages = [message];
+        this.Reason = reason;
+        this.AssociatedValue = null;
+    }
+
+    public AssociatedResult(string[] messages, ResultReasonType reason = ResultReasonType.None)
+    {
+        this.Success = false;
+        this.Messages = messages;
         this.Reason = reason;
         this.AssociatedValue = null;
     }

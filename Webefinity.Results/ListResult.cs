@@ -22,13 +22,19 @@ public class ListResult<TItemType> : IResult
 
     public static ListResult<TItemType> Fail(string message, ResultReasonType reason = ResultReasonType.None)
     {
-        return new ListResult<TItemType>() { Success = false, Message = message, Reason = reason };
+        return new ListResult<TItemType>() { Success = false, Messages = [message], Reason = reason };
+    }
+
+    public static ListResult<TItemType> Fail(string[] messages, ResultReasonType reason = ResultReasonType.None)
+    {
+        return new ListResult<TItemType>() { Success = false, Messages = messages, Reason = reason };
     }
 
 
 
     public bool Success { get; set; }
-    public string? Message { get; set; }
+    public string Message => String.Join(',', Messages);
+    public string[] Messages { get; set; } = [];
     public ICollection<TItemType> Items { get; set; } = Array.Empty<TItemType>();
 
     public bool HasError => Success == false;

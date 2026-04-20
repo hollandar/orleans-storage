@@ -6,19 +6,20 @@ public class Result : IResult
     public Result()
     {
         Success = true;
-        Message = null;
+        Messages = [];
         Reason = ResultReasonType.None;
     }
 
     public Result(string message, ResultReasonType reason)
     {
         Success = false;
-        Message = message;
+        Messages = [message];
         Reason = reason;
     }
 
     public bool Success { get; set; }
-    public string? Message { get; set; } = null;
+    public string Message => String.Join(',', Messages);
+    public string[] Messages { get; set; }
     public bool HasError => Message != null;
     public ResultReasonType Reason { get; set; } = ResultReasonType.None;
 
@@ -32,7 +33,12 @@ public class Result : IResult
 
     public static Result Fail(string message, ResultReasonType reason = ResultReasonType.None)
     {
-        return new Result() { Success = false, Message = message, Reason = reason };
+        return new Result() { Success = false, Messages = [message], Reason = reason };
+    }
+
+    public static Result Fail(string[] messages, ResultReasonType reason = ResultReasonType.None)
+    {
+        return new Result() { Success = false, Messages = messages, Reason = reason };
     }
 
     public static implicit operator Result(bool success)
