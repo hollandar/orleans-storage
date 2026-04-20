@@ -18,10 +18,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<ProjectReference Include="..\..\webefinity-cadence\Cadence.UI\Cadence.UI.csproj" />
 		<ProjectReference Include="..\Webefinity.ContentRoot.IndexUI\Webefinity.ContentRoot.IndexUI.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
