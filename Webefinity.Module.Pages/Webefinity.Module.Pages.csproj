@@ -15,7 +15,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Markdig" />
-		<PackageReference Include="Microsoft.AspNetCore.Components.Web" />
 	</ItemGroup>
 
 	<ItemGroup>
