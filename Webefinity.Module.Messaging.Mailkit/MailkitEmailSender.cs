@@ -15,18 +15,13 @@ namespace Webefinity.Module.Messaging.Mailkit
 
         public MailkitEmailSender(IServiceProvider serviceProvider)
         {
-            var options = serviceProvider.GetService<ISmtpOptionsProvider>();
-            if (options is null)
-            {
-                throw new InvalidOperationException("The SMTP options provider is not registered");
-            }
-
+            var options = serviceProvider.GetService<ISmtpOptionsProvider>() ?? throw new InvalidOperationException("The SMTP options provider is not registered");
             this.smtpOptions = options.GetSmtpOptions();
 
             // Validate the options
             if (string.IsNullOrWhiteSpace(this.smtpOptions.Host))
             {
-                throw new ArgumentException("The SMTP server host is not set", nameof(this.smtpOptions.Host));
+                throw new InvalidOperationException("The SMTP server host is not set");
             }
 
             this.logger = serviceProvider.GetRequiredService<ILogger<MailkitEmailSender>>();
@@ -56,7 +51,7 @@ namespace Webefinity.Module.Messaging.Mailkit
             {
                 message.From.Add(new MailboxAddress(emailMessage.From.Name, emailMessage.From.Address));
             }
-            if (!message.From.Any())
+            if (message.From.Count == 0)
             {
                 message.From.Add(new MailboxAddress(smtpOptions.FromName, smtpOptions.From));
             }
@@ -64,20 +59,13 @@ namespace Webefinity.Module.Messaging.Mailkit
             message.Subject = emailMessage.Subject;
 
             // Add the email body
-            switch (emailMessage.Format)
+            message.Body = emailMessage.Format switch
             {
-                case EmailMessageFormat.Text:
-                    message.Body = new TextPart("plain") { Text = emailMessage.Body };
-                    break;
-                case EmailMessageFormat.Html:
-                    message.Body = new TextPart("html") { Text = emailMessage.Body };
-                    break;
-                case EmailMessageFormat.Markdown:
-                    message.Body = new TextPart("markdown") { Text = Markdig.Markdown.ToHtml(emailMessage.Body) };
-                    break;
-                default:
-                    throw new ArgumentException($"Email format is not known {emailMessage.Format}", nameof(emailMessage.Format));
-            }
+                EmailMessageFormat.Text => new TextPart("plain") { Text = emailMessage.Body },
+                EmailMessageFormat.Html => new TextPart("html") { Text = emailMessage.Body },
+                EmailMessageFormat.Markdown => new TextPart("markdown") { Text = Markdig.Markdown.ToHtml(emailMessage.Body) },
+                _ => throw new InvalidOperationException($"Email format is not known {emailMessage.Format}"),
+            };
 
             // Connect to the SMTP server and send the email
             using (var client = new SmtpClient())
@@ -85,11 +73,14 @@ namespace Webefinity.Module.Messaging.Mailkit
                 try
                 {
                     // Connect to the SMTP server
+                    ArgumentNullException.ThrowIfNull(this.smtpOptions.Host, nameof(this.smtpOptions.Host));
                     client.Connect(this.smtpOptions.Host, this.smtpOptions.Port, this.smtpOptions.UseSsl);
 
                     // Authenticate if needed
                     if (this.smtpOptions.RequiresAuthentication)
                     {
+                        ArgumentNullException.ThrowIfNull(this.smtpOptions.Username, nameof(this.smtpOptions.Username));
+                        ArgumentNullException.ThrowIfNull(this.smtpOptions.Password, nameof(this.smtpOptions.Password));
                         client.Authenticate(this.smtpOptions.Username, this.smtpOptions.Password);
                     }
 
