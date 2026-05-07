@@ -8,5 +8,6 @@ public enum ResultReasonType {
     Invalid,
     Unauthorized,
     LimitReached,
-    Exception
+    Exception,
+    Cancelled
 }
