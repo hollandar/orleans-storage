@@ -1,4 +1,4 @@
-﻿@using Cadence.UI.Components
+@using Cadence.UI.Components
 @using Cadence.UI.Extensions
 @using Microsoft.AspNetCore.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
@@ -109,8 +109,8 @@
                     <ValidationMessage For="@(() => settingsModel.State)" />
                 </div>
                 <div class="actions">
-                    <button class="primary" type="submit">Update</button>
-                    <button class="secondary" type="button" @onclick="() => showSettings = false">Close</button>
+                    <button class="button primary" type="submit">Update</button>
+                    <button class="button secondary" type="button" @onclick="() => showSettings = false">Close</button>
                 </div>
             </EditForm>
         </div>
@@ -280,3 +280,4 @@ else
         await RefreshPageAsync();
     }
 }
+

@@ -1,4 +1,4 @@
-﻿<h3>Edit Tile</h3>
+<h3>Edit Tile</h3>
 
 <EditForm Model="this.tile" OnValidSubmit="SaveTileAsync">
 	<FluentValidator TModelType="TileModel" TValidator="TileModelValidator"/>
@@ -24,8 +24,8 @@
 		</div>
 
 		<div class="actions">
-				<button class="primary" type="submit">Save</button>
-				<button type="button" class="secondary" @onclick="CancelModelAsync">Cancel</button>
+				<button class="button primary" type="submit">Save</button>
+				<button type="button" class="button secondary" @onclick="CancelModelAsync">Cancel</button>
 		</div>
 
 	</div>
@@ -83,3 +83,4 @@
 		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
 	}
 }
+

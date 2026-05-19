@@ -1,4 +1,4 @@
-﻿@using Webefinity.ContentRoot.IndexUI.Components
+@using Webefinity.ContentRoot.IndexUI.Components
 <h3>_Edit</h3>
 <EditForm Model="this.Model.Detail" OnValidSubmit="SaveModelAsync">
 	<FluentValidator TModelType="TilesDetailModel" TValidator="TilesDetailModelValidator" />
@@ -33,8 +33,8 @@
 	</div>
 
 	<div class="actions">
-		<button class="primary" type="submit">Update Detail</button>
-		<button type="button" @onclick="CancelModelAsync">Cancel</button>
+		<button class="button primary" type="submit">Update Detail</button>
+		<button class="button" type="button" @onclick="CancelModelAsync">Cancel</button>
 	</div>
 
 </EditForm>
@@ -72,3 +72,4 @@
 		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
 	}
 }
+
