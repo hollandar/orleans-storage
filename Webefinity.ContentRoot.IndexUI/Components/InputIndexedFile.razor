@@ -108,7 +108,7 @@
         await browseDialog!.CloseAsync();
     }
 
-    protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
+    protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args, CancellationToken ct)
     {
         if (KeyCollection is null)
         {

@@ -70,7 +70,7 @@
         base.OnParametersSet();
     }
 
-    protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args)
+    protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args, CancellationToken ct)
     {
         var files = await FileBrowserService.ListFiles(KeyCollection.Collection, null, args.Skip, args.Take, KeyCollection.Key);
         return new TableRowResult<FileMetadataModel>(files.TotalCount, files.Items);
