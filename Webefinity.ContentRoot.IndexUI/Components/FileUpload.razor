@@ -27,14 +27,14 @@
     bool uploadAvailable = false;
     string? errorMessage = null;
 
-    protected override void OnParametersSet()
+    protected override Task OnInitializedAsync()
     {
-        if (KeyCollection is null)
+        if (RendererInfo.IsInteractive && KeyCollection is null)
         {
             throw new InvalidOperationException("KeyCollection must be set before rendering.");
         }
 
-        base.OnParametersSet();
+        return base.OnInitializedAsync();
     }
 
     public Task SetUploadFile(InputFileChangeEventArgs inputFileChangeEventArgs)

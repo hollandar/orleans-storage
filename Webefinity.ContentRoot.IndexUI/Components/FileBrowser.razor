@@ -60,14 +60,14 @@
     private Repeater<FileMetadataModel>? fileRepeater = null;
     private FileMetadataModel? selectedFile = null;
 
-    protected override void OnParametersSet()
+    protected override Task OnInitializedAsync()
     {
-        if (KeyCollection is null)
+        if (RendererInfo.IsInteractive && KeyCollection is null)
         {
             throw new InvalidOperationException("KeyCollection must be set before rendering.");
         }
 
-        base.OnParametersSet();
+        return base.OnInitializedAsync();
     }
 
     protected async Task<TableRowResult<FileMetadataModel>> FileListProvider(TableRowParams args, CancellationToken ct)
