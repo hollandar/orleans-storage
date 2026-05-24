@@ -19,6 +19,7 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\..\webefinity-cadence\Cadence.UI\Cadence.UI.csproj" />
+		<ProjectReference Include="..\..\webefinity-cadence\Cadence.Upload\Cadence.Upload.csproj" />
 		<ProjectReference Include="..\Webefinity.ContentRoot.IndexUI\Webefinity.ContentRoot.IndexUI.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Data\Webefinity.Module.Blocks.Data.csproj" />

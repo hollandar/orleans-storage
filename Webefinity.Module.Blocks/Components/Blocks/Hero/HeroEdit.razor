@@ -1,4 +1,5 @@
 ﻿@using Cadence.UI.Components
+@using Cadence.Upload
 @using Webefinity.ContentRoot.IndexUI.Components
 @using Webefinity.Module.Blocks.Abstractions
 @using Webefinity.Module.Blocks.Components.Blocks
@@ -20,7 +21,7 @@
 
     <div class="field">
         <label for="url">Url</label>
-        <InputIndexedFile type="text" id="url" @bind-Value="Model.Url" />
+        <InputSelectFile Library="@Library" id="url" @bind-Value="Model.Url" />
         <ValidationMessage For="@(() => Model.Url)" />
     </div>
 
@@ -32,6 +33,7 @@
 </EditForm>
 
 @code {
+    [CascadingParameter(Name = "CadenceUploadContentLibraryKey")] public string Library { get; set; } = string.Empty;
     EditForm editForm = default!;
 
     protected async Task Apply()
