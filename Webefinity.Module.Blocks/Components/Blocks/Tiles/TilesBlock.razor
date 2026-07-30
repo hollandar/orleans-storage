@@ -1,5 +1,4 @@
-﻿@using Webefinity.ContentRoot.Index.Shared.Uri
-@inherits BlockComponentBase<TilesModel>
+﻿@inherits BlockComponentBase<TilesModel>
 @attribute [BlockAttribute("tiles", "Tiles", "A block that renders a number of tiles.")]
 
 <TextureMap Src="@(UriTransformer.Transform(Model.Detail.TextureUri))" TextureSize="@($"{Model.Detail.TextureSize}px")" XCount="@Model.Detail.X" YCount="@Model.Detail.Y" ImageSize="@($"{Model.Detail.TileSize}px")">

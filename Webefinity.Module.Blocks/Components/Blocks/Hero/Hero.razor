@@ -1,4 +1,4 @@
-﻿@using Webefinity.ContentRoot.Index.Shared.Uri
+﻿@using Webefinity.Module.Blocks
 @using Webefinity.Module.Blocks.Components.Blocks
 @inherits BlockComponentBase<HeroModel>
 @attribute [BlockAttribute("hero", "Hero", "A responsive hero.")]
@@ -7,15 +7,14 @@
     <div class="hero">
         <div class="center">
 
-                    <Markdown Md="@Model.Text" />
+            <Markdown Md="@Model.Text" />
 
 
         </div>
-        <img 
-            src="@UriTransformer.TransformSize(this.Model.Url, ContentRoot.Index.Shared.ImageSizeEnum.ExtraLarge, "unspecified.jpg")" alt="Hero Image" class="hero-image" 
-             srcset="@UriTransformer.TransformSize(this.Model.Url, ContentRoot.Index.Shared.ImageSizeEnum.Large, "unspecified.jpg") 2560w,
-        @UriTransformer.TransformSize(this.Model.Url, ContentRoot.Index.Shared.ImageSizeEnum.Medium, "unspecified.jpg") 1920w,
-        @UriTransformer.TransformSize(this.Model.Url, ContentRoot.Index.Shared.ImageSizeEnum.Small, "unspecified.jpg") 1024w" />
+        <img src="@UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg")" alt="Hero Image" class="hero-image"
+             srcset="@UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 2560w,
+        @UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 1920w,
+        @UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 1024w" />
     </div>
 </section>
 

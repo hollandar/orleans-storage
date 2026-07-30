@@ -1,4 +1,3 @@
-@using Webefinity.ContentRoot.IndexUI.Components
 <h3>_Edit</h3>
 <EditForm Model="this.Model.Detail" OnValidSubmit="SaveModelAsync">
 	<FluentValidator TModelType="TilesDetailModel" TValidator="TilesDetailModelValidator" />
@@ -16,7 +15,7 @@
 
 	<div class="field">
 		<label for="TextureUri">Texture Uri</label>
-		<InputIndexedFile id="TextureUri" @bind-Value="tilesDetail.TextureUri" />
+		<InputSelectFile Library="@Library" id="TextureUri" @bind-Value="tilesDetail.TextureUri" />
 		<ValidationMessage For="@(() => tilesDetail.TextureUri)" />
 	</div>
 
@@ -42,6 +41,8 @@
 @code {
 	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
 	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
+	[CascadingParameter(Name = "CadenceUploadContentLibraryKey")] public string Library { get; set; } = string.Empty;
+
 	TilesDetailModel tilesDetail = new();
 
 	protected override async Task OnInitializedAsync()
