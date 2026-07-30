@@ -1,5 +1,4 @@
-﻿@using System.ComponentModel
-@using Webefinity.ContentRoot.Index.Models
+﻿@using Webefinity.ContentRoot.Index.Models
 @using Webefinity.ContentRoot.IndexUI.Interfaces
 
 @inject IFileBrowserService FileBrowserService
@@ -16,7 +15,7 @@
     case "text/x-markdown" when content is not null:
         {
             <div class="card">
-                <Cadence.UI.Components.Markdown Md="@content" />
+                <Webefinity.Cadence.UI.Components.Markdown Md="@content" />
             </div>
         }
         break;

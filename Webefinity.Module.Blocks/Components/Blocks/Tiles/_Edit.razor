@@ -42,7 +42,7 @@
 @code {
 	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
 	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
-	TilesDetailModel? tilesDetail = null;
+	TilesDetailModel tilesDetail = new();
 
 	protected override async Task OnInitializedAsync()
 	{
