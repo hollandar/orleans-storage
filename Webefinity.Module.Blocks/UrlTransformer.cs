@@ -6,22 +6,27 @@ namespace Webefinity.Module.Blocks
 {
     public static class UriTransformer
     {
-        public static string TransformSize(string url, string size = "", string defaultUrl = "unspecified.jpg")
+        public static string Transform(string url, params string[] processingInstructions)
         {
-            if (string.IsNullOrEmpty(url))
+            if (processingInstructions.Any())
             {
-                return defaultUrl;
+                var separator = url.Contains("?") ? "&" : "?";
+
+                return $"{url}{separator}p={String.Join(',', processingInstructions)}";
             }
-            return url;
+            else
+                return url;
         }
 
-        public static string Transform(string url, string defaultUrl = "unspecified.jpg")
+        static int[] defaultSizes = new int[] { 320, 480, 640, 960, 1280, 1600, 1920, 2560, 3840 };
+        public static string TransformSrcSet(string url, Func<int, string>? processingInstructionFactory = null, int[]? sizes = null)
         {
-            if (string.IsNullOrEmpty(url))
-            {
-                return defaultUrl;
-            }
-            return url;
+            sizes ??= defaultSizes;
+            processingInstructionFactory ??= size => $"bicubic_wh({size})";
+
+            var srcSetBuilder = new StringBuilder();
+
+            return sizes.Select(size => $"{Transform(url, processingInstructionFactory(size))} {size}w").Aggregate((a, b) => $"{a}, {b}");
         }
     }
 }

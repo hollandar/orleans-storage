@@ -15,7 +15,7 @@
 
 	<ItemGroup>
 	  <PackageReference Include="Webefinity.Cadence.UI" Version="0.0.1-beta02" />
-	  <PackageReference Include="Webefinity.Cadence.Upload" Version="0.0.1-beta01" />
+	  <PackageReference Include="Webefinity.Cadence.Upload" Version="0.0.1-beta03" />
 	</ItemGroup>
 
 	<ItemGroup>

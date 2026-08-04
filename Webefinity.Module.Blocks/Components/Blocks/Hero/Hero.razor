@@ -1,5 +1,6 @@
 ﻿@using Webefinity.Module.Blocks
 @using Webefinity.Module.Blocks.Components.Blocks
+@using Webefinity.Module.Blocks.Components.Shared
 @inherits BlockComponentBase<HeroModel>
 @attribute [BlockAttribute("hero", "Hero", "A responsive hero.")]
 
@@ -9,15 +10,15 @@
 
             <Markdown Md="@Model.Text" />
 
-
         </div>
-        <img src="@UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg")" alt="Hero Image" class="hero-image"
-             srcset="@UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 2560w,
-        @UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 1920w,
-        @UriTransformer.TransformSize(this.Model.Url, String.Empty, "unspecified.jpg") 1024w" />
+        <img 
+            src="@UriTransformer.Transform(this.Model.Url)" 
+            srcset="@UriTransformer.TransformSrcSet(this.Model.Url)"
+            class="hero-image" 
+            alt="Hero Image"
+            />
     </div>
 </section>
 
 @code {
-
 }

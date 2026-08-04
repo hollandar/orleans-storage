@@ -1,0 +1,13 @@
+﻿<img src="@UriTransformer.Transform(Url ?? DefaultUrl)" @attributes="AdditionalAttributes" srcset="@ImageSizes()" />
+
+@code {
+    [Parameter(CaptureUnmatchedValues = true)] public IDictionary<string, object> AdditionalAttributes { get; set; } = new Dictionary<string, object>();
+    [Parameter, EditorRequired] public string? Url { get; set; } = null;
+    [Parameter] public string DefaultUrl { get; set; } = "unspecified.jpg";
+    [Parameter] public int[] Sizes { get; set; } = new int[] { 2560, 1920, 1024 };
+
+    private string ImageSizes()
+    {
+        return string.Join(", ", Sizes.Select(size => $"{UriTransformer.Transform(Url ?? DefaultUrl, $"bicubic_wh({size})")} {size}w"));
+    }
+}
