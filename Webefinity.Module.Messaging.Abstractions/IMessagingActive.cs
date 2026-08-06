@@ -2,5 +2,5 @@
 
 public interface IMessagingActive
 {
-    Task<bool> IsMessagingAsync();
+    Task<bool> IsMessagingAsync(CancellationToken? ct = null);
 }

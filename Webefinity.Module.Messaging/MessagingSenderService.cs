@@ -32,7 +32,7 @@ public class MessagingSenderService : BackgroundService
             var senderTransportService = scope.ServiceProvider.GetRequiredService<ISenderTransportService>();
             var messagingActive = scope.ServiceProvider.GetRequiredService<IMessagingActive>();
 
-            if (!await messagingActive.IsMessagingAsync())
+            if (!await messagingActive.IsMessagingAsync(stoppingToken))
             {
                 if (waitTime < this.options.Value.MaxWaitTime)
                 {

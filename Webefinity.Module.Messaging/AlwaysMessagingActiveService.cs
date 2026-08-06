@@ -4,7 +4,7 @@ namespace Webefinity.Module.Messaging;
 
 public class AlwaysMessagingActiveService : IMessagingActive
 {
-    public Task<bool> IsMessagingAsync()
+    public Task<bool> IsMessagingAsync(CancellationToken? ct = null)
     {
         return Task.FromResult(true);
     }
