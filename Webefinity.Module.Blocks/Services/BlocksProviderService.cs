@@ -17,7 +17,7 @@ public class BlocksProviderService
         return this.blocksDataProvider.GetPageOutlineAsync(name, ct);
     }
 
-    public Task<PageModel> GetPageModelAsync(string name, CancellationToken ct = default!)
+    public Task<PageResult> GetPageModelAsync(string name, CancellationToken ct = default!)
     {
         return this.blocksDataProvider.GetPageModelAsync(name, ct);
     }

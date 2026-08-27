@@ -4,6 +4,6 @@ namespace Webefinity.Module.Authority.Entities;
 
 public interface IAuthorityDbContext
 {
-    DbSet<UserAuthority> Authorities { get; init; }
+    DbSet<UserAuthority> Authorities { get; set; }
     Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
 }

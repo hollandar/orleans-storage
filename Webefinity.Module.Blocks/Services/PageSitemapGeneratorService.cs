@@ -7,9 +7,9 @@ namespace Webefinity.Module.Blocks.Services;
 
 public class PageSitemapGeneratorService : ISitemapGenerator
 {
-    private readonly IBlocksDbContextChild dbContext;
+    private readonly IBlocksDbContext dbContext;
 
-    public PageSitemapGeneratorService(IBlocksDbContextChild dbContext)
+    public PageSitemapGeneratorService(IBlocksDbContext dbContext)
     {
         this.dbContext = dbContext;
     }

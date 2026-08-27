@@ -51,7 +51,7 @@
     [Inject] internal BlockProviderService BlockProvider { get; set; } = default!;
     [Parameter] public string PageName { get; set; } = default!;
 
-    PageModel pageModel = default!;
+    PageModel? pageModel = null;
     IEnumerable<BlockModel> blockEditorStates = Array.Empty<BlockModel>();
 
     protected override async Task OnInitializedAsync()
@@ -62,8 +62,18 @@
 
     async Task RefreshPageModel()
     {
-        this.pageModel = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
-        this.blockEditorStates = this.pageModel.Blocks.ToList().OrderBy(r => r.Sequence);
+        var pageResult = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
+        if (pageResult.found && pageResult.pageModel is not null)
+        {
+            pageModel = pageResult.pageModel;
+            this.blockEditorStates = this.pageModel.Blocks.ToList().OrderBy(r => r.Sequence);
+        }
+        else
+        {
+            pageModel = null;
+            this.blockEditorStates = Array.Empty<BlockModel>();
+        }
+
         await InvokeAsync(StateHasChanged);
     }
 }

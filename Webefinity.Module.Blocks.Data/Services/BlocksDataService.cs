@@ -9,9 +9,9 @@ namespace Webefinity.Module.Blocks.Data.Services;
 
 public class BlocksDataService : IBlocksDataProvider
 {
-    private readonly IBlocksDbContextChild dbContextChild;
+    private readonly IBlocksDbContext dbContextChild;
 
-    public BlocksDataService(IBlocksDbContextChild dbContextChild)
+    public BlocksDataService(IBlocksDbContext dbContextChild)
     {
         this.dbContextChild = dbContextChild;
     }
@@ -48,14 +48,16 @@ public class BlocksDataService : IBlocksDataProvider
         return true;
     }
 
-    public Task<PageModel> GetPageModelAsync(string name, CancellationToken ct)
+    public Task<PageResult> GetPageModelAsync(string name, CancellationToken ct)
     {
         var lowerName = name.ToLower() ?? string.Empty;
         var page = dbContextChild.Pages.Where(r => r.Name.ToLower() == lowerName).FirstOrDefault();
-        if (page is null) throw new ArgumentException($"Page {name} not found", nameof(name));
+        if (page is null) { 
+            return Task.FromResult(new PageResult(false, null));
+        }
 
         dbContextChild.Pages.Entry(page).Collection(r => r.Blocks).Load();
-        return Task.FromResult(PageMapper.Map(page));
+        return Task.FromResult(new PageResult(true,PageMapper.Map(page)));
     }
 
     public Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct)

@@ -135,7 +135,7 @@
     [Inject] public NavigationManager NavigationManager { get; set; } = default!;
     [Parameter] public string PageName { get; set; } = default!;
 
-    PageModel pageModel = default!;
+    PageModel? pageModel = null;
     IEnumerable<BlockEditorState> blockEditorStates = Array.Empty<BlockEditorState>();
 	IEnumerable<BlockDescription> blockDescriptions = Array.Empty<BlockDescription>();
 
@@ -159,9 +159,18 @@
 
     async Task RefreshPageModel()
     {
-        this.pageModel = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
-        this.blockEditorStates = this.pageModel.Blocks.Select(m => new BlockEditorState(m)).ToList().OrderBy(r =>
-        r.Model.Sequence);
+        var pageResult = await BlocksProvider.GetPageModelAsync(PageName, CancellationToken.None);
+        if (pageResult.found && pageResult.pageModel is not null)
+        {
+            this.pageModel = pageResult.pageModel;
+            this.blockEditorStates = this.pageModel.Blocks.Select(m => new BlockEditorState(m)).ToList().OrderBy(r => r.Model.Sequence);
+        }
+        else
+        {
+            this.pageModel = null;
+            this.blockEditorStates = Array.Empty<BlockEditorState>();
+        }
+        
         await InvokeAsync(StateHasChanged);
     }
 
