@@ -225,6 +225,7 @@
 
     async Task AddBlockAtInsertSequenceAsync(string kind)
     {
+        ArgumentNullException.ThrowIfNull(pageModel, nameof(pageModel));
         await blockListDialog.CloseAsync();
         if (this.insertSequence == -1)
         {

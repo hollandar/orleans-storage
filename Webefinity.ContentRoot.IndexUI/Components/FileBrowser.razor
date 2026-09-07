@@ -8,7 +8,7 @@
     <div class="panel file-browser-panel">
         <h2>Files</h2>
         <div class="file-repeater repeater-control repeater-2">
-            <Repeater @ref="fileRepeater" ItemsProvider="FileListProvider">
+            <Repeater @ref="fileRepeater" ItemsProvider="FileListProvider" VirtualScroll="true">
                 <Header>
                     <div class="repeater-control-row repeater-head">
                         <div class="file-name">
