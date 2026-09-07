@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace Webefinity.Module.Messaging.Data;
 
-public interface IMessagingDbContext
+public interface IMessagingDbContext: IDisposable
 {
     DbSet<Message> Messages { get; set; }
     DbSet<Attachment> Attachments { get; set; }
