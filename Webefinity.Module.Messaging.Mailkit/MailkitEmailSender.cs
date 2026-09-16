@@ -26,9 +26,12 @@ namespace Webefinity.Module.Messaging.Mailkit
 
             this.logger = serviceProvider.GetRequiredService<ILogger<MailkitEmailSender>>();
 
-            this.logger.LogInformation(
-                "MailKit: Email sender initialized with SMTP server {Host}:{Port}, UseSsl={UseSsl}, RequiresAuthentication={RequiresAuthentication}, From={From}", 
-                this.smtpOptions.Host, this.smtpOptions.Port, this.smtpOptions.UseSsl, this.smtpOptions.RequiresAuthentication, this.smtpOptions.From);
+            if (this.logger.IsEnabled(LogLevel.Information))
+            {
+                this.logger.LogInformation(
+                    "MailKit: Email sender initialized with SMTP server {Host}:{Port}, UseSsl={UseSsl}, RequiresAuthentication={RequiresAuthentication}, From={From}", 
+                    this.smtpOptions.Host, this.smtpOptions.Port, this.smtpOptions.UseSsl, this.smtpOptions.RequiresAuthentication, this.smtpOptions.From);
+            }
         }
 
         public Task SendAsync(EmailMessageModel emailMessage, CancellationToken? ct)
@@ -87,11 +90,17 @@ namespace Webefinity.Module.Messaging.Mailkit
                     // Send the email
                     client.Send(message);
 
-                    this.logger?.LogInformation("MailKit: Email sent to {To} with subject {Subject}", message.To, message.Subject);
+                    if (this.logger.IsEnabled(LogLevel.Information))
+                    {
+                        this.logger.LogInformation("MailKit: Email sent to {To} with subject {Subject}", message.To, message.Subject);
+                    }
                 }
                 catch (Exception ex)
                 {
-                    this.logger?.LogError("MailKit: Email sent to {To} with subject {Subject} failed: {Error}", message.To, message.Subject, ex.Message);
+                    if (this.logger.IsEnabled(LogLevel.Error))
+                    {
+                        this.logger.LogError("MailKit: Email sent to {To} with subject {Subject} failed: {Error}", message.To, message.Subject, ex.Message);
+                    }
                     throw new MessagingException($"An error occurred while sending the email: {ex.Message}");
                 }
                 finally
