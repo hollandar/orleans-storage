@@ -8,4 +8,5 @@ public class MessagingOptions
     public int RetryCount { get; set; } = 5;
     public int RetryDelay { get; set; } = 60; // Minutes
     public int IntraMessageDelay { get; set; } = 1000 / 10; // Milliseconds, 10 messages per second
+    public int BatchSize { get; set; } = 10; // Number of messages to send in one batch
 }

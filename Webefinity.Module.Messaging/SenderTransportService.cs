@@ -43,48 +43,53 @@ public class SenderTransportService : ISenderTransportService
                 (r.Status == SendStatus.Failed && r.RetryAfter != null && r.RetryAfter < guardDate && r.RetryCount > 0)
             )
             .OrderBy(r => r.Created)
+            .Take(this.options.Value.BatchSize)
             .AsNoTracking();
 
         var sendQueue = new Queue<Message>(sendAvailableMessageQuery.ToList());
-
         int workDone = 0;
         while (!ct.IsCancellationRequested && sendQueue.Count > 0)
         {
-            var message = sendQueue.Dequeue();
+            var sendingMessage = sendQueue.Dequeue();
+
             try
             {
-                switch (message.Target)
+                switch (sendingMessage.Target)
                 {
                     case MessageTarget.Email:
-                        await SendEmailAsync(message, ct);
+                        await SendEmailAsync(sendingMessage, ct);
                         break;
                     case MessageTarget.SMS:
-                        await SendSmsAsync(message, ct);
+                        await SendSmsAsync(sendingMessage, ct);
                         break;
                     case MessageTarget.PushNotification:
-                        await SendPushAsync(message, ct);
+                        await SendPushAsync(sendingMessage, ct);
                         break;
                     default:
                         throw new NotImplementedException();
                 }
 
-                dbContext.Messages.Where(r => r.Id == message.Id).ExecuteUpdate(
+                await dbContext.Messages.Where(r => r.Id == sendingMessage.Id).ExecuteUpdateAsync(
                     r => r.SetProperty(m => m.Status, SendStatus.Sent)
                           .SetProperty(m => m.Sent, DateTimeOffset.UtcNow)
                 );
-            } catch (Exception ex)
+
+                workDone++;
+                await Task.Delay(this.options.Value.IntraMessageDelay, ct);
+            }
+            catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
-                dbContext.Messages.Where(r => r.Id == message.Id).ExecuteUpdate(
+                // Operation was canceled, exit the loop
+                throw;
+            }
+            catch (Exception ex)
+            {
+                await dbContext.Messages.Where(r => r.Id == sendingMessage.Id).ExecuteUpdateAsync(
                     r => r.SetProperty(m => m.Status, SendStatus.Failed)
                     .SetProperty(m => m.RetryAfter, guardDate.AddMinutes(this.options.Value.RetryDelay))
                     .SetProperty(m => m.RetryCount, r => r.RetryCount - 1)
                     .SetProperty(m => m.Error, ex.Message)
                 );
-            }
-            finally
-            {
-                workDone++;
-                await Task.Delay(this.options.Value.IntraMessageDelay, ct);
             }
         }
 
@@ -166,12 +171,13 @@ public class SenderTransportService : ISenderTransportService
 
     private EmailMessageFormat MapEmailFormat(MessageFormat format)
     {
-        return format switch { 
-            MessageFormat.None => EmailMessageFormat.None, 
-            MessageFormat.Text => EmailMessageFormat.Text, 
-            MessageFormat.Html => EmailMessageFormat.Html, 
-            MessageFormat.Markdown => EmailMessageFormat.Markdown, 
-            _ => throw new ArgumentException($"Email format is not known {format}", nameof(format)) 
+        return format switch
+        {
+            MessageFormat.None => EmailMessageFormat.None,
+            MessageFormat.Text => EmailMessageFormat.Text,
+            MessageFormat.Html => EmailMessageFormat.Html,
+            MessageFormat.Markdown => EmailMessageFormat.Markdown,
+            _ => throw new ArgumentException($"Email format is not known {format}", nameof(format))
         };
     }
 
