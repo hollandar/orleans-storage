@@ -14,7 +14,7 @@ namespace Webefinity.Module.Blog
     public static class StartupExtensions
     {
 
-        public static void AddWebefinityBlog(this WebApplicationBuilder builder)
+        public static void AddWebefinityBlog(this WebApplicationBuilder builder, string? key = null)
         {
             builder.Services.AddScoped<ArticleIndexService>();
             var blogConnectionString = builder.Configuration.GetConnectionString("Blog");
@@ -22,16 +22,16 @@ namespace Webefinity.Module.Blog
             {
                 options.UseSqlite(blogConnectionString ?? "Data Source=db/blog.db");
             });
-            builder.Services.AddHostedService<ArticleIndexHostedService>();
+            builder.Services.AddHostedService<ArticleIndexHostedService>((sp) => new ArticleIndexHostedService(sp, key));
+            builder.Services.AddKeyedSingleton<string>("Webefinity.Module.Blog.ArticleStoreKey", key!);
         }
 
-        public static void MapWebefinityBlogEndpoints(this WebApplication builder)
+        public static void MapWebefinityBlogEndpoints(this WebApplication builder, string? key = null)
         {
             
             builder.Map("/contentroot/blog/{*slug}", (string slug, IServiceProvider serviceProvider) =>
             {
-
-                var contentRootLibrary = serviceProvider.GetRequiredService<IContentRootLibrary>();
+                var contentRootLibrary = key is not null? serviceProvider.GetRequiredKeyedService<IContentRootLibrary>(key) : serviceProvider.GetRequiredService<IContentRootLibrary>();
                 if (contentRootLibrary.FileExists(Constants.BlogCollection, slug))
                     return Results.File(contentRootLibrary.LoadReadStream(Constants.BlogCollection, slug));
                 else

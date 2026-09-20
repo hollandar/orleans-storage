@@ -22,18 +22,20 @@ namespace Webefinity.Module.Blog.Services
     {
         private readonly ILogger<ArticleIndexHostedService> logger;
         private readonly IServiceProvider serviceProvider;
+        private readonly string? key;
 
-        public ArticleIndexHostedService(ILogger<ArticleIndexHostedService> logger, IServiceProvider serviceProvider)
+        public ArticleIndexHostedService(IServiceProvider serviceProvider, string? key = null)
         {
-            this.logger = logger;
+            this.logger = serviceProvider.GetRequiredService<ILogger<ArticleIndexHostedService>>();
             this.serviceProvider = serviceProvider;
+            this.key = key;
         }
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             // Resolve a db context
             using var scope = this.serviceProvider.CreateScope();
-            var contentRootLibrary = scope.ServiceProvider.GetRequiredService<IContentRootLibrary>();
+            var contentRootLibrary = this.key is not null? scope.ServiceProvider.GetRequiredKeyedService<IContentRootLibrary>(this.key) : scope.ServiceProvider.GetRequiredService<IContentRootLibrary>();
             var dbContext = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
 
             // Set up a database

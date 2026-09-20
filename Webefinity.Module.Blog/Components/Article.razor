@@ -1,18 +1,18 @@
 ﻿@page "/article/{id}"
 
+@using Humanizer
 @using Markdig
 @using Markdig.Renderers
 @using Markdig.Syntax
 @using Markdig.Syntax.Inlines
+@using Microsoft.Extensions.DependencyInjection
 @using Microsoft.Extensions.Options
-@using Webefinity.Frontmatter
-@using Humanizer
 @using Webefinity.ContentRoot
 @using Webefinity.ContentRoot.Abstractions
-
+@using Webefinity.Frontmatter
 @using Webefinity.Module.Blog.Models
 
-@inject IContentRootLibrary ContentRootLibrary
+@inject IServiceProvider ServiceProvider
 
 <HeadContent>
     <meta name="description" content="@this.properties?.Summary" />
@@ -76,12 +76,14 @@
 
     protected override async Task OnInitializedAsync()
     {
+        var key = ServiceProvider.GetRequiredKeyedService<string>("Webefinity.Module.Blog.ArticleStoreKey");
+        var contentRootLibrary = key is not null? ServiceProvider.GetRequiredKeyedService<IContentRootLibrary>(key) : ServiceProvider.GetRequiredService<IContentRootLibrary>();
         var collectionDef = new CollectionDef("blog");
 
         var file = $"{Id}.md";
-        if (ContentRootLibrary.FileExists(collectionDef, file))
+        if (contentRootLibrary.FileExists(collectionDef, file))
         {
-            using var reader = ContentRootLibrary.LoadReader(collectionDef, file);
+            using var reader = contentRootLibrary.LoadReader(collectionDef, file);
             var content = await FrontmatterLoader.LoadAsync<ArticleFrontmatter>(reader);
             this.properties = content.Frontmatter;
             var markdownPipeline = new MarkdownPipelineBuilder().Use<ImageExtension>().Build();
