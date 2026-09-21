@@ -23,6 +23,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\cadence\Webefinity.Cadence.UI\Webefinity.Cadence.UI.csproj" />
+		<ProjectReference Include="..\..\cadence\Webefinity.Cadence.Upload\Webefinity.Cadence.Upload.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Data\Webefinity.Module.Blocks.Data.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.SiteMap.Abstractions\Webefinity.Module.SiteMap.Abstractions.csproj" />
