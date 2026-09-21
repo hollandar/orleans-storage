@@ -15,23 +15,24 @@ using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Frontmatter;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Models;
+using Webefinity.Module.Scheduler.Interfaces;
 
 namespace Webefinity.Module.Blog.Services
 {
-    public partial class ArticleIndexHostedService : IHostedService
+    public partial class ArticleIndexJob : IJob
     {
-        private readonly ILogger<ArticleIndexHostedService> logger;
+        private readonly ILogger<ArticleIndexJob> logger;
         private readonly IServiceProvider serviceProvider;
         private readonly string? key;
 
-        public ArticleIndexHostedService(IServiceProvider serviceProvider, string? key = null)
+        public ArticleIndexJob(IServiceProvider serviceProvider, string? key = null)
         {
-            this.logger = serviceProvider.GetRequiredService<ILogger<ArticleIndexHostedService>>();
+            this.logger = serviceProvider.GetRequiredService<ILogger<ArticleIndexJob>>();
             this.serviceProvider = serviceProvider;
             this.key = key;
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
+        public async Task ExecuteAsync(IJobExecutionContext jobExecutionContext)
         {
             // Resolve a db context
             using var scope = this.serviceProvider.CreateScope();

@@ -3,23 +3,29 @@ using Webefinity.Module.Scheduler.Interfaces;
 using Webefinity.Module.Scheduler.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Webefinity.Module.Scheduler;
 
 public static class StartupExtensions
 {
-    public static void AddScheduler(this IServiceCollection services, Action<JobDescriptorConfigurationOptions> configureOptions)
+
+    public static void AddScheduler(this IServiceCollection services)
     {
         // Add scheduler services
+        services.TryAddSingleton<IJobSchedulerActive, JobSchedulerAlwaysActive>();
         services.AddScoped<IJobManualTrigger, JobManualTriggerService>();
         services.AddHostedService<SchedulerBackgroundWorker>();
+    }
 
+    public static void AddSchedulerJobs(this IServiceCollection services, Action<JobDescriptorConfigurationOptions> configureOptions)
+    {
         // Configure scheduled options for the scheduler
         JobDescriptorConfigurationOptions options = new();
         configureOptions(options);
 
         // Register the individual job types as singletons in the DI container
-        HashSet<Type> alreadyRegistered = [];
+        HashSet<Type> alreadyRegistered = new();
         foreach (var job in options.Jobs)
         {
             if (alreadyRegistered.Contains(job.JobType))

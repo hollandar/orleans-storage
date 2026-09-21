@@ -22,8 +22,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\cadence\Webefinity.Cadence.UI\Webefinity.Cadence.UI.csproj" />
 		<ProjectReference Include="..\Webefinity.ContentRoot\Webefinity.ContentRoot.csproj" />
 		<ProjectReference Include="..\Webefinity.Frontmatter\Webefinity.Frontmatter.csproj" />
+		<ProjectReference Include="..\Webefinity.Module.Scheduler\Webefinity.Module.Scheduler.csproj" />
+		<ProjectReference Include="..\Webefinity.Validation.Components\Webefinity.Validation.Components.csproj" />
 </ItemGroup>
 
 </Project>

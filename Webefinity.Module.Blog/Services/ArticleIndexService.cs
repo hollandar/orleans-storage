@@ -59,7 +59,8 @@ namespace Webefinity.Module.Blog.Services
                     Date = articleDb.Date,
                     Image = articleDb.Image,
                     Summary = articleDb.Summary,
-                    Tags = articleDb.Tags.Select(r => r.Tag).ToArray()
+                    Tags = articleDb.Tags.Select(r => r.Tag).ToArray(),
+                    State = articleDb.State
                 };
                 result.Add(frontmatter);
             }

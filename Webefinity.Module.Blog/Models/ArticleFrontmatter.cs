@@ -1,4 +1,6 @@
-﻿namespace Webefinity.Module.Blog.Models;
+﻿using Webefinity.Module.Blog.Data;
+
+namespace Webefinity.Module.Blog.Models;
 
 public class ArticleFrontmatter
 {
@@ -9,4 +11,5 @@ public class ArticleFrontmatter
     public string[] Tags { get; set; } = Array.Empty<string>();
     public string? Image { get; set; } = null;
     public string? Summary { get; set; } = null;
+    public ArticleState State { get; set; } = ArticleState.Draft;
 }
