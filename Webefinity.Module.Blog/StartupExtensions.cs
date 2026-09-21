@@ -14,15 +14,11 @@ namespace Webefinity.Module.Blog
     public static class StartupExtensions
     {
 
-        public static void AddWebefinityBlog(this WebApplicationBuilder builder, string? key = null)
+        public static void AddWebefinityBlog<TDbContext>(this WebApplicationBuilder builder, string? key = null) where TDbContext : DbContext
         {
             builder.Services.AddScoped<ArticleIndexService>();
-            var blogConnectionString = builder.Configuration.GetConnectionString("Blog");
-            builder.Services.AddDbContextFactory<BlogDbContext>(options =>
-            {
-                options.UseSqlite(blogConnectionString ?? "Data Source=db/blog.db");
-            });
-            builder.Services.AddHostedService<ArticleIndexHostedService>((sp) => new ArticleIndexHostedService(sp, key));
+            builder.Services.AddScoped<IBlogDbContext, BlogDbContext<TDbContext>>((sp) => new BlogDbContext<TDbContext>(sp.GetRequiredService<TDbContext>()));
+            builder.Services.AddHostedService((sp) => new ArticleIndexHostedService(sp, key));
             builder.Services.AddKeyedSingleton<string>("Webefinity.Module.Blog.ArticleStoreKey", key!);
         }
 

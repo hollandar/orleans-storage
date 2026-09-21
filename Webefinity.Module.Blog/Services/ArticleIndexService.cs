@@ -10,9 +10,9 @@ namespace Webefinity.Module.Blog.Services
 
     public class ArticleIndexService
     {
-        private readonly BlogDbContext blogDbContext;
+        private readonly IBlogDbContext blogDbContext;
 
-        public ArticleIndexService(BlogDbContext blogDbContext)
+        public ArticleIndexService(IBlogDbContext blogDbContext)
         {
             this.blogDbContext = blogDbContext;
         }

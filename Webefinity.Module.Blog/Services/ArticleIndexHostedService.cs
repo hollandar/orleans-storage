@@ -35,48 +35,17 @@ namespace Webefinity.Module.Blog.Services
         {
             // Resolve a db context
             using var scope = this.serviceProvider.CreateScope();
-            var contentRootLibrary = this.key is not null? scope.ServiceProvider.GetRequiredKeyedService<IContentRootLibrary>(this.key) : scope.ServiceProvider.GetRequiredService<IContentRootLibrary>();
-            var dbContext = scope.ServiceProvider.GetRequiredService<BlogDbContext>();
-
-            // Set up a database
-            await dbContext.Database.MigrateAsync();
+            var dbContext = scope.ServiceProvider.GetRequiredService<IBlogDbContext>();
 
             // Index all articles
             HashSet<string> articleIds = new HashSet<string>();
-            var enumerable = contentRootLibrary.EnumerateRecursiveAsync(Constants.BlogCollection, "*.md");
-            await foreach (var file in enumerable)
+            var enumerable = dbContext.Articles.ToList();
+            foreach (var file in enumerable)
             {
-                using var article = contentRootLibrary.LoadReader(Constants.BlogCollection, file);
-                var frontmatterResult = await FrontmatterLoader.LoadAsync<ArticleFrontmatter>(article);
-
-                if (frontmatterResult.Frontmatter is null)
-                {
-                    logger.LogError("Failed to index article {ArticleFile}, frontmatter was not loaded.", file);
-                    continue;
-                }
-
-                var articleEntry = await dbContext.Articles.FindAsync(frontmatterResult.Frontmatter.Id);
-                if (articleEntry is null)
-                {
-                    articleEntry = new BlogArticle { Id = frontmatterResult.Frontmatter.Id };
-                    dbContext.Articles.Add(articleEntry);
-                }
-
-                articleIds.Add(frontmatterResult.Frontmatter.Id);
-                articleEntry.Title = frontmatterResult.Frontmatter.Title;
-                articleEntry.Author = frontmatterResult.Frontmatter.Author;
-                articleEntry.Summary = frontmatterResult.Frontmatter.Summary;
-                articleEntry.Date = frontmatterResult.Frontmatter.Date;
-                articleEntry.Image = frontmatterResult.Frontmatter.Image;
-                
                 // Populate the tag list and words list for this article
-                await SynchronizeTagsAsync(dbContext, articleEntry, frontmatterResult.Frontmatter.Tags.ToHashSet());
-                await SynchronizeWordsAsync(dbContext, articleEntry, frontmatterResult.Content);
+                await SynchronizeTagsAsync(dbContext, file);
+                await SynchronizeWordsAsync(dbContext, file);
             }
-
-            // Clean up no longer existing articles
-            var oldArticles = dbContext.Articles.Where(a => !articleIds.Contains(a.Id));
-            dbContext.RemoveRange(oldArticles);
 
             await dbContext.SaveChangesAsync();
         }
@@ -84,8 +53,9 @@ namespace Webefinity.Module.Blog.Services
         [GeneratedRegex("([a-zA-Z0-9]{3,})")]
         public static partial Regex WordRegex();
 
-        private async Task SynchronizeWordsAsync(BlogDbContext blogDbContext, BlogArticle articleEntry, string content)
+        private async Task SynchronizeWordsAsync(IBlogDbContext blogDbContext, BlogArticle articleEntry)
         {
+            var content = articleEntry.Content ?? string.Empty;
             var words = WordRegex().Matches(content.ToLower());
             var wordCount = new Dictionary<string, int>();
             foreach (Match word in words)
@@ -106,34 +76,36 @@ namespace Webefinity.Module.Blog.Services
                 }
                 else
                 {
-                    blogDbContext.Remove(wordDb);
+                    blogDbContext.Words.Remove(wordDb);
                 }
             }
 
             foreach (var word in wordCount)
             {
-               blogDbContext.Add(new BlogWord { ArticleId = articleEntry.Id, Word = word.Key, Count = word.Value });
+                blogDbContext.Words.Add(new BlogWord { ArticleId = articleEntry.Id, Word = word.Key, Count = word.Value });
             }
         }
 
-        private async Task SynchronizeTagsAsync(BlogDbContext blogDbContext, BlogArticle articleEntry, HashSet<string> tags)
+        private async Task SynchronizeTagsAsync(IBlogDbContext blogDbContext, BlogArticle articleEntry)
         {
+            var tags = (articleEntry.TagList ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries).ToHashSet();
+
             await blogDbContext.Entry(articleEntry).Collection(a => a.Tags).LoadAsync();
             foreach (var tagDb in articleEntry.Tags)
             {
                 if (tags.Contains(tagDb.Tag))
                 {
-                   tags.Remove(tagDb.Tag);
+                    tags.Remove(tagDb.Tag);
                 }
                 else
                 {
-                    blogDbContext.Remove(tagDb);
+                    blogDbContext.Tags.Remove(tagDb);
                 }
             }
 
             foreach (var tag in tags)
             {
-                blogDbContext.Add(new BlogTag { ArticleId = articleEntry.Id, Tag = tag });
+                blogDbContext.Tags.Add(new BlogTag { ArticleId = articleEntry.Id, Tag = tag });
             }
         }
 
