@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -24,7 +25,7 @@ namespace Webefinity.Module.Blog.Services
     {
         public async Task<ArticleContentResult> GetArticleContentAsync(string articleId, CancellationToken stoppingToken)
         {
-            var article = await blogDbContext.Articles.FindAsync(articleId, stoppingToken);
+            var article = await blogDbContext.Articles.Include(r => r.Tags).FirstOrDefaultAsync(r => r.Id == articleId, stoppingToken);
             if (article == null)
             {
                 return new ArticleContentResult(ResultType.NotFound, new ArticleFrontmatter(), string.Empty);

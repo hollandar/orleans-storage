@@ -17,7 +17,7 @@ namespace Webefinity.Module.Blog.Services
             this.blogDbContext = blogDbContext;
         }
 
-        public Task<IEnumerable<ArticleFrontmatter>> ListArticlesAsync(int page = 0, int pageSize = 10, string? search = null, string? tag = null)
+        public Task<IEnumerable<ArticleFrontmatter>> ListArticlesAsync(int page = 0, int pageSize = 10, string? search = null, string? tag = null, ArticleState? state = null)
         {
             HashSet<string> searchArticleIds = new HashSet<string>();
             var searching = !string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(tag);
@@ -35,6 +35,8 @@ namespace Webefinity.Module.Blog.Services
 
             var enumerable = blogDbContext.Articles.Include(r => r.Tags).AsNoTracking();
             var fullArticles = enumerable.AsQueryable();
+            if (state is not null)
+                fullArticles = fullArticles.Where(r => r.State == state.Value);
             HashSet<string> articleIds = new HashSet<string>();
 
             if (searching)

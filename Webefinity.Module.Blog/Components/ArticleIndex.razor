@@ -38,7 +38,7 @@
         }
         else if (this.articleModels.Count() == 0 && !this.SearchTerms.IsActive)
         {
-            <p>No article are published</p>
+            <p>No articles found</p>
         }
         else
         {
@@ -80,6 +80,15 @@
 
     <EditForm Model="this.SearchTerms" method="post" OnSubmit="SearchAsync" FormName="BlogSearch">
         <div class="panel stack horizontal">
+            @if (this.isAuthorized)
+            {
+                <InputSelect @bind-Value="this.SearchTerms.State" style="padding-right: 2rem;">
+                    <option value="">All states</option>
+                    <option value="@ArticleState.Draft">Draft</option>
+                    <option value="@ArticleState.Published">Published</option>
+                    <option value="@ArticleState.Archived">Archived</option>
+                </InputSelect>
+            }
             <InputSelect @bind-Value="this.SearchTerms.Tag" style="padding-right: 2rem;">
                 <option value="">(none)</option>
                 @foreach (var tag in this.tags)
@@ -108,7 +117,21 @@
     {
         public string Search { get; set; } = string.Empty;
         public string Tag { get; set; } = string.Empty;
-        public bool IsActive { get => !String.IsNullOrWhiteSpace(Search) || !String.IsNullOrWhiteSpace(Tag); }
+        public string State { get; set; } = string.Empty;
+        public bool IsActive { get => !String.IsNullOrWhiteSpace(Search) || !String.IsNullOrWhiteSpace(Tag) || !String.IsNullOrWhiteSpace(State); }
+    }
+
+    /// <summary>
+    /// Anonymous users can only ever see published articles. Authorized users
+    /// may filter by state, or pass null to see all states.
+    /// </summary>
+    private ArticleState? ResolveRequestedState()
+    {
+        if (!this.isAuthorized)
+            return ArticleState.Published;
+        if (Enum.TryParse<ArticleState>(this.SearchTerms.State, out var state))
+            return state;
+        return null;
     }
 
     protected override async Task OnInitializedAsync()
@@ -125,14 +148,13 @@
 
         this.tags = await ArticleIndexService.ListTagsAsync();
 
-        if (!this.SearchTerms.IsActive)
-            this.articleModels = await ArticleIndexService.ListArticlesAsync();
+        this.articleModels = await ArticleIndexService.ListArticlesAsync(state: ResolveRequestedState());
 
         await base.OnInitializedAsync();
     }
 
     protected async Task SearchAsync()
     {
-        this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag);
+        this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag, state: ResolveRequestedState());
     }
 }

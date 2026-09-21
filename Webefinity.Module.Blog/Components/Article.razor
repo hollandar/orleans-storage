@@ -47,6 +47,16 @@
             @(new MarkupString(this.html))
         </article>
 
+        @if (this.properties.Tags.Length > 0)
+        {
+            <div class="tags-container">
+                @foreach (var tag in this.properties.Tags)
+                {
+                    <span class="tag">@tag</span>
+                }
+            </div>
+        }
+
         
     }
     else
