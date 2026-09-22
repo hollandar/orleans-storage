@@ -35,6 +35,9 @@ public static class BlocksDbContextExtensions
         modelBuilder.Entity<Page>(builder =>
         {
             builder.HasKey(r => r.Id);
+            builder.HasIndex(r => new { r.LinkText, r.LinkOrder });
+            builder.Property(r => r.Title).HasMaxLength(200);
+            builder.Property(r => r.LinkText).HasMaxLength(200);
         });
 
         modelBuilder.Entity<Block>(builder =>

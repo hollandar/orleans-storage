@@ -17,4 +17,6 @@ public class Page
     public PublishState State { get; set; } = PublishState.Draft;
     public DateTimeOffset CreatedAt { get; set; } = DateTimeOffset.UtcNow;
     public DateTimeOffset UpdatedAt { get; set; } = DateTimeOffset.UtcNow;
+    public string LinkText { get; set; } = string.Empty;
+    public int LinkOrder { get; set; } = 0;
 }

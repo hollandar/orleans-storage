@@ -104,6 +104,14 @@
                     </InputSelect>
                     <ValidationMessage For="@(() => settingsModel.State)" />
                 </div>
+                <div class="field">
+                    <InputText type="text" @bind-Value="settingsModel.LinkText" Label="Link Text" Placeholder="Page link text" />
+                    <ValidationMessage For="@(() => settingsModel.LinkText)" />
+                </div>
+                <div class="field">
+                    <InputNumber @bind-Value="settingsModel.LinkOrder" Label="Link Order" Placeholder="Page link order" />
+                    <ValidationMessage For="@(() => settingsModel.LinkOrder)" />
+                </div>
                 <div class="actions">
                     <button class="button primary" type="submit">Update</button>
                     <button class="button secondary" type="button" @onclick="() => showSettings = false">Close</button>
@@ -225,7 +233,9 @@ else
                     Id = pageOutline?.PageId ?? Guid.Empty,
                     Name = pageOutline?.Name ?? string.Empty,
                     Title = pageOutline?.Title ?? string.Empty,
-                    State = pageOutline?.State ?? PublishState.Draft
+                    State = pageOutline?.State ?? PublishState.Draft,
+                    LinkText = pageOutline?.LinkText ?? string.Empty,
+                    LinkOrder = pageOutline?.LinkOrder ?? 0
                 };
             }
             else
@@ -235,7 +245,9 @@ else
                     Id = Guid.Empty,
                     Name = string.Empty,
                     Title = string.Empty,
-                    State = PublishState.Draft
+                    State = PublishState.Draft,
+                    LinkText = string.Empty,
+                    LinkOrder = 0
                 };
             }
         }

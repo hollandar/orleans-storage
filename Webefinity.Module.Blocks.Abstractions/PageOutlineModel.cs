@@ -9,6 +9,8 @@ public class PageOutlineModel
     public string Title { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public PublishState State { get; set; } = PublishState.Draft;
+    public string LinkText { get; set; } = string.Empty;
+    public int LinkOrder { get; set; } = 0;
 
     public PageOutlineModel() { }
 
