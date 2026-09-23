@@ -1,6 +1,7 @@
 ﻿@page "/article/create"
 @page "/article/edit/{ArticleId}"
 @using Microsoft.AspNetCore.Components.Forms
+@using Webefinity.Cadence.Upload.Components
 @using Webefinity.Module.Blog.Data
 @using Webefinity.Validation.Components
 
@@ -62,7 +63,7 @@
             </div>
             <div class="field">
                 <label for="image">Image</label>
-                <InputText id="image" class="form-control" @bind-Value="articleEditModel.Image" />
+                <Webefinity.Cadence.Upload.Components.InputSelectFile id="image" class="form-control" @bind-Value="articleEditModel.Image" Library="@LibraryKey"/>
                 <ValidationMessage For="@(() => articleEditModel.Image)" />
             </div>
             <div class="field">
@@ -97,6 +98,7 @@ else
 })
 
 @code {
+    [CascadingParameter(Name ="CadenceUploadContentLibraryKey")] public string LibraryKey { get; set; } = "uploads";
     [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = null;
     [Parameter] public string? ArticleId { get; set; } = null;
 

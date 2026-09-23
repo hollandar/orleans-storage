@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
-using Webefinity.ContentRoot;
+﻿using Microsoft.EntityFrameworkCore;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Models;
 

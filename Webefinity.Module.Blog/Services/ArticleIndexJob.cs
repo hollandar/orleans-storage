@@ -1,20 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Webefinity.ContentRoot;
-using Webefinity.ContentRoot.Abstractions;
-using Webefinity.Frontmatter;
 using Webefinity.Module.Blog.Data;
-using Webefinity.Module.Blog.Models;
 using Webefinity.Module.Scheduler.Interfaces;
 
 namespace Webefinity.Module.Blog.Services

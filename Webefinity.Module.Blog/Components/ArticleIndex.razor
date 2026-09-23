@@ -49,7 +49,7 @@
                         <div>
                             @if (article.Image is not null)
                             {
-                                <img class="cover" src="@($"/contentroot/{Constants.BlogCollection.Collection}/{article.Image}")" alt="@article.Title" />
+                                <img class="cover" src="@($"{article.Image}")" alt="@article.Title" />
                             }
                         </div>
 

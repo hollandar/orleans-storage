@@ -1,12 +1,7 @@
 ﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
-using Webefinity.ContentRoot;
-using Webefinity.ContentRoot.Abstractions;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Services;
 using Webefinity.Module.Scheduler;
