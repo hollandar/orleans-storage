@@ -1,18 +1,11 @@
 ﻿@page "/article/{id}"
 
-@using Humanizer
-@using Markdig
-@using Markdig.Renderers
-@using Markdig.Syntax
-@using Markdig.Syntax.Inlines
-@using Microsoft.Extensions.DependencyInjection
-@using Microsoft.Extensions.Options
-@using Webefinity.ContentRoot
-@using Webefinity.ContentRoot.Abstractions
-@using Webefinity.Frontmatter
-@using Webefinity.Module.Blog.Models
-
 @inject IServiceProvider ServiceProvider
+@inject IOptions<BlogOptions> BlogOptions
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@inject ArticleContentService ArticleContentService
+@inject NavigationManager NavigationManager
 
 <HeadContent>
     <meta name="description" content="@this.properties?.Summary" />
@@ -22,35 +15,66 @@
 </HeadContent>
 
 <section class="gutter constrained p-t-4 p-b-4">
+
     @if (found)
     {
         @if (this.properties is not null)
         {
-            <PageTitle>@this.properties.Title</PageTitle>
+            if (this.BlogOptions.Value.SiteTitle is not null)
+            {
+                <PageTitle>@this.properties.Title - @this.BlogOptions.Value.SiteTitle</PageTitle>
+            }
+            else
+            {
+                <PageTitle>@this.properties.Title</PageTitle>
+            }
+
+            <BackH1 BackUrl="@(ReturnUrl ?? "/")">@this.properties.Title</BackH1>
+
             <p>@this.properties.Date.Humanize() by @this.properties.Author</p>
+
+            @if (this.isAuthorized)
+            {
+
+                <div class="actions">
+                        <div class="@ArticleStatusBadgeStateHelper.GetBadgeState(this.properties.State)">@this.properties.State</div>
+                    <a href="@NavigationManager.NavigationString($"/article/edit/{this.Id}", ReturnUrl)" class="button secondary"><i class="fa-solid fa-pencil"></i> Edit</a>
+                </div>
+            }
         }
 
         <article>
             @(new MarkupString(this.html))
         </article>
 
-        <div class="actions">
-            <a href="/article" class="button primary"><i class="fa-solid fa-caret-left"></i> Back</a>
-        </div>
+        @if (this.properties.Tags.Length > 0)
+        {
+            <div class="tags-container">
+                @foreach (var tag in this.properties.Tags)
+                {
+                    <span class="tag">@tag</span>
+                }
+            </div>
+        }
+
+        
     }
     else
     {
-        <h1>Article Not Found</h1>
+        <BackH1 BackUrl="@(ReturnUrl ?? "/")">Article Not Found</BackH1>
         <p>The article you have requested does not exist, maybe the link is wrong?</p>
     }
 </section>
 
 @code {
+    [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = null;
     [Parameter] public string Id { get; set; }
 
     string html = string.Empty;
     ArticleFrontmatter? properties = null;
     bool found = false;
+    private bool isAuthorized = false;
+    private AuthenticationState authenticationState;
 
     class ImageExtension : IMarkdownExtension
     {
@@ -76,19 +100,29 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var key = ServiceProvider.GetRequiredKeyedService<string>("Webefinity.Module.Blog.ArticleStoreKey");
-        var contentRootLibrary = key is not null? ServiceProvider.GetRequiredKeyedService<IContentRootLibrary>(key) : ServiceProvider.GetRequiredService<IContentRootLibrary>();
-        var collectionDef = new CollectionDef("blog");
-
-        var file = $"{Id}.md";
-        if (contentRootLibrary.FileExists(collectionDef, file))
+        this.authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        foreach (var policy in this.BlogOptions.Value.AuthorSecurityPolicies)
         {
-            using var reader = contentRootLibrary.LoadReader(collectionDef, file);
-            var content = await FrontmatterLoader.LoadAsync<ArticleFrontmatter>(reader);
-            this.properties = content.Frontmatter;
+            if ((await this.AuthorizationService.AuthorizeAsync(this.authenticationState.User, policy)).Succeeded)
+            {
+                this.isAuthorized = true;
+                break;
+            }
+        }
+
+        var articleContent = await ArticleContentService.GetArticleContentAsync(Id, CancellationToken.None);
+        this.found = articleContent.Result == ResultType.Found;
+        if (found)
+        {
+            this.properties = articleContent.Properties;
             var markdownPipeline = new MarkdownPipelineBuilder().Use<ImageExtension>().Build();
-            this.html = Markdig.Markdown.ToHtml(content.Content, markdownPipeline);
-            found = true;
+            this.html = Markdig.Markdown.ToHtml(articleContent.Content, markdownPipeline);
+
+        }
+        else
+        {
+            this.properties = null;
+            this.html = string.Empty;
         }
 
         await base.OnInitializedAsync();

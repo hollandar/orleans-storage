@@ -1,9 +1,14 @@
 @page "/article"
 @using Microsoft.AspNetCore.Components.Forms
+@using Webefinity.Module.Blog.Data
 @using Webefinity.Module.Blog.Models
 @using Webefinity.Module.Blog.Services
 
 @inject ArticleIndexService ArticleIndexService
+@inject IAuthorizationService AuthorizationService
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IOptions<BlogOptions> BlogOptions
+@inject NavigationManager NavigationManager
 
 <HeadContent>
     <meta name="description" content="An index of blog articles published by Sports Trainer."/>
@@ -16,7 +21,14 @@
 <PageTitle>Articles - AthHQ</PageTitle>
 
 <section class="gutter container p-t-4 p-b-4">
-    <h1>Articles</h1>
+    <BackH1 BackUrl="/">Articles</BackH1>
+
+    @if (this.isAuthorized)
+    {
+        <div class="actions">
+            <a href="@NavigationManager.NavigationString($"/article/create", ReturnUrl)" class="button secondary"><i class="fa-solid fa-plus"></i> New Article</a>
+        </div>    
+    }
 
     @if (this.articleModels is not null)
     {
@@ -26,7 +38,7 @@
         }
         else if (this.articleModels.Count() == 0 && !this.SearchTerms.IsActive)
         {
-            <p>No article are published</p>
+            <p>No articles found</p>
         }
         else
         {
@@ -37,12 +49,12 @@
                         <div>
                             @if (article.Image is not null)
                             {
-                                <img class="cover" src="@($"/contentroot/{Constants.BlogCollection.Collection}/{article.Image}")" alt="@article.Title" />
+                                <img class="cover" src="@($"{article.Image}")" alt="@article.Title" />
                             }
                         </div>
 
                         <h2>
-                            <a href="@($"/article/{article.Id}")">
+                            <a href="@NavigationManager.NavigationString($"/article/{article.Id}", ReturnUrl)">
                                 @article.Title
                             </a>
                         </h2>
@@ -50,6 +62,11 @@
                         @if (article.Summary is not null)
                         {
                             <p>@article.Summary</p>
+                        }
+
+                        @if (this.isAuthorized)
+                        {
+                            <div class="@ArticleStatusBadgeStateHelper.GetBadgeState(article.State)">@article.State</div>    
                         }
                     </div>
                 }
@@ -63,6 +80,15 @@
 
     <EditForm Model="this.SearchTerms" method="post" OnSubmit="SearchAsync" FormName="BlogSearch">
         <div class="panel stack horizontal">
+            @if (this.isAuthorized)
+            {
+                <InputSelect @bind-Value="this.SearchTerms.State" style="padding-right: 2rem;">
+                    <option value="">All states</option>
+                    <option value="@ArticleState.Draft">Draft</option>
+                    <option value="@ArticleState.Published">Published</option>
+                    <option value="@ArticleState.Archived">Archived</option>
+                </InputSelect>
+            }
             <InputSelect @bind-Value="this.SearchTerms.Tag" style="padding-right: 2rem;">
                 <option value="">(none)</option>
                 @foreach (var tag in this.tags)
@@ -78,31 +104,57 @@
 </section>
 
 @code {
+    [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = null;
     IEnumerable<ArticleFrontmatter>? articleModels;
     List<string> tags = new List<string>();
 
     [SupplyParameterFromForm]
     public MatchTerms SearchTerms { get; set; } = new MatchTerms();
 
+    bool isAuthorized = false;
+
     public class MatchTerms
     {
         public string Search { get; set; } = string.Empty;
         public string Tag { get; set; } = string.Empty;
-        public bool IsActive { get => !String.IsNullOrWhiteSpace(Search) || !String.IsNullOrWhiteSpace(Tag); }
+        public string State { get; set; } = string.Empty;
+        public bool IsActive { get => !String.IsNullOrWhiteSpace(Search) || !String.IsNullOrWhiteSpace(Tag) || !String.IsNullOrWhiteSpace(State); }
+    }
+
+    /// <summary>
+    /// Anonymous users can only ever see published articles. Authorized users
+    /// may filter by state, or pass null to see all states.
+    /// </summary>
+    private ArticleState? ResolveRequestedState()
+    {
+        if (!this.isAuthorized)
+            return ArticleState.Published;
+        if (Enum.TryParse<ArticleState>(this.SearchTerms.State, out var state))
+            return state;
+        return null;
     }
 
     protected override async Task OnInitializedAsync()
     {
+        var authenticationState = await this.AuthenticationStateProvider.GetAuthenticationStateAsync();
+        foreach (var policy in BlogOptions.Value.AuthorSecurityPolicies)
+        {
+            if ((await this.AuthorizationService.AuthorizeAsync(authenticationState.User, policy)).Succeeded)
+            {
+                this.isAuthorized = true;
+                break;
+            }
+        }
+
         this.tags = await ArticleIndexService.ListTagsAsync();
 
-        if (!this.SearchTerms.IsActive)
-            this.articleModels = await ArticleIndexService.ListArticlesAsync();
+        this.articleModels = await ArticleIndexService.ListArticlesAsync(state: ResolveRequestedState());
 
         await base.OnInitializedAsync();
     }
 
     protected async Task SearchAsync()
     {
-        this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag);
+        this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag, state: ResolveRequestedState());
     }
 }

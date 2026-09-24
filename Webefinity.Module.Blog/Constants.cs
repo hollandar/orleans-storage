@@ -1,9 +1,6 @@
-﻿using Webefinity.ContentRoot;
-using Webefinity.ContentRoot.Abstractions;
+﻿namespace Webefinity.Module.Blog;
 
-namespace Webefinity.Module.Blog;
-
-public class Constants
+public static class Constants
 {
-    public static CollectionDef BlogCollection = new CollectionDef("blog");
+    public const string BlobReindexTrigger = "ArticleIndexer";
 }

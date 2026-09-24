@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Collections.Concurrent;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
@@ -7,9 +8,12 @@ using Webefinity.Module.Blocks.Data.Mappers;
 
 namespace Webefinity.Module.Blocks.Data.Services;
 
-public class BlocksDataService : IBlocksDataProvider
+internal class BlocksDataService : IBlocksDataProvider
 {
     private readonly IBlocksDbContext dbContextChild;
+    private static readonly List<PageLinkModel> pageLinkModelsCache = new List<PageLinkModel>();
+    private static readonly ReaderWriterLockSlim pageLinksCacheLock = new ReaderWriterLockSlim();
+    private static bool pageLinksDirty = true;
 
     public BlocksDataService(IBlocksDbContext dbContextChild)
     {
@@ -52,18 +56,19 @@ public class BlocksDataService : IBlocksDataProvider
     {
         var lowerName = name.ToLower() ?? string.Empty;
         var page = dbContextChild.Pages.Where(r => r.Name.ToLower() == lowerName).FirstOrDefault();
-        if (page is null) { 
+        if (page is null)
+        {
             return Task.FromResult(new PageResult(false, null));
         }
 
         dbContextChild.Pages.Entry(page).Collection(r => r.Blocks).Load();
-        return Task.FromResult(new PageResult(true,PageMapper.Map(page)));
+        return Task.FromResult(new PageResult(true, PageMapper.Map(page)));
     }
 
     public Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct)
     {
         var lowerName = name.ToLower();
-        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name, r.State });
+        var pages = dbContextChild.Pages.Where(r => r.Name.ToLower() == name.ToLower()).Select(r => new { r.Id, r.Title, r.Name, r.State, r.LinkText, r.LinkOrder });
         var pageExists = pages.Any();
         if (!pageExists)
         {
@@ -71,7 +76,7 @@ public class BlocksDataService : IBlocksDataProvider
         }
         var page = pages.Single();
 
-        return Task.FromResult(new PageOutlineModel(pageExists, page.Id, page.Title, page.Name, page.State));
+        return Task.FromResult(new PageOutlineModel(pageExists, page.Id, page.Title, page.Name, page.State) { LinkText = page.LinkText, LinkOrder = page.LinkOrder });
     }
 
     public async Task<bool> SetPageModelAsync(BlockModel model, JsonDocument jsonDocument, CancellationToken ct)
@@ -136,6 +141,8 @@ public class BlocksDataService : IBlocksDataProvider
 
         await this.dbContextChild.SaveChangesAsync();
 
+        pageLinksDirty = true;
+
         return true;
 
     }
@@ -144,6 +151,7 @@ public class BlocksDataService : IBlocksDataProvider
     {
         await this.dbContextChild.Blocks.Where(r => r.PageId == pageId).ExecuteDeleteAsync();
         await this.dbContextChild.Pages.Where(r => r.Id == pageId).ExecuteDeleteAsync();
+        pageLinksDirty = true;
 
         return true;
     }
@@ -220,7 +228,12 @@ public class BlocksDataService : IBlocksDataProvider
         page.Title = settingsModel.Title;
         page.State = settingsModel.State;
         page.UpdatedAt = DateTimeOffset.UtcNow;
+        page.LinkText = settingsModel.LinkText;
+        page.LinkOrder = settingsModel.LinkOrder;
+
         await this.dbContextChild.SaveChangesAsync(ct);
+
+        pageLinksDirty = true;
     }
 
     public async Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct)
@@ -240,6 +253,51 @@ public class BlocksDataService : IBlocksDataProvider
         page.UpdatedAt = DateTimeOffset.UtcNow;
         await this.dbContextChild.SaveChangesAsync(ct);
 
+        pageLinksDirty = true;
         return page.State;
+    }
+
+    public Task<IReadOnlyCollection<PageLinkModel>> GetPageControlLinksAsync(CancellationToken ct)
+    {
+        try
+        {
+            pageLinksCacheLock.EnterReadLock();
+            if (!pageLinksDirty)
+            {
+                return Task.FromResult((IReadOnlyCollection<PageLinkModel>)pageLinkModelsCache.ToList().AsReadOnly());
+            }
+        }
+        finally
+        {
+            pageLinksCacheLock.ExitReadLock();
+        }
+
+        try
+        {
+            pageLinksCacheLock.EnterWriteLock();
+            var links = this.dbContextChild.Pages
+                .Where(r => !String.IsNullOrEmpty(r.LinkText) && r.State == PublishState.Published)
+                .OrderBy(r => r.LinkOrder)
+                .Select(r => new PageLinkModel
+                {
+                    LinkText = r.LinkText,
+                    LinkOrder = r.LinkOrder,
+                    PageName = r.Name
+                });
+
+            if (pageLinksDirty)
+            {
+                pageLinkModelsCache.Clear();
+                pageLinkModelsCache.AddRange(links);
+                pageLinksDirty = false;
+            }
+
+            return Task.FromResult((IReadOnlyCollection<PageLinkModel>)pageLinkModelsCache.ToList().AsReadOnly());
+        }
+        finally
+        {
+
+            pageLinksCacheLock.ExitWriteLock();
+        }
     }
 }

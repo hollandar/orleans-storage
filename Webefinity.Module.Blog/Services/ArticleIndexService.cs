@@ -1,6 +1,4 @@
-﻿using Microsoft.AspNetCore.Mvc.Routing;
-using Microsoft.EntityFrameworkCore;
-using Webefinity.ContentRoot;
+﻿using Microsoft.EntityFrameworkCore;
 using Webefinity.Module.Blog.Data;
 using Webefinity.Module.Blog.Models;
 
@@ -10,14 +8,14 @@ namespace Webefinity.Module.Blog.Services
 
     public class ArticleIndexService
     {
-        private readonly BlogDbContext blogDbContext;
+        private readonly IBlogDbContext blogDbContext;
 
-        public ArticleIndexService(BlogDbContext blogDbContext)
+        public ArticleIndexService(IBlogDbContext blogDbContext)
         {
             this.blogDbContext = blogDbContext;
         }
 
-        public Task<IEnumerable<ArticleFrontmatter>> ListArticlesAsync(int page = 0, int pageSize = 10, string? search = null, string? tag = null)
+        public Task<IEnumerable<ArticleFrontmatter>> ListArticlesAsync(int page = 0, int pageSize = 10, string? search = null, string? tag = null, ArticleState? state = null)
         {
             HashSet<string> searchArticleIds = new HashSet<string>();
             var searching = !string.IsNullOrWhiteSpace(search) || !string.IsNullOrWhiteSpace(tag);
@@ -35,6 +33,8 @@ namespace Webefinity.Module.Blog.Services
 
             var enumerable = blogDbContext.Articles.Include(r => r.Tags).AsNoTracking();
             var fullArticles = enumerable.AsQueryable();
+            if (state is not null)
+                fullArticles = fullArticles.Where(r => r.State == state.Value);
             HashSet<string> articleIds = new HashSet<string>();
 
             if (searching)
@@ -59,7 +59,8 @@ namespace Webefinity.Module.Blog.Services
                     Date = articleDb.Date,
                     Image = articleDb.Image,
                     Summary = articleDb.Summary,
-                    Tags = articleDb.Tags.Select(r => r.Tag).ToArray()
+                    Tags = articleDb.Tags.Select(r => r.Tag).ToArray(),
+                    State = articleDb.State
                 };
                 result.Add(frontmatter);
             }

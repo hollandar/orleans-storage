@@ -14,10 +14,10 @@ public record FailTime(DateTimeOffset Time, double BackoffMinutes);
 
 internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : BackgroundService
 {
-    private readonly IOptions<JobDescriptorConfigurationOptions> jobDescriptorOptions = serviceProvider.GetRequiredService<IOptions<JobDescriptorConfigurationOptions>>();
-    private readonly Dictionary<Guid, DateOnly> lastRunDates = [];
-    private readonly Dictionary<Guid, DateTimeOffset> lastRunTimes = [];
-    private readonly Dictionary<Guid, FailTime> lastFailTimes = [];
+    private readonly IEnumerable<IOptions<JobDescriptorConfigurationOptions>> jobDescriptorOptions = serviceProvider.GetRequiredService<IEnumerable<IOptions<JobDescriptorConfigurationOptions>>>();
+    private readonly Dictionary<Guid, DateOnly> lastRunDates = new();
+    private readonly Dictionary<Guid, DateTimeOffset> lastRunTimes = new();
+    private readonly Dictionary<Guid, FailTime> lastFailTimes = new();
     private readonly ILogger<SchedulerBackgroundWorker>? logger = serviceProvider.GetService<ILogger<SchedulerBackgroundWorker>>();
     private readonly IServiceProvider serviceProvider = serviceProvider;
     private readonly IOptions<SchedulerOptions> schedulerOptions = serviceProvider.GetRequiredService<IOptions<SchedulerOptions>>();
@@ -28,9 +28,9 @@ internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : Bac
         while (!stoppingToken.IsCancellationRequested)
         {
             using var scope = serviceProvider.CreateScope();
-            var jobSchedulerActive = scope.ServiceProvider.GetService<IJobSchedulerActive>();
+            var jobSchedulerActive = scope.ServiceProvider.GetRequiredService<IJobSchedulerActive>();
             await Task.Delay(TimeSpan.FromSeconds(this.schedulerOptions.Value.CycleIntervalSeconds), stoppingToken);
-            if (jobSchedulerActive is not null && await jobSchedulerActive.IsJobSchedulerActiveAsync(stoppingToken))
+            if (await jobSchedulerActive.IsJobSchedulerActiveAsync(stoppingToken))
                 try
                 {
                     if (!await runningSemaphore.WaitAsync(1000, stoppingToken))
@@ -50,7 +50,7 @@ internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : Bac
 
     private async Task ExecuteTickAsync(DateTimeOffset currentTime, IServiceProvider serviceProvider, CancellationToken stoppingToken)
     {
-        foreach (var jobDescriptor in this.jobDescriptorOptions.Value.Jobs)
+        foreach (var jobDescriptor in this.jobDescriptorOptions.SelectMany(r => r.Value.Jobs))
         {
             if (stoppingToken.IsCancellationRequested)
             {
@@ -81,11 +81,17 @@ internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : Bac
                             interval = every.TimeSpan;
                         }
                         break;
-                    case ConditionManual manual:
-                        shouldRun = jobDescriptor.TriggeredManually;
+                    case ConditionManual manual when manual.IsTriggered:
+                        shouldRun = true;
+                        break;
+                    case ConditionAtStartup atStartup when atStartup.IsTriggered:
+                        shouldRun = true;
                         break;
                 }
+
+                if (shouldRun) break; // If any condition is satisfied, we can break early
             }
+
             if (shouldRun)
             {
                 try
@@ -115,8 +121,9 @@ internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : Bac
                         // Update the last run time and date after execution
                         lastRunTimes[jobDescriptor.Id] = currentTime;
                         lastRunDates[jobDescriptor.Id] = DateOnly.FromDateTime(currentTime.Date);
-                        jobDescriptor.TriggeredManually = false; // Reset the manual trigger after execution
                         lastFailTimes.Remove(jobDescriptor.Id); // Clear the last fail time on successful execution
+                        jobDescriptor.Conditions.OfType<ConditionAtStartup>().ToList().ForEach(c => c.IsTriggered = false);
+                        jobDescriptor.Conditions.OfType<ConditionManual>().ToList().ForEach(c => c.IsTriggered = false);
                     }
                     else
                     {
@@ -125,6 +132,7 @@ internal class SchedulerBackgroundWorker(IServiceProvider serviceProvider) : Bac
                             this.logger.LogError("Job type {JobType} for job {JobName}:{JobId} could not be resolved.", jobDescriptor.JobType.FullName, jobDescriptor.Name, jobDescriptor.Id);
                         }
                     }
+
                 }
 
                 catch (Exception ex)

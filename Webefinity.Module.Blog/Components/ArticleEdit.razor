@@ -1,0 +1,149 @@
+﻿@page "/article/create"
+@page "/article/edit/{ArticleId}"
+@using Microsoft.AspNetCore.Components.Forms
+@using Webefinity.Cadence.Upload.Components
+@using Webefinity.Module.Blog.Data
+@using Webefinity.Validation.Components
+
+@rendermode InteractiveServer
+
+@inject IOptions<BlogOptions> BlogOptions
+@inject AuthenticationStateProvider AuthenticationStateProvider
+@inject IAuthorizationService AuthorizationService
+@inject ArticleContentService ArticleContentService
+@inject NavigationManager NavigationManager
+
+
+@if (isAuthorized && articleEditModel is not null)
+{
+    <section class="gutter constrained p-t-4 p-b-4">
+        @if (this.BlogOptions.Value.SiteTitle is not null)
+        {
+            <PageTitle>Edit @this.articleEditModel.Title - @this.BlogOptions.Value.SiteTitle</PageTitle>
+        }
+        else
+        {
+            <PageTitle>Edit @this.articleEditModel.Title</PageTitle>
+        }
+        <BackH1 BackUrl="@(ReturnUrl ?? $"/article/{ArticleId}")">Edit @this.articleEditModel.Title</BackH1>
+        <p>@this.articleEditModel.Date.Humanize() by @this.articleEditModel.Author</p>
+        
+        <EditForm Model="@this.articleEditModel" OnValidSubmit="@HandleValidSubmitAsync">
+            <FluentValidator TModelType="ArticleEditModel" TValidator="ArticleEditModelValidator" />
+            <ValidationSummary />
+            <div class="field">
+                <label for="id">Id</label>
+                <InputText id="id" class="form-control" @bind-Value="articleEditModel.NewId" />
+                <ValidationMessage For="@(() => articleEditModel.NewId)" />
+            </div>
+            <div class="field">
+                <label for="title">Title</label>
+                <InputText id="title" class="form-control" @bind-Value="articleEditModel.Title" />
+                <ValidationMessage For="@(() => articleEditModel.Title)" />
+            </div>
+            <div class="field">
+                <label for="author">Author</label>
+                <InputText id="author" class="form-control" @bind-Value="articleEditModel.Author" />
+                <ValidationMessage For="@(() => articleEditModel.Author)" />
+            </div>
+            <div class="field">
+                <label for="summary">Summary</label>
+                <InputTextArea id="summary" class="form-control" @bind-Value="articleEditModel.Summary" />
+                <ValidationMessage For="@(() => articleEditModel.Summary)" />
+            </div>
+            <div class="field">
+                <label for="content">Content</label>
+                <InputTextArea id="content" class="form-control" @bind-Value="articleEditModel.Content" rows="20" />
+                <ValidationMessage For="@(() => articleEditModel.Content)" />
+            </div>
+            <div class="field">
+                <label for="tags">Tags</label>
+                <InputText id="tags" class="form-control" @bind-Value="articleEditModel.Tags" />
+                <ValidationMessage For="@(() => articleEditModel.Tags)" />
+            </div>
+            <div class="field">
+                <label for="image">Image</label>
+                <Webefinity.Cadence.Upload.Components.InputSelectFile id="image" class="form-control" @bind-Value="articleEditModel.Image" Library="@LibraryKey"/>
+                <ValidationMessage For="@(() => articleEditModel.Image)" />
+            </div>
+            <div class="field">
+                <label for="date">Date</label>
+                <InputDate id="date" class="form-control" @bind-Value="articleEditModel.Date" />
+                <ValidationMessage For="@(() => articleEditModel.Date)" />
+            </div>
+            <div class="field">
+                <label for="state">State</label>
+                <InputSelect id="state" class="form-control" @bind-Value="articleEditModel.State">
+                    @foreach (ArticleState value in Enum.GetValues<ArticleState>())
+                    {
+                        <option value="@value">@Enum.GetName(typeof(ArticleState), value)</option>
+                    }
+                </InputSelect>
+                <ValidationMessage For="@(() => articleEditModel.State)" />
+            </div>
+            @if (!string.IsNullOrEmpty(ErrorMessage))
+            {
+                <div class="danger">@ErrorMessage</div>
+            }
+            <div class="actions">
+                <Button type="submit" class="primary">Save Changes</Button>
+            </div>
+        </EditForm>
+    </section>
+}
+else
+{
+    <BackH1 BackUrl="@(ReturnUrl ?? "/")">Article Not Found</BackH1>
+    <p>The article you have requested does not exist, maybe the link is wrong?</p>
+})
+
+@code {
+    [CascadingParameter(Name ="CadenceUploadContentLibraryKey")] public string LibraryKey { get; set; } = "uploads";
+    [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = null;
+    [Parameter] public string? ArticleId { get; set; } = null;
+
+    private AuthenticationState authenticationState = default!;
+    private bool isAuthorized = false;
+    private ArticleEditModel? articleEditModel;
+    private string ErrorMessage = string.Empty;
+
+    protected override async Task OnInitializedAsync()
+    {
+        this.authenticationState = await AuthenticationStateProvider.GetAuthenticationStateAsync();
+        foreach (var policy in this.BlogOptions.Value.AuthorSecurityPolicies)
+        {
+            if ((await this.AuthorizationService.AuthorizeAsync(this.authenticationState.User, policy)).Succeeded)
+            {
+                // User is authorized to edit articles
+                this.isAuthorized = true;
+                break;
+            }
+        }
+
+        var articleEditResult = await ArticleContentService.GetArticleForEditAsync(ArticleId, CancellationToken.None);
+        if (articleEditResult.Result == ResultType.Found)
+        {
+            this.articleEditModel = articleEditResult.ArticleModel;
+        } else
+        {
+            this.articleEditModel = null;
+        }
+
+        await base.OnInitializedAsync();
+    }
+
+    public async Task HandleValidSubmitAsync()
+    {
+        var saveReslt = await ArticleContentService.SaveArticleEditsAsync(articleEditModel!, CancellationToken.None);
+
+        if (saveReslt.Success)
+        {
+            // Redirect to the article view page after successful save
+            NavigationManager.NavigateToWithReturn($"/article/{saveReslt.NewSlug}", "/article");
+        }
+        else
+        {
+            ErrorMessage = $"Failed to save article edits: {saveReslt.ErrorMessage}";
+        }
+    }
+}
