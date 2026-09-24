@@ -14,17 +14,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="Webefinity.Cadence.UI" Version="0.0.1-beta02" />
-	  <PackageReference Include="Webefinity.Cadence.Upload" Version="0.0.1-beta03" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<SupportedPlatform Include="browser" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\..\cadence\Webefinity.Cadence.UI\Webefinity.Cadence.UI.csproj" />
-		<ProjectReference Include="..\..\cadence\Webefinity.Cadence.Upload\Webefinity.Cadence.Upload.csproj" />
+		<ProjectReference Include="$(CadencePath)\Webefinity.Cadence.UI\Webefinity.Cadence.UI.csproj" />
+		<ProjectReference Include="$(CadencePath)\Webefinity.Cadence.Upload\Webefinity.Cadence.Upload.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Abstractions\Webefinity.Module.Blocks.Abstractions.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.Blocks.Data\Webefinity.Module.Blocks.Data.csproj" />
 		<ProjectReference Include="..\Webefinity.Module.SiteMap.Abstractions\Webefinity.Module.SiteMap.Abstractions.csproj" />
