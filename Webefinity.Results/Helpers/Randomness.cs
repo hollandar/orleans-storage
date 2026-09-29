@@ -8,7 +8,7 @@ public static class Randomness
 {
     public static string RandomString(int length, string? baseCharacters = null)
     {
-        string chars = baseCharacters ?? "abcdefghijklmnopqrstuvwxyz0123456789";
+        string chars = baseCharacters ?? AlphaNumericLowercase;
         var builder = new StringBuilder();
         for (int i = 0; i < length; i++)
         {
@@ -18,4 +18,8 @@ public static class Randomness
         Debug.Assert(builder.Length == length);
         return builder.ToString();
     }
+
+    public static string Numeric = "0123456789";
+    public static string AlphaLowercase = "abcdefghijklmnopqrstuvwxyz";
+    public static string AlphaNumericLowercase = AlphaLowercase + Numeric;
 }
