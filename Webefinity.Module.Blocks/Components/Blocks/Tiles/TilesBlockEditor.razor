@@ -8,12 +8,12 @@
 				<_View />
 				break;
 
-			case var mode when mode.Mode == EditorMode.EditTile && mode.TileId is not null:
+			case var mode when mode.Mode is (EditorMode.AddTile or EditorMode.EditTile):
 				<_EditTile />
 				break;
 
-			case var mode when mode.Mode == EditorMode.AddTile && mode.TileId is null:
-				<_EditTile />
+			case var mode when mode.Mode == EditorMode.EditHighlight && mode.TileId is null:
+				<_EditHighlight />
 				break;
 
 			default:
@@ -32,7 +32,8 @@
 	{
 		View,
 		AddTile,
-		EditTile
+		EditTile,
+		EditHighlight
 	}
 
 	public record EditorState(EditorMode Mode, Guid? TileId = null);
@@ -68,6 +69,11 @@
 	public async Task EditTileAsync(Guid id)
 	{
 		await SetEditorModeAsync(EditorMode.EditTile, id);
+	}
+
+	public async Task EditHighlightAsync()
+	{
+		await SetEditorModeAsync(EditorMode.EditHighlight, null);
 	}
 
 	public async Task RemoveTileAsync(Guid id)

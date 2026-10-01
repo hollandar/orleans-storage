@@ -1,0 +1,61 @@
+<h3>Edit Tile</h3>
+
+<EditForm Model="this.Model" OnValidSubmit="SaveTileAsync">
+	<FluentValidator TModelType="TilesModel" TValidator="TilesModelValidator"/>
+
+	<div class="field">
+
+		<div class="field">
+			<label for="url">Image Resource</label>
+			<InputSelectFile Library="@Library" id="url" @bind-Value="this.Model.ImageUri" />
+			<ValidationMessage For="@(() => this.Model.ImageUri)" />
+			<p class="hint">A url to an highlight image for the tile.</p>
+			<div class="actions">
+				<Button Clicked="() => this.Model.ImageUri = string.Empty">Reset</Button>
+			</div>
+		</div>
+
+		<div class="field">
+			<label for="Title">Title</label>
+			<InputText type="text" @bind-Value="this.Model.Title" />
+			<ValidationMessage For="() => this.Model.Title" />
+		</div>
+
+		<div class="field">
+			<label for="Title">Text Color</label>
+			<InputColor @bind-Value="this.Model.TextColor" />
+			<ValidationMessage For="() => this.Model.TextColor" />
+		</div>
+
+
+
+		<div class="field">
+			<label for="Md">Content (Markdown)</label>
+			<InputTextArea @bind-Value="this.Model.Md" rows="5" />
+			<ValidationMessage For="() => this.Model.Md" />
+		</div>
+
+		<div class="actions">
+				<button class="button primary" type="submit">Save</button>
+				<button type="button" class="button secondary" @onclick="CancelModelAsync">Cancel</button>
+		</div>
+
+	</div>
+
+</EditForm>
+@code {
+	[CascadingParameter(Name = "CadenceUploadContentLibraryKey")] public string Library { get; set; } = string.Empty;
+	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
+	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
+
+	protected async Task SaveTileAsync()
+	{
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+
+	protected async Task CancelModelAsync()
+	{
+		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
+	}
+}
+

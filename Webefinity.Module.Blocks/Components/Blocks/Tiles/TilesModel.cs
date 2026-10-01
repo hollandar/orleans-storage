@@ -5,6 +5,10 @@ namespace Webefinity.Module.Blocks.Components.Blocks.Tiles;
 public class TilesModel
 {
     public List<TileModel> Tiles { get; set; } = new List<TileModel>();
+    public string Title { get; set; } = string.Empty;
+    public string Md { get; set; } = string.Empty;
+    public string? ImageUri { get; set; } = null;
+    public string TextColor { get; set; } = string.Empty;
 }
 
 public class TilesModelValidator : AbstractValidator<TilesModel>

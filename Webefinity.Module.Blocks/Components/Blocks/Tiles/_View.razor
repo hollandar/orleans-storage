@@ -1,4 +1,14 @@
 <h3>View</h3>
+<Properties>
+    <Property Key="Title">@Model.Title</Property>
+    <Property Key="Image Resource">@Model.ImageUri</Property>
+</Properties>
+
+<div class="actions">
+	<div class="actions">
+		<Button class="primary" type="button" Clicked="async () => await Editor.EditHighlightAsync()">Edit Highlight</Button>
+	</div>
+</div>
 
 <table class="table">
 	<tr>
@@ -13,8 +23,8 @@
 				<td>@tile.Title</td>
 				<td>
 					<div class="actions">
-						<Button class="control" Clicked="() => Editor.EditTileAsync(tile.Id)"><Icon><i class="fa-solid fa-pencil"></i></Icon></Button>
-						<Button class="control" Clicked="() => Editor.RemoveTileAsync(tile.Id)"><Icon><i class="fa-solid fa-trash"></i></Icon></Button>
+						<Button class="control" Clicked="async () => await Editor.EditTileAsync(tile.Id)"><Icon><i class="fa-solid fa-pencil"></i></Icon></Button>
+						<Button class="control" Clicked="async () => await Editor.RemoveTileAsync(tile.Id)"><Icon><i class="fa-solid fa-trash"></i></Icon></Button>
 					</div>
 				</td>
 			</tr>

@@ -1,7 +1,21 @@
 ﻿@inherits BlockComponentBase<TilesModel>
 @attribute [BlockAttribute("tiles", "Tiles", "A block that renders a number of tiles.")]
-
 <div class="container">
+    <div class="@TilesSectionClass()">
+        @if (!TilesSectionClass().Contains("no-highlight"))
+        {
+            <div class="tiles-highlight">
+                <div class="tiles-highlight-content" style="color: @Model.TextColor">
+                    <h3>@Model.Title</h3>
+                    <Markdown Md="@Model.Md" />
+                </div>
+                <img src="@UriTransformer.Transform(this.Model.ImageUri)"
+                     srcset="@UriTransformer.TransformSrcSet(this.Model.ImageUri)"
+                     class="tiles-highlight-image object-position-scroll object-fit-cover"
+                     alt="@Model.Title" />
+            </div>
+        }
+
         <div class="@ContainerClass()">
             @foreach (var tile in Model.Tiles)
             {
@@ -27,6 +41,7 @@
             }
         </div>
     </div>
+</div>
 
 @code {
     protected string ContainerClass()
@@ -46,6 +61,18 @@
         else
         {
             return "tiles-container tiles-columns-1";
+        }
+    }
+
+    protected string TilesSectionClass()
+    {
+        if (String.IsNullOrWhiteSpace(Model.Md) && String.IsNullOrWhiteSpace(Model.ImageUri) && String.IsNullOrWhiteSpace(Model.Title))
+        {
+            return "tiles-section no-highlight";
+        }
+        else
+        {
+            return "tiles-section";
         }
     }
 }
