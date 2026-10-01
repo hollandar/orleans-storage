@@ -10,8 +10,9 @@
 
 @attribute [Authorize]
 
-@inject IBlocksDataProvider BlocksDataProvider
+@inject BlocksProviderService BlocksDataProvider
 @inject NavigationManager Nav
+
 <AuthorizeView Policy="@BlockSecurityPolicies.AuthorPolicy">
     <Authorized Context="authContext">
     <BackH1 BackUrl="@ReturnUrl">Content Pages</BackH1>
@@ -88,7 +89,7 @@
 
     private async Task<TableRowResult<PageListModel>> ClubMembershipsAsync(TableRowParams req, CancellationToken ct)
     {
-        var clubsResult = await BlocksDataProvider.GetPageListAsync(ct);
+        var clubsResult = await BlocksDataProvider.ListPagesAsync(ct);
         return new TableRowResult<PageListModel>(clubsResult.Count(), clubsResult);
     }
 

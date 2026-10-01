@@ -1,4 +1,6 @@
-﻿using System.Text.Json;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Components.Authorization;
+using System.Text.Json;
 using Webefinity.Module.Blocks.Abstractions;
 
 namespace Webefinity.Module.Blocks.Services;
@@ -6,10 +8,16 @@ namespace Webefinity.Module.Blocks.Services;
 public class BlocksProviderService
 {
     private readonly IBlocksDataProvider blocksDataProvider;
+    private readonly BlockSecurityPolicies blockSecurityPolicies;
+    private readonly IAuthorizationService authorizationService;
+    private readonly AuthenticationStateProvider authenticationStateProvider;
 
-    public BlocksProviderService(IBlocksDataProvider blocksDataProvider)
+    public BlocksProviderService(IBlocksDataProvider blocksDataProvider, BlockSecurityPolicies blockSecurityPolicies, IAuthorizationService authorizationService, AuthenticationStateProvider authenticationStateProvider)
     {
         this.blocksDataProvider = blocksDataProvider;
+        this.blockSecurityPolicies = blockSecurityPolicies;
+        this.authorizationService = authorizationService;
+        this.authenticationStateProvider = authenticationStateProvider;
     }
 
     public Task<PageOutlineModel> GetPageOutlineAsync(string name, CancellationToken ct = default!)
@@ -60,5 +68,16 @@ public class BlocksProviderService
     public Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct)
     {
         return this.blocksDataProvider.PublishPageAsync(pageId, publishState, ct);
+    }
+
+    public async Task<IEnumerable<PageListModel>> ListPagesAsync(CancellationToken ct = default!)
+    {
+        if (this.blockSecurityPolicies.AuthorPolicy is null)
+        {
+            throw new InvalidOperationException("AuthorPolicy is not configured.");
+        }
+        var user = await this.authenticationStateProvider.GetAuthenticationStateAsync();
+        var authorizeResult = await this.authorizationService.AuthorizeAsync(user.User, this.blockSecurityPolicies.AuthorPolicy);
+        return await this.blocksDataProvider.GetPageListAsync(ct);
     }
 }
