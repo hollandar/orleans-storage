@@ -14,26 +14,27 @@
 
 @if (pageModel is not null)
 {
-    @foreach (var enumBlockState in this.blockEditorStates)
-    {
-        var blockState = enumBlockState;
-        var blockModel = blockState.Model;
-        var hasBlock = BlockProvider.HasBlock(blockModel.Kind);
+    <div class="blocks-container">
+        @foreach (var enumBlockState in this.blockEditorStates)
+        {
+            var blockState = enumBlockState;
+            var blockModel = blockState.Model;
+            var hasBlock = BlockProvider.HasBlock(blockModel.Kind);
 
-        <div @key="blockState.Id" class="blocks-parent">
-            @if (hasBlock.block)
-            {
-                <div class="blocks-container @(blockState.Editing ? "editing" : "viewing")" data-blockid="@blockModel.Id"
-                    data-blockkind="@blockModel.Kind" data-blocksequence="@blockModel.Sequence">
-                    @if (blockState.Editing)
-                    {
-                        <div class="blocks-editor">
-                            @BlockProvider.RenderEditorFragment(blockModel, BuildApply(blockState), BuildSave(blockState),
-                            BuildCancel(blockState))
-                        </div>
-                    }
-                    <div class="blocks-block">
-                        
+            <div @key="blockState.Id" class="blocks-parent">
+                @if (hasBlock.block)
+                {
+                    <div class="blocks-container @(blockState.Editing ? "editing" : "viewing")" data-blockid="@blockModel.Id"
+                         data-blockkind="@blockModel.Kind" data-blocksequence="@blockModel.Sequence">
+                        @if (blockState.Editing)
+                        {
+                            <div class="blocks-editor">
+                                @BlockProvider.RenderEditorFragment(blockModel, BuildApply(blockState), BuildSave(blockState),
+                                BuildCancel(blockState))
+                            </div>
+                        }
+                        <div class="blocks-block">
+
                             @if (!blockState.Editing)
                             {
                                 <div class="blocks-blockbar" style="--stack-gap: 0.25rem;">
@@ -44,16 +45,19 @@
                                             <Icon><i class="fa-solid fa-pencil fa-xs"></i></Icon>
                                         </Button>
                                     }
-                                    <Button class="control" Clicked="async () => await MoveBlockUp(blockState)"><i
-                                            class="fa-solid fa-caret-up"></i></Button>
-                                    <Button class="control" Clicked="async () => await MoveBlockDown(blockState)"><i
-                                            class="fa-solid fa-caret-down"></i></Button>
+                                    <Button class="control" Clicked="async () => await MoveBlockUp(blockState)">
+                                        <i class="fa-solid fa-caret-up"></i>
+                                    </Button>
+                                    <Button class="control" Clicked="async () => await MoveBlockDown(blockState)">
+                                        <i class="fa-solid fa-caret-down"></i>
+                                    </Button>
                                     <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)"
-                                        title="Add block above">
+                                            title="Add block above">
                                         <Icon><i class="fa-solid fa-plus fa-xs"></i></Icon>
                                     </Button>
-                                    <Button class="control" Clicked="async () => await DeleteBlock(blockState)"><i
-                                            class="fa-solid fa-trash fa-xs"></i></Button>
+                                    <Button class="control" Clicked="async () => await DeleteBlock(blockState)">
+                                        <i class="fa-solid fa-trash fa-xs"></i>
+                                    </Button>
                                 </div>
                             }
                             else
@@ -61,70 +65,73 @@
                                 // Nada
                             }
 
-                        <div>
-                            @BlockProvider.RenderFragment(blockModel)
-                        </div>
-                    </div>
-                </div>
-            }
-            else 
-            {
-                <div class="blocks-container viewing" data-blockid="@blockModel.Id" data-blockkind="@blockModel.Kind"
-                    data-blocksequence="@blockModel.Sequence">
-                    <div class="block-missing">
-                        Block missing: @blockModel.Kind
-                    </div>
-                    @if (!blockState.Editing)
-                    {
-                        <div class="blocks-blockbar stack horizontal" style="--stack-gap: 0.25rem;">
-                            <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)"
-                                title="Add block above">
-                                <Icon><i class="fa-solid fa-plus fa-xs"></i></Icon>
-                            </Button>
-                            <Button class="control" Clicked="async () => await DeleteBlock(blockState)"><i
-                                    class="fa-solid fa-trash fa-xs"></i></Button>
-                        </div>
-                    }
-                    else
-                    {
-                        // Nada
-                    }
-                </div>
-            }
-
-        </div>
-    }
-
-        <div class="blocks-controls">
-            <div>End of page</div>
-            <Button class="control" Clicked="() => ShowBlockListDialog(int.MaxValue)" title="Add block at the end">
-                <Icon><i class="fa-solid fa-plus"></i></Icon>
-            </Button>
-        </div>
-
-        <Dialog @ref="blockListDialog" Modal="true" class="full">
-            <Header>
-                <h4>Blocks</h4>
-            </Header>
-            <Content>
-                <div class="blocks-dialog-content">
-                    @foreach (var d in BlockProvider.GetBlockDescriptions())
-                    {
-                        <div class="blocks-dialog-block" @key="d.Kind">
-                            <div class="blocks-dialog-name">@d.Name</div>
-                            <div class="blocks-dialog-description">@d.Description</div>
-                            <div class="blocks-dialog-actions">
-                                <Button class="control" Text="Add"
-                                    Clicked="async () => await AddBlockAtInsertSequenceAsync(d.Kind)">
-                                    <Icon><i class="fa-solid fa-plus"></i></Icon>
-                                </Button>
+                            <div>
+                                @BlockProvider.RenderFragment(blockModel)
                             </div>
                         </div>
-                    }
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="blocks-container viewing" data-blockid="@blockModel.Id" data-blockkind="@blockModel.Kind"
+                         data-blocksequence="@blockModel.Sequence">
+                        <div class="block-missing">
+                            Block missing: @blockModel.Kind
+                        </div>
+                        @if (!blockState.Editing)
+                        {
+                            <div class="blocks-blockbar stack horizontal" style="--stack-gap: 0.25rem;">
+                                <Button class="control" Clicked="async () => await ShowBlockListDialog(blockState.Model.Sequence)"
+                                        title="Add block above">
+                                    <Icon><i class="fa-solid fa-plus fa-xs"></i></Icon>
+                                </Button>
+                                <Button class="control" Clicked="async () => await DeleteBlock(blockState)">
+                                    <i class="fa-solid fa-trash fa-xs"></i>
+                                </Button>
+                            </div>
+                        }
+                        else
+                        {
+                            // Nada
+                        }
+                    </div>
+                }
 
-            </Content>
-        </Dialog>
+            </div>
+        }
+
+    </div>
+
+    <div class="blocks-controls">
+        <div>End of page</div>
+        <Button class="control" Clicked="() => ShowBlockListDialog(int.MaxValue)" title="Add block at the end">
+            <Icon><i class="fa-solid fa-plus"></i></Icon>
+        </Button>
+    </div>
+
+    <Dialog @ref="blockListDialog" Modal="true" class="full">
+        <Header>
+            <h4>Blocks</h4>
+        </Header>
+        <Content>
+            <div class="blocks-dialog-content">
+                @foreach (var d in BlockProvider.GetBlockDescriptions())
+                {
+                    <div class="blocks-dialog-block" @key="d.Kind">
+                        <div class="blocks-dialog-name">@d.Name</div>
+                        <div class="blocks-dialog-description">@d.Description</div>
+                        <div class="blocks-dialog-actions">
+                            <Button class="control" Text="Add"
+                                    Clicked="async () => await AddBlockAtInsertSequenceAsync(d.Kind)">
+                                <Icon><i class="fa-solid fa-plus"></i></Icon>
+                            </Button>
+                        </div>
+                    </div>
+                }
+            </div>
+
+        </Content>
+    </Dialog>
 }
 
 
@@ -137,7 +144,7 @@
 
     PageModel? pageModel = null;
     IEnumerable<BlockEditorState> blockEditorStates = Array.Empty<BlockEditorState>();
-	IEnumerable<BlockDescription> blockDescriptions = Array.Empty<BlockDescription>();
+    IEnumerable<BlockDescription> blockDescriptions = Array.Empty<BlockDescription>();
 
     Dialog blockListDialog = default!;
     int insertSequence = -1;
@@ -152,7 +159,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-		this.blockDescriptions = BlockProvider.GetBlockDescriptions();
+        this.blockDescriptions = BlockProvider.GetBlockDescriptions();
         await RefreshPageModel();
         await base.OnInitializedAsync();
     }
@@ -170,7 +177,7 @@
             this.pageModel = null;
             this.blockEditorStates = Array.Empty<BlockEditorState>();
         }
-        
+
         await InvokeAsync(StateHasChanged);
     }
 

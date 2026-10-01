@@ -24,6 +24,9 @@ body.dark {
     --_blocks-container--editing--border-radius: 5px;
     --_blocks-container--editing--border: var(--blocks-container--editing--border, 1px solid var(--color-zinc--300));
     position: relative;
+    display: flex;
+    flex-direction:column;
+    gap: 4rem;
 }
 
     .blocks-container.viewing, .blocks-container.editing {

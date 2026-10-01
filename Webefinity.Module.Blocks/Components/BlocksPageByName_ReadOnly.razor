@@ -9,6 +9,7 @@
 
 @if (pageModel is not null && pageModel.State == PublishState.Published)
 {
+    <div class="blocks-container">
     @foreach (var enumBlockState in this.blockEditorStates)
     {
         var blockModel = enumBlockState;
@@ -27,6 +28,7 @@
             }
         </div>
     }
+    </div>
 } else {
     <div class="blocks-page-not-found panel" style="margin:1rem;">
         <h1>Page Not Found</h1>
