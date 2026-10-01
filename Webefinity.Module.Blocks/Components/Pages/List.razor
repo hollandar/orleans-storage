@@ -1,0 +1,103 @@
+﻿@page "/admin/pages"
+@using System.Diagnostics
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@using Webefinity.Module.Blocks.Services
+
+@rendermode InteractiveServer
+
+@inject BlockSecurityPolicies BlockSecurityPolicies
+
+@attribute [Authorize]
+
+@inject IBlocksDataProvider BlocksDataProvider
+@inject NavigationManager Nav
+<AuthorizeView Policy="@BlockSecurityPolicies.AuthorPolicy">
+    <Authorized Context="authContext">
+    <BackH1 BackUrl="@ReturnUrl">Content Pages</BackH1>
+
+    <div class="panel">
+        <div class="container">
+            <div class="page-repeater repeater-control repeater-5">
+                <Repeater TRowType="PageListModel" ItemsProvider="ClubMembershipsAsync" @ref="clubsTable" MoreLoaded="() => StateHasChanged()" VirtualScroll="true">
+                    <Header>
+                            <div class="page-repeater-row repeater-control-head flat pill">
+                                <div class="page-repeater-name">
+                                Name
+                            </div>
+                            <div class="page-repeater-title">
+                                Title
+                            </div>
+                            <div class="page-repeater-status">
+                                Status
+                            </div>
+                            <div class="page-repeater-linktext">
+                                Link Text
+                            </div>
+                            <div class="page-repeater-actions">
+                            </div>
+                            </div>
+                        </Header>
+                    <Content>
+                        <div class="page-repeater-row repeater-control-row flat pill" @key="context.Id" role="button" @onclick="async () => await NavigateToPageAsync(context.Item)">
+                            <div class="page-repeater-name">
+                                @context.Item.Name
+                            </div>
+                            <div class="page-repeater-title">
+                                @context.Item.Title
+                            </div>
+                            <div class="page-repeater-status">
+                                <span>@context.Item.State.ToDisplayString()</span>
+                            </div>
+                            <div class="page-repeater-linktext">
+                                <span>@context.Item.PageLinkText</span>
+                            </div>
+                            <div class="page-repeater-actions">
+                                <i class="fa-solid fa-caret-right"></i>
+                            </div>
+                        </div>
+                    </Content>
+                    <NoRecords>
+                        <div class="repeater-no-records">
+                            <p>You are not yet a member of any clubs.  Go on, request to join a club!</p>
+                        </div>
+                    </NoRecords>
+                </Repeater>
+                @if (clubsTable?.IsMoreDataAvailable ?? false)
+                {
+                    <div class="flex start gap-1">
+                        <span>Displaying @clubsTable.LoadedCount of @clubsTable.TotalCount</span>
+                        <button class="button link" @onclick="async () => await clubsTable.LoadMoreAsync()">Load more</button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    </Authorized>
+</AuthorizeView>
+
+@code {
+    [Parameter, SupplyParameterFromQuery(Name = "r")] public string? ReturnUrl { get; set; } = null;
+
+    private Repeater<PageListModel>? clubsTable;
+
+    private async Task<TableRowResult<PageListModel>> ClubMembershipsAsync(TableRowParams req, CancellationToken ct)
+    {
+        var clubsResult = await BlocksDataProvider.GetPageListAsync(ct);
+        return new TableRowResult<PageListModel>(clubsResult.Count(), clubsResult);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+    }
+
+    protected Task NavigateToPageAsync(PageListModel page)
+    {
+        Nav.NavigateToWithReturn($"/{page.Name}", ReturnUrl ?? "/");
+
+        return Task.CompletedTask;
+    }
+
+}
+

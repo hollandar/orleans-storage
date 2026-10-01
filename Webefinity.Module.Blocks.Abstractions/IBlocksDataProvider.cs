@@ -19,4 +19,5 @@ public interface IBlocksDataProvider
     Task UpdatePageAsync(UpdateBlockSettingsRequest settingsModel, CancellationToken ct);
     Task<PublishState> PublishPageAsync(Guid pageId, PublishState publishState, CancellationToken ct);
     Task<IReadOnlyCollection<PageLinkModel>> GetPageControlLinksAsync(CancellationToken ct);
+    Task<IEnumerable<PageListModel>> GetPageListAsync(CancellationToken ct);
 }

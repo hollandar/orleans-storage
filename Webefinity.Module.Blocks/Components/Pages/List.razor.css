@@ -1,0 +1,4 @@
+﻿.page-repeater {
+    grid-template-columns: auto auto auto auto min-content;
+}
+

@@ -8,3 +8,12 @@ public class PageModel
     public PublishState State { get; set; } = PublishState.Draft;
     public ICollection<BlockModel> Blocks { get; set; } = Array.Empty<BlockModel>();
 }
+
+public class PageListModel
+{
+    public Guid Id { get; set; } = Guid.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Title { get; set; } = "No Title Provided";
+    public PublishState State { get; set; } = PublishState.Draft;
+    public string PageLinkText { get; set; } = string.Empty;
+}

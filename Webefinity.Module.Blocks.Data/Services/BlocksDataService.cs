@@ -300,4 +300,20 @@ internal class BlocksDataService : IBlocksDataProvider
             pageLinksCacheLock.ExitWriteLock();
         }
     }
+
+    public Task<IEnumerable<PageListModel>> GetPageListAsync(CancellationToken ct)
+    {
+        var links = this.dbContextChild.Pages
+            .OrderBy(r => r.Name)
+            .Select(r => new PageListModel
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Title = r.Title,
+                State = r.State,
+                PageLinkText = r.LinkText
+            });
+
+        return Task.FromResult((IEnumerable<PageListModel>)links.ToList());
+    }
 }
