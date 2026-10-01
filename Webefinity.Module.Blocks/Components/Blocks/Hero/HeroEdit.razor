@@ -10,14 +10,26 @@
 
     <div class="field">
         <label for="text">Text</label>
-        <InputTextArea rows="20" id="text" @bind-Value="Model.Text" />
-        <ValidationMessage For="@(() => Model.Text)" />
+        <InputTextArea rows="10" id="text" @bind-Value="Model.Left" />
+        <ValidationMessage For="@(() => Model.Left)" />
     </div>
 
     <div class="field">
-        <label for="url">Url</label>
+        <label for="text">Text</label>
+        <InputTextArea rows="10" id="text" @bind-Value="Model.Right" />
+        <ValidationMessage For="@(() => Model.Right)" />
+    </div>
+
+    <div class="field">
+        <label for="url">Background</label>
         <InputSelectFile Library="@Library" id="url" @bind-Value="Model.Url" />
         <ValidationMessage For="@(() => Model.Url)" />
+    </div>
+
+    <div class="field">
+        <label for="text-color">Text Color</label>
+        <InputColor id="text-color" @bind-Value="Model.TextColor" />
+        <ValidationMessage For="@(() => Model.TextColor)" />
     </div>
 
     <div class="actions">

@@ -1,37 +1,5 @@
 <h3>View</h3>
 
-<div class="properties">
-	<div class="property">
-		<div class="key">Texture Uri</div>
-		<div class="value">@Model.Detail.TextureUri</div>
-	</div>
-
-	<div class="property">
-		<div class="key">Texture Size</div>
-		<div class="value">@Model.Detail.TextureSize</div>
-	</div>
-
-	<div class="property">
-		<div class="key">Tile Size</div>
-		<div class="value">@Model.Detail.TileSize</div>
-	</div>
-
-	<div class="property">
-		<div class="key">Texture X</div>
-		<div class="value">@Model.Detail.X</div>
-	</div>
-
-	<div class="property">
-		<div class="key">Texture Y</div>
-		<div class="value">@Model.Detail.Y</div>
-	</div>
-
-</div>
-
-<div class="actions">
-	<button class="button primary" type="button" @onclick="() => Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.EditTiles)">Update Detail</button>
-</div>
-
 <table class="table">
 	<tr>
 		<th>Title</th>
@@ -42,7 +10,7 @@
 		@foreach (var tile in Model.Tiles)
 		{
 			<tr @key="tile.Id">
-				<td>@tile.Title (Icon: @tile.TextureIndex)</td>
+				<td>@tile.Title</td>
 				<td>
 					<div class="actions">
 						<Button class="control" Clicked="() => Editor.EditTileAsync(tile.Id)"><Icon><i class="fa-solid fa-pencil"></i></Icon></Button>

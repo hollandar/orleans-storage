@@ -4,12 +4,20 @@
 	<FluentValidator TModelType="TileModel" TValidator="TileModelValidator"/>
 
 	<div class="field">
+
 		<div class="field">
-			<label for="TextureIndex">Texture Index</label>
-			<InputNumber id="TextureIndex" @bind-Value="tile.TextureIndex" />
-			<ValidationMessage For="@(() => tile.TextureIndex)" />
+			<label for="url">Image Resource</label>
+			<InputSelectFile Library="@Library" id="url" @bind-Value="tile.ImageUri" />
+			<ValidationMessage For="@(() => tile.ImageUri)" />
+			<p class="hint">A url to an image for the tile, this will be used in preference to the icon resource.</p>
 		</div>
 
+		<div class="field">
+			<label for="IconResource">Icon Resource</label>
+			<InputText type="text" @bind-Value="tile.IconResource" />
+			<ValidationMessage For="() => tile.IconResource" />
+			<p class="hint">A reference to an icon from the style library.  Font Awesome is the standard icon library.  For example "fa-solid fa-user fa-2x".</p>
+		</div>
 
 		<div class="field">
 			<label for="Title">Title</label>
@@ -32,6 +40,7 @@
 
 </EditForm>
 @code {
+	[CascadingParameter(Name = "CadenceUploadContentLibraryKey")] public string Library { get; set; } = string.Empty;
 	[CascadingParameter(Name = "Model")] public TilesModel Model { get; set; } = default!;
 	[CascadingParameter(Name = "Editor")] public TilesBlockEditor Editor { get; set; } = default!;
 	TileModel tile = new();
@@ -43,9 +52,10 @@
 			tile = new()
 				{
 					Id = Guid.NewGuid(),
-					TextureIndex = 0,
 					Title = "",
-					Md = ""
+					Md = "",
+					IconResource = string.Empty,
+					ImageUri = string.Empty
 				};
 		} else
 		{
@@ -54,8 +64,9 @@
 				{
 					Id = tileEditing.Id,
 					Title = tileEditing.Title,
-					TextureIndex = tileEditing.TextureIndex,
-					Md = tileEditing.Md
+					Md = tileEditing.Md,
+					IconResource = tileEditing.IconResource,
+					ImageUri = tileEditing.ImageUri
 				};
 		}
 		await base.OnInitializedAsync();
@@ -71,9 +82,10 @@
 			Model.Tiles.Add(tileEditing);
 		}
 
-		tileEditing.TextureIndex = tile.TextureIndex;
 		tileEditing.Title = tile.Title;
 		tileEditing.Md = tile.Md;
+		tileEditing.IconResource = tile.IconResource;
+		tileEditing.ImageUri = tile.ImageUri;
 
 		await Editor.SetEditorModeAsync(TilesBlockEditor.EditorMode.View, null);
 	}

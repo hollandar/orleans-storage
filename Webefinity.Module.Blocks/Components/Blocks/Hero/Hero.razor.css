@@ -7,31 +7,43 @@
 }
 
 .hero {
-    background-size: cover;
-    background-position: center;
-    min-height: 80vh;
+    background-size: contain;
+    background-position: top;
+    min-height: 60vh;
     display: flex;
-    justify-content: center;
+    justify-content: stretch;
     align-items: center;
     padding: 4rem;
     font-size: 180%;
 }
 
-@container (max-width: 1024px) {
-    .hero {
-        font-size: 120%;
-        padding: 1rem;
-    }
+
+.hero > .hero-content {
+    position: relative;
+    color: var(--color-black);
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem 4rem;
+    grid-template-rows: auto;
+    grid-template-areas: "left right";
 }
 
-.hero .center {
-    position: relative;
-    background: linear-gradient(rgba(255,255,255,0.8) 0 0) border-box;
-    min-height: 30%;
-    min-width: 50%;
-    padding: 4rem;
-    color: var(--color-black);
-}
+    .hero > .hero-content > .hero-section-left {
+        grid-area: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    .hero > .hero-content > .hero-section-right {
+        grid-area: right;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+
 
 .hero-image {
     position: absolute;
@@ -40,6 +52,16 @@
     width: 100%;
     height: 100%;
     z-index: -1;
-    object-fit: cover;
-    object-position: center;
+}
+
+@container (max-width: 1024px) {
+    .hero {
+        font-size: 120%;
+        padding: 1rem;
+    }
+
+        .hero > .hero-content {
+            grid-template-columns: 1fr;
+            grid-template-areas: "left" "right";
+        }
 }

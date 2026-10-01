@@ -6,17 +6,27 @@
 
 <section class="container">
     <div class="hero">
-        <div class="center">
 
-            <Markdown Md="@Model.Text" />
+        <div class="hero-content">
+            <div class="hero-section-left" style="color: @Model.TextColor">
+                @if (!string.IsNullOrWhiteSpace(Model.Left))
+                {
+                    <Markdown Md="@Model.Left" />
+                }
+            </div>
 
+            <div class="hero-section-right" style="color: @Model.TextColor">
+                @if (!string.IsNullOrWhiteSpace(Model.Right))
+                {
+                    <Markdown Md="@Model.Right" />
+                }
+            </div>
         </div>
-        <img 
-            src="@UriTransformer.Transform(this.Model.Url)" 
-            srcset="@UriTransformer.TransformSrcSet(this.Model.Url)"
-            class="hero-image" 
-            alt="Hero Image"
-            />
+
+        <img src="@UriTransformer.Transform(this.Model.Url)"
+             srcset="@UriTransformer.TransformSrcSet(this.Model.Url)"
+             class="hero-image object-position-scroll object-fit-cover"
+             alt="Hero Image" />
     </div>
 </section>
 

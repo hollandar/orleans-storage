@@ -7,9 +7,6 @@
 			case var mode when mode.Mode == EditorMode.View && mode.TileId is null:
 				<_View />
 				break;
-			case var mode when mode.Mode == EditorMode.EditTiles && mode.TileId is null:
-				<_Edit/>
-				break;
 
 			case var mode when mode.Mode == EditorMode.EditTile && mode.TileId is not null:
 				<_EditTile />
@@ -34,7 +31,6 @@
 	public enum EditorMode
 	{
 		View,
-		EditTiles,
 		AddTile,
 		EditTile
 	}

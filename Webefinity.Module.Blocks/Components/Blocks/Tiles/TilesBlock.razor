@@ -1,22 +1,51 @@
 ﻿@inherits BlockComponentBase<TilesModel>
 @attribute [BlockAttribute("tiles", "Tiles", "A block that renders a number of tiles.")]
 
-<TextureMap Src="@(UriTransformer.Transform(Model.Detail.TextureUri))" TextureSize="@($"{Model.Detail.TextureSize}px")" XCount="@Model.Detail.X" YCount="@Model.Detail.Y" ImageSize="@($"{Model.Detail.TileSize}px")">
-    <Features Basis="@($"{Model.Detail.TileSize}px")">
-        @foreach (var tile in Model.Tiles)
-        {
-            <FeatureItem id="@tile.Id" @key="@tile.Id">
-                <TextureImage Index="@tile.TextureIndex" />
-                <h2>@tile.Title</h2>
-                @if (!string.IsNullOrWhiteSpace(tile.Md))
-                {
-                    <Markdown Md="@tile.Md" />
-                }
-            </FeatureItem>
-		}
-    </Features>
-</TextureMap>
+<div class="container">
+        <div class="@ContainerClass()">
+            @foreach (var tile in Model.Tiles)
+            {
+                <div class="tiles-item">
+                    <div class="tiles-image">
+                        @if (!String.IsNullOrWhiteSpace(tile.ImageUri))
+                        {
+                            <img src="@UriTransformer.Transform(tile.ImageUri)"
+                                 srcset="@UriTransformer.TransformSrcSet(tile.ImageUri)"
+                                 class="tiles-image object-fit-cover"
+                                 alt="@tile.Title" />
+                        }
+                        else if (!string.IsNullOrWhiteSpace(tile.IconResource))
+                        {
+                            <i class="@tile.IconResource"></i>
+                        }
+                    </div>
+                    <div class="tiles-content">
+                        <h4>@tile.Title</h4>
+                        <Markdown Md="@tile.Md" />
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 
 @code {
-
+    protected string ContainerClass()
+    {
+        if (Model.Tiles.Count % 4 == 0)
+        {
+            return "tiles-container tiles-columns-4";
+        }
+        else if (Model.Tiles.Count % 3 == 0)
+        {
+            return "tiles-container tiles-columns-3";
+        }
+        else if (Model.Tiles.Count % 2 == 0)
+        {
+            return "tiles-container tiles-columns-2";
+        }
+        else
+        {
+            return "tiles-container tiles-columns-1";
+        }
+    }
 }
