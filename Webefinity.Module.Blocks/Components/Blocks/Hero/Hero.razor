@@ -11,14 +11,18 @@
             <div class="hero-section-left" style="color: @Model.TextColor">
                 @if (!string.IsNullOrWhiteSpace(Model.Left))
                 {
-                    <Markdown Md="@Model.Left" />
+                    <div class="hero-backdrop">
+                        <Markdown Md="@Model.Left" />
+                    </div>
                 }
             </div>
 
             <div class="hero-section-right" style="color: @Model.TextColor">
                 @if (!string.IsNullOrWhiteSpace(Model.Right))
                 {
-                    <Markdown Md="@Model.Right" />
+                    <div class="hero-backdrop">
+                        <Markdown Md="@Model.Right" />
+                    </div>
                 }
             </div>
         </div>

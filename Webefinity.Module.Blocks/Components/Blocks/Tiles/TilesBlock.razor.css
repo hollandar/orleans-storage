@@ -32,13 +32,6 @@
     }
 }
 
-@container (max-width: 1024px) {
-    .tiles-section {
-        grid-template-columns: 1fr 1fr;
-        grid-template-areas: "highlight tiles";
-    }
-}
-
 .tiles-container {
     grid-area: tiles;
     display: grid;
@@ -57,24 +50,25 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            object-fit: cover;
         }
     }
 }
 
     .tiles-container.tiles-columns-4 {
-        grid-template-columns: 1fr 2fr 1fr 2fr 1fr 2fr 1fr 2fr;
+        grid-template-columns: 1fr 3fr 1fr 3fr 1fr 3fr 1fr 3fr;
     }
 
     .tiles-container.tiles-columns-3 {
-        grid-template-columns: 1fr 2fr 1fr 2fr 1fr 2fr;
+        grid-template-columns: 1fr 3fr 1fr 3fr 1fr 3fr;
     }
 
     .tiles-container.tiles-columns-2 {
-        grid-template-columns: 1fr 2fr 1fr 2fr;
+        grid-template-columns: 1fr 3fr 1fr 3fr;
     }
 
     .tiles-container.tiles-columns-1 {
-        grid-template-columns: 1fr 2fr;
+        grid-template-columns: 1fr 3fr;
     }
 
 @container (max-width: 1600px) {
@@ -83,7 +77,34 @@
     }
 }
 
-@container (max-width: 1024px) {
+@container (max-width: 1400px) {
+    .tiles-section {
+        grid-template-columns: 1fr;
+        grid-template-areas: "tiles";
+    }
+
+    .tiles-highlight {
+        display: none;
+    }
+
+    .tiles-container.tiles-columns-4 {
+        grid-template-columns: 1fr 3fr;
+    }
+
+    .tiles-container.tiles-columns-3 {
+        grid-template-columns: 1fr 3fr;
+    }
+
+    .tiles-container.tiles-columns-2 {
+        grid-template-columns: 1fr 3fr;
+    }
+
+    .tiles-container.tiles-columns-1 {
+        grid-template-columns: 1fr 3fr;
+    }
+}
+
+@container (max-width: 800px) {
     .tiles-container.tiles-columns-4 {
         grid-template-columns: 1fr 2fr;
     }
@@ -98,5 +119,23 @@
 
     .tiles-container.tiles-columns-1 {
         grid-template-columns: 1fr 2fr;
+    }
+}
+
+@container (max-width: 600px) {
+    .tiles-container.tiles-columns-4 {
+        grid-template-columns: 1fr;
+    }
+
+    .tiles-container.tiles-columns-3 {
+        grid-template-columns: 1fr;
+    }
+
+    .tiles-container.tiles-columns-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .tiles-container.tiles-columns-1 {
+        grid-template-columns: 1fr;
     }
 }
