@@ -3,6 +3,7 @@
     display: grid;
     grid-template-columns: 1fr 4fr;
     grid-template-areas: "highlight tiles";
+    padding: 1rem;
 }
     .tiles-section.no-highlight {
         grid-template-columns: 1fr;
