@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace Webefinity.Module.Blocks
+namespace Webefinity.Module.Blog
 {
     public static class UriTransformer
     {

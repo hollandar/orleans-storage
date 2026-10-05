@@ -49,7 +49,12 @@
                         <div>
                             @if (article.Image is not null)
                             {
-                                <img class="cover" src="@($"{article.Image}")" alt="@article.Title" />
+                                <img class="cover" 
+                                    loading="lazy"
+                                    sizes="auto"
+                                    src="@(Webefinity.Module.Blog.UriTransformer.Transform(article.Image))" 
+                                    srcset="@(Webefinity.Module.Blog.UriTransformer.TransformSrcSet(article.Image))" 
+                                    alt="@article.Title" />
                             }
                         </div>
 
