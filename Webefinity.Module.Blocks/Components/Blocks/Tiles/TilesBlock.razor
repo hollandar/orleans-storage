@@ -11,8 +11,7 @@
                 </div>
                 <img 
                     src="@UriTransformer.Transform(this.Model.ImageUri)"
-                    loading="lazy"
-                    sizes="auto"
+                    sizes="512px"
                     srcset="@UriTransformer.TransformSrcSet(this.Model.ImageUri)"
                     class="tiles-highlight-image object-position-scroll object-fit-cover"
                     alt="@Model.Title" />
@@ -27,8 +26,7 @@
                         @if (!String.IsNullOrWhiteSpace(tile.ImageUri))
                         {
                             <img src="@UriTransformer.Transform(tile.ImageUri)"
-                                 loading="lazy"
-                                 sizes="auto"
+                                 sizes="300px"
                                  srcset="@UriTransformer.TransformSrcSet(tile.ImageUri)"
                                  class="tiles-image object-fit-cover"
                                  alt="@tile.Title" />

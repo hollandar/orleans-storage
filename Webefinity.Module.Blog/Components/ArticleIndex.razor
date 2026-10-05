@@ -50,8 +50,7 @@
                             @if (article.Image is not null)
                             {
                                 <img class="cover" 
-                                    loading="lazy"
-                                    sizes="auto"
+                                    sizes="500px"
                                     src="@(Webefinity.Module.Blog.UriTransformer.Transform(article.Image))" 
                                     srcset="@(Webefinity.Module.Blog.UriTransformer.TransformSrcSet(article.Image))" 
                                     alt="@article.Title" />
