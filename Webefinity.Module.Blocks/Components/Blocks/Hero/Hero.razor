@@ -25,6 +25,8 @@
 
         <img src="@UriTransformer.Transform(this.Model.Url)"
              srcset="@UriTransformer.TransformSrcSet(this.Model.Url)"
+             loading="lazy"
+             sizes="auto"
              class="hero-image object-position-scroll object-fit-cover"
              alt="Hero Image" />
     </div>

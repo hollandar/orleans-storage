@@ -18,7 +18,7 @@ namespace Webefinity.Module.Blocks
                 return url;
         }
 
-        static int[] defaultSizes = new int[] { 320, 480, 640, 960, 1280, 1600, 1920, 2560, 3840 };
+        static int[] defaultSizes = new int[] { 50, 100, 150, 200, 320, 480, 640, 960, 1280, 1600, 1920, 2560, 3840 };
         public static string TransformSrcSet(string url, Func<int, string>? processingInstructionFactory = null, int[]? sizes = null)
         {
             sizes ??= defaultSizes;
