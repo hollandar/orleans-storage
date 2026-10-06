@@ -1,4 +1,5 @@
 ﻿@page "/article/{id}"
+@using Microsoft.AspNetCore.Http
 
 @inject IServiceProvider ServiceProvider
 @inject IOptions<BlogOptions> BlogOptions
@@ -6,12 +7,13 @@
 @inject IAuthorizationService AuthorizationService
 @inject ArticleContentService ArticleContentService
 @inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <HeadContent>
     <meta name="description" content="@this.properties?.Summary" />
-    <link rel="canonical" href="https://www.sports-trainer.com.au/article/@this.Id" />
+    <link rel="canonical" href="@GetArticleUrl(this.Id)" />
     <meta property="og:type" content="article" />
-    <meta property="og:url" content="https://www.sports-trainer.com.au/article/@this.Id" />
+    <meta property="og:url" content="@GetArticleUrl(this.Id)" />
 </HeadContent>
 
 <section class="gutter constrained p-t-4 p-b-4">
@@ -126,5 +128,13 @@
         }
 
         await base.OnInitializedAsync();
+    }
+
+    protected string GetArticleUrl(string articleId)
+    {
+        ArgumentNullException.ThrowIfNull(this.HttpContextAccessor?.HttpContext, nameof(this.HttpContextAccessor));
+        var domain = this.HttpContextAccessor.HttpContext.Request.Host.Value;
+        var scheme = this.HttpContextAccessor.HttpContext.Request.Scheme;
+        return NavigationManager.NavigationString($"{scheme}://{domain}/article/{articleId}", ReturnUrl);
     }
 }

@@ -11,9 +11,5 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\Webefinity.InteractiveAuto\Webefinity.InteractiveAuto.csproj" />
-  </ItemGroup>
   
 </Project>

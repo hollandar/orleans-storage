@@ -1,5 +1,6 @@
 @page "/article"
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.AspNetCore.Http
 @using Webefinity.Module.Blog.Data
 @using Webefinity.Module.Blog.Models
 @using Webefinity.Module.Blog.Services
@@ -9,16 +10,17 @@
 @inject AuthenticationStateProvider AuthenticationStateProvider
 @inject IOptions<BlogOptions> BlogOptions
 @inject NavigationManager NavigationManager
+@inject IHttpContextAccessor HttpContextAccessor
 
 <HeadContent>
-    <meta name="description" content="An index of blog articles published by Sports Trainer."/>
-    <link rel="canonical" href="https://www.sports-trainer.com.au/article" />
+    <meta name="description" content="@BlogOptions.Value.ArticleIndexMetaDescription"/>
+    <link rel="canonical" href="@GetArticleUrl()" />
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="Articles - AthHQ" />
-    <meta property="og:url" content="https://www.sports-trainer.com.au/article" />
+    <meta property="og:title" content="@BlogOptions.Value.ArticleIndexTitle" />
+    <meta property="og:url" content="@GetArticleUrl()" />
 </HeadContent>
 
-<PageTitle>Articles - AthHQ</PageTitle>
+<PageTitle>@BlogOptions.Value.ArticleIndexTitle</PageTitle>
 
 <section class="gutter container p-t-4 p-b-4">
     <BackH1 BackUrl="/">Articles</BackH1>
@@ -160,5 +162,13 @@
     protected async Task SearchAsync()
     {
         this.articleModels = await ArticleIndexService.ListArticlesAsync(search: SearchTerms.Search, tag: SearchTerms.Tag, state: ResolveRequestedState());
+    }
+
+    protected string GetArticleUrl()
+    {
+        ArgumentNullException.ThrowIfNull(this.HttpContextAccessor?.HttpContext, nameof(this.HttpContextAccessor));
+        var domain = this.HttpContextAccessor.HttpContext.Request.Host.Value;
+        var scheme = this.HttpContextAccessor.HttpContext.Request.Scheme;
+        return NavigationManager.NavigationString($"{scheme}://{domain}/article", ReturnUrl);
     }
 }
