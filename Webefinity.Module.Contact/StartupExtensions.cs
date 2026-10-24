@@ -21,7 +21,7 @@ public static class StartupExtensions
         
         builder.Services.AddDbContextFactory<ContactDbContext>(options =>
         {
-            options.UseSqlite(contactConnectionString ?? "Data Source=data/db/contact.db");
+            options.UseSqlite(contactConnectionString ?? "Data Source=db/contact.db");
         });
 
         builder.Services.AddQuartz(q => {
