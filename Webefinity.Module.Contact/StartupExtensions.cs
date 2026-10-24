@@ -16,16 +16,12 @@ public static class StartupExtensions
     public static void AddWebefinityContact(this WebApplicationBuilder builder)
     {
         builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
-
-        var blogConnectionString = builder.Configuration.GetConnectionString("Contact");
-        if (!Directory.Exists("./db"))
-        {
-            Directory.CreateDirectory("./db");
-        }
+        
+        var contactConnectionString = builder.Configuration.GetConnectionString("Contact");
         
         builder.Services.AddDbContextFactory<ContactDbContext>(options =>
         {
-            options.UseSqlite(blogConnectionString ?? "Data Source=db/contact.db");
+            options.UseSqlite(contactConnectionString ?? "Data Source=data/db/contact.db");
         });
 
         builder.Services.AddQuartz(q => {
