@@ -18,6 +18,11 @@ public static class StartupExtensions
         builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection("Smtp"));
 
         var blogConnectionString = builder.Configuration.GetConnectionString("Contact");
+        if (!Directory.Exists("./db"))
+        {
+            Directory.CreateDirectory("./db");
+        }
+        
         builder.Services.AddDbContextFactory<ContactDbContext>(options =>
         {
             options.UseSqlite(blogConnectionString ?? "Data Source=db/contact.db");
